@@ -53,7 +53,7 @@ type
 
 type
   SciterBehaviorFactory* = proc (a2: cstring; a3: HELEMENT; a4: ptr LPElementEventProc;
-                                 a5: ptr pointer): bool {.stdcall.}
+                              a5: ptr pointer): bool {.stdcall.}
   PHASE_MASK* = enum
     BUBBLING = 0,               ## # bubbling (emersion) phase
     SINKING = 0x00008000,       ## # capture (immersion) phase, this flag is or'ed with EVENTS codes below

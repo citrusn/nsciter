@@ -30,18 +30,20 @@ r.left = 500
 r.bottom = 500
 r.right = 800
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR, r, nil, nil, nil)
+#var wnd = SciterCreateWindow(0, nil, nil, nil, nil)
 if wnd == nil:
     quit("wnd is nil")
 echo "wnd:", repr wnd
 
 var htmlw: string = """<html> <head><title>Test Html Page</title></head> hello world! </html>"""
-echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
-#echo "SciterLoadFile: ", wnd.SciterLoadFile("t1.html") # for test debuger
-#echo "SciterLoadFile: " , wnd.SciterLoadFile("test.html")
+#echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
+echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.html") # for test debuger
+echo "SciterLoadFile: " , wnd.SciterLoadFile("./test.html")
 
 #testInsertFn("hello, world#0" , 0)
 #testInsertFn("hello, world#5" , 5)
 
+#wnd.run
 var testInsertFn = proc(text: string; index: uint32) =
     var root: HELEMENT
     wnd.SciterGetRootElement(root.addr)
@@ -49,7 +51,6 @@ var testInsertFn = proc(text: string; index: uint32) =
     SciterCreateElement("div", text, dv.addr)
     echo "InsertElem:", dv.SciterInsertElement(root, index)
 
-#wnd.run
 #wnd.setTitle("test") - # windows only proc calling
 wnd.onClick(proc() = echo "generic click")
 wnd.onClick(proc() = echo "generic click 2")
@@ -76,7 +77,7 @@ var testFn = proc() =
     echo "o:", o
 testFn()
 
-proc nf(args: seq[Value]): Value =
+proc nf(args: seq[Value]):Value=
     echo "NativeFunction called"
     return newValue("nf ok")
 
@@ -105,10 +106,10 @@ proc testCallback() =
         ret = fn.invokeWithSelf(newValue("string as this"), newValue(100),
                 newValue("arg2"))
     )
-testCallback() 
+testCallback()
 
 proc testNativeFunctor() =
-    echo "dfm api ret: ", wnd.defineScriptingFunction("api", proc(args: seq[Value]): Value =
+    wnd.defineScriptingFunction("api", proc(args:seq[Value]):Value =
         result = newValue()
         result["i"] = newValue(1000)
         result["str"] = newValue("a string")
@@ -120,7 +121,3 @@ testNativeFunctor()
 #echo HANDLE_SCRIPTING_METHOD_CALL, "->", ord(HANDLE_SCRIPTING_METHOD_CALL)
 echo 1024, "->" , cast[EVENT_GROUPS](1024)
 wnd.run
-
-#dfgdf fhfgh fg
-
-# test 
