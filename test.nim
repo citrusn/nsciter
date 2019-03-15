@@ -121,6 +121,6 @@ testNativeFunctor()
 echo 1024, "->" , cast[EVENT_GROUPS](1024)
 wnd.run
 
-
+#dfgdf fhfgh fg
 
 # test 
