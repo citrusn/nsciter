@@ -120,3 +120,7 @@ testNativeFunctor()
 #echo HANDLE_SCRIPTING_METHOD_CALL, "->", ord(HANDLE_SCRIPTING_METHOD_CALL)
 echo 1024, "->" , cast[EVENT_GROUPS](1024)
 wnd.run
+
+
+
+# test 
