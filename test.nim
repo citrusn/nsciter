@@ -36,9 +36,9 @@ if wnd == nil:
 echo "wnd:", repr wnd
 
 var htmlw: string = """<html> <head><title>Test Html Page</title></head> hello world! </html>"""
-echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
-#echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.html") # for test debuger
-#echo "SciterLoadFile: " , wnd.SciterLoadFile("./test.html")
+#echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
+echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.html") # for test debuger
+echo "SciterLoadFile: " , wnd.SciterLoadFile("./test.html")
 
 #testInsertFn("hello, world#0" , 0)
 #testInsertFn("hello, world#5" , 5)
