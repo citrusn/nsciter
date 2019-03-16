@@ -29,9 +29,9 @@ type
     cx*: int32
     cy*: int32
 
-  LPCWSTR_RECEIVER* = proc (str: ptr WideCString; str_length: cuint; param: pointer) {.cdecl.}
-  LPCSTR_RECEIVER* = proc (str: cstring; str_length: cuint; param: pointer) {.cdecl.}
-  LPCBYTE_RECEIVER* = proc (str: ptr byte; num_bytes: cuint; param: pointer) {.cdecl.}
+  LPCWSTR_RECEIVER* = proc (str: ptr WideCString; str_length: cuint; param: pointer) {.stdcall.}
+  LPCSTR_RECEIVER*  = proc (str: cstring; str_length: cuint; param: pointer) {.stdcall.}
+  LPCBYTE_RECEIVER* = proc (str: ptr byte; num_bytes: cuint; param: pointer) {.stdcall.}
 
 when defined(windows):
   import winlean
@@ -43,6 +43,7 @@ when defined(windows):
     WPARAM* = ByteAddress
     LPARAM* = ByteAddress
     LRESULT* = ByteAddress
+    HRESULT* = int
     MSG* {.header:whdr, importc.} = object
     # ID2D1RenderTarget* {.header:d2hdr, importc.} = object
     # IDXGISwapChain* {.header:d2hdr, importc.} = object
@@ -57,7 +58,7 @@ when defined(windows):
   else:
     const
       TARGET_32* = true
-      SCITER_DLL_NAME* = "sciter32.dll" 
+      SCITER_DLL_NAME* = "sciter.dll" 
 
 when defined(posix):
   const

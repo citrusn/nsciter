@@ -224,8 +224,7 @@ typedef BOOL SC_CALLBACK SciterBehaviorFactory( LPCSTR, HELEMENT, LPElementEvent
   };
 
 
-// parameters of evtg == HANDLE_KEY
-
+  // parameters of evtg == HANDLE_KEY
   enum KEY_EVENTS
   {
       KEY_DOWN = 0,
@@ -241,8 +240,7 @@ typedef BOOL SC_CALLBACK SciterBehaviorFactory( LPCSTR, HELEMENT, LPElementEvent
       UINT      alt_state;    // KEYBOARD_STATES
   };
 
-// parameters of evtg == HANDLE_FOCUS
-
+  // parameters of evtg == HANDLE_FOCUS
   enum FOCUS_EVENTS
   {
       FOCUS_LOST = 0, // non-bubbling event, target is new focus element
@@ -260,8 +258,7 @@ typedef BOOL SC_CALLBACK SciterBehaviorFactory( LPCSTR, HELEMENT, LPElementEvent
       BOOL      cancel;         // in FOCUS_LOST phase setting this field to true will cancel transfer focus from old element to the new one.
   };
 
-// parameters of evtg == HANDLE_SCROLL
-
+  // parameters of evtg == HANDLE_SCROLL
   enum SCROLL_EVENTS
   {
       SCROLL_HOME = 0,

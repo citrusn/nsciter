@@ -1,4 +1,3 @@
-
 include xapi, event, valueprocs
 
 when defined(posix):
@@ -45,6 +44,7 @@ when defined(windows):
     proc TranslateMessage(lpMsg: ptr MSG): bool {.stdcall, dynlib: "user32", importc: "TranslateMessage".}
     proc DispatchMessage(lpMsg: ptr MSG): LONG{.stdcall, dynlib: "user32", importc: "DispatchMessageW".}
     proc UpdateWindow(wnd: HWINDOW): bool{.stdcall, dynlib: "user32", importc: "UpdateWindow".}
+    proc OleInitialize*(pvReserved: pointer): HRESULT {.stdcall,discardable , dynlib: "ole32", importc: "OleInitialize".}
     proc ShowWindow(wnd: HWINDOW, nCmdShow: int32): WINBOOL{.stdcall, dynlib: "user32", importc: "ShowWindow".}
     proc setTitle*(h:HWINDOW, title:string) = 
         discard SetWindowText(h, newWideCString(title))

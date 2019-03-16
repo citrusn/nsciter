@@ -2,15 +2,18 @@ type
   VALUE_RESULT* = enum
     HV_OK_TRUE = - 1, HV_OK = 0, HV_BAD_PARAMETER = 1, HV_INCOMPATIBLE_TYPE = 2
 
-
-type
-  VALUE* = object
+type 
+  #PValue* = ref VALUE
+  VALUE* = object # {.byref.}
     t*: uint32
     u*: uint32
     d*: uint64
+  
 
   VTYPE* = enum
-    T_UNDEFINED = 0, T_NULL = 1, T_BOOL, T_INT, T_FLOAT, T_STRING, T_DATE, ## # INT64 - contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC), a.k.a. FILETIME on Windows
+    T_UNDEFINED = 0, T_NULL = 1, T_BOOL, T_INT, T_FLOAT, T_STRING, 
+    T_DATE,                   ## # INT64 - contains a 64-bit value representing the number of 100-nanosecond intervals 
+                              ## # since January 1, 1601 (UTC), a.k.a. FILETIME on Windows
     T_CURRENCY,               ## # INT64 - 14.4 fixed number. E.g. dollars = int64 / 10000; 
     T_LENGTH,                 ## # length units, value is int or float, units are VALUE_UNIT_TYPE
     T_ARRAY, T_MAP, T_FUNCTION, T_BYTES, ## # sequence of bytes - e.g. image data
@@ -67,23 +70,23 @@ type
 ## # Native functor
 
 type
-  NATIVE_FUNCTOR_INVOKE* = proc (tag: int; argc: uint32; argv: ptr VALUE;
-                              retval: ptr VALUE) {.cdecl.}
+  NATIVE_FUNCTOR_INVOKE* = proc (tag: pointer; argc: uint32; argv: ptr VALUE;
+                              retval: ptr VALUE) {.stdcall.}
 
 ## # retval may contain error definition
 
 type
-  NATIVE_FUNCTOR_RELEASE* = proc (tag: int) {.cdecl.}
+  NATIVE_FUNCTOR_RELEASE* = proc (tag: pointer) {.stdcall.}
 
 ## #*Callback function used with #ValueEnumElements().
 ## #  return TRUE to continue enumeration
 ## # 
 
 type
-  KeyValueCallback* = proc (param: pointer; pkey: ptr VALUE; pval: ptr VALUE): bool {.cdecl.}
+  KeyValueCallback* = proc (param: pointer; pkey: ptr VALUE; pval: ptr VALUE): bool {.stdcall.}
   VALUE_STRING_CVT_TYPE* = enum
     CVT_SIMPLE,               ## #/< simple conversion of terminal values 
     CVT_JSON_LITERAL,         ## #/< json literal parsing/emission 
     CVT_JSON_MAP,             ## #/< json parsing/emission, it parses as if token '{' already recognized 
-    CVT_XJSON_LITERAL         ## #/< x-json parsing/emission, date is emitted as ISO8601 date literal, currency is emitted in the form DDDD$CCC
-
+    CVT_XJSON_LITERAL         ## #/< x-json parsing/emission, date is emitted as ISO8601 date literal, 
+                              ## # currency is emitted in the form DDDD$CCC

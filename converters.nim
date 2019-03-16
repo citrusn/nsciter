@@ -1,10 +1,15 @@
 converter toWideCString*(s: string):WideCString =
   return newWideCString(s)
 
-template enumToInt*(typ: expr): stmt =
+#template enumToInt*(typ: expr): stmt =
+#  converter toUint32*(x: typ): uint32 =
+#    return uint32(x)
+
+template enumToInt*(typ: untyped): typed =
   converter toUint32*(x: typ): uint32 =
     return uint32(x)
 
+enumToInt(SCRIPT_RUNTIME_FEATURES)
 enumToInt(SCITER_CREATE_WINDOW_FLAGS)
 enumToInt(EVENT_GROUPS)
 enumToInt(MOUSE_BUTTONS)
