@@ -43,7 +43,7 @@ r.right = 800
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR, addr r, nil, nil, nil)
 SciterSetCallback(wnd, shCallBack, nil)
 
-echo "SciterLoadFile: ", wnd.SciterLoadFile("D:/Soft/nim-0.19.4/nsciter-master/handlers.html")
+echo "SciterLoadFile: ", wnd.SciterLoadFile("./handlers.html")
                                             
 var root: HELEMENT
 wnd.SciterGetRootElement(root.addr)
