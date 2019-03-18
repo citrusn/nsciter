@@ -65,7 +65,15 @@ proc isNull*[VT: Value | ptr Value](v:VT):bool =
 proc isFunction*[VT: Value | ptr Value](v:VT):bool =
     return v.t == T_FUNCTION
 
+<<<<<<< HEAD
 #[template xDefPtr(x, v:untyped) = #TODO
+=======
+<<<<<<< HEAD
+#[template xDefPtr(x, v:untyped) = #TODO
+=======
+template xDefPtr(x, v:untyped) {.immediate.} =
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     var v:ptr Value
     when x is Value:
         #var nx = x
@@ -74,14 +82,28 @@ proc isFunction*[VT: Value | ptr Value](v:VT):bool =
         v = x]#
 
 proc isNativeFunctor*(x:Value):bool =
+<<<<<<< HEAD
     #xDefPtr(x, v)    
     return ValueIsNativeFunctor(x.unsafeAddr)
+=======
+<<<<<<< HEAD
+    #xDefPtr(x, v)    
+    return ValueIsNativeFunctor(x.unsafeAddr)
+=======
+    xDefPtr(x, v)
+    return v.ValueIsNativeFunctor()
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 
 proc nullValue*(): Value =
     result = Value()
     result.t = T_NULL
 
 proc clone*(x:Value):Value =
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     #xDefPtr(x, v)
     var dst = nullValue()
     discard ValueCopy(dst.addr, x.unsafeAddr)
@@ -99,6 +121,28 @@ proc newValue*(dat:string):Value =
 proc newValue*(dat:int32):Value=
     result = newValue()
     discard ValueIntDataSet(result.addr, dat, T_INT, 0)
+<<<<<<< HEAD
+=======
+=======
+    xDefPtr(x, v)
+    var dst = nullValue()
+    ValueCopy(dst.addr, v)
+    return dst
+
+proc newValue*():Value =
+    result = Value()
+    ValueInit(result.addr)
+
+proc newValue*(dat:string):Value =
+    var ws = newWideCString(dat)
+    result = newValue()
+    ValueStringDataSet(result.addr, ws, uint32(ws.len()), uint32(0))
+
+proc newValue*(dat:int32):Value=
+    result = newValue()
+    ValueIntDataSet(result.addr, dat, T_INT, 0)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 
 proc newValue*(dat:float64):Value =
     result = newValue()
@@ -107,9 +151,21 @@ proc newValue*(dat:float64):Value =
 proc newValue*(dat:bool):Value =
     result = newValue()
     if dat:
+<<<<<<< HEAD
         discard ValueIntDataSet(result.addr, 1, T_INT, 0)
     else:
         discard ValueIntDataSet(result.addr, 0, T_INT, 0)
+=======
+<<<<<<< HEAD
+        discard ValueIntDataSet(result.addr, 1, T_INT, 0)
+    else:
+        discard ValueIntDataSet(result.addr, 0, T_INT, 0)
+=======
+        ValueIntDataSet(result.addr, 1, T_INT, 0)
+    else:
+        ValueIntDataSet(result.addr, 0, T_INT, 0)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 
 proc convertFromString*(x:ptr Value, s:string, how:VALUE_STRING_CVT_TYPE) =
     var ws = newWideCString(s)
@@ -120,10 +176,23 @@ proc convertToString*(x:ptr Value, how:VALUE_STRING_CVT_TYPE):uint32 =
     x.ValueToString(how)
 
 proc getString*(x:Value):string =
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     #var xx = x
     var ws: WideCString
     var n:uint32
     discard ValueStringData(x.unsafeAddr, addr ws, addr n)
+<<<<<<< HEAD
+=======
+=======
+    var xx = x
+    var ws: WideCString
+    var n:uint32
+    ValueStringData(xx.addr, addr ws, addr n)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     return $(ws)
 
 proc `$`*(v: Value):string =
@@ -136,11 +205,25 @@ proc `$`*(v: Value):string =
     return nv.getString()
 
 proc getInt32*(x:ptr Value): int32 =
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     discard ValueIntData(x, addr result)   
     
 proc getInt*(x:Value): int =
     #var xx = x       
     result = cast[int](getInt32(x.unsafeAddr))
+<<<<<<< HEAD
+=======
+=======
+    discard ValueIntData(x, addr result)
+
+proc getInt*(x:Value): int =
+    var xx = x
+    result = cast[int](getInt32(xx.addr))
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 
 proc getBool*(x:Value): bool =
     var i = getInt(x)
@@ -149,7 +232,15 @@ proc getBool*(x:Value): bool =
     return true
 
 proc getFloat*(x:Value): float =
+<<<<<<< HEAD
     #xDefPtr(x, v)
+=======
+<<<<<<< HEAD
+    #xDefPtr(x, v)
+=======
+    xDefPtr(x, v)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     var f:float64
     ValueFloatData(x.unsafeAddr, f.addr)
     return float(f)
@@ -167,7 +258,15 @@ proc getBytes*(x:var Value): seq[byte] =
 proc setBytes*(x:ptr Value, dat: var openArray[byte]) =
     var p = dat[0].addr
     var size = dat.len()*sizeof(byte)
+<<<<<<< HEAD
     discard x.ValueBinaryDataSet(p, uint32(size), T_BYTES, 0)
+=======
+<<<<<<< HEAD
+    discard x.ValueBinaryDataSet(p, uint32(size), T_BYTES, 0)
+=======
+    x.ValueBinaryDataSet(p, uint32(size), T_BYTES, 0)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 
 proc setBytes*(x:var Value, dat: var openArray[byte]) =
     setBytes(x.addr, dat)
@@ -175,20 +274,47 @@ proc setBytes*(x:var Value, dat: var openArray[byte]) =
 # for array and object types
 
 proc len*(x:Value): int =
+<<<<<<< HEAD
     #xDefPtr(x, v)
+=======
+<<<<<<< HEAD
+    #xDefPtr(x, v)
+=======
+    xDefPtr(x, v)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     var n:int32 = 0
     discard ValueElementsCount(x.unsafeAddr, addr n)
     return int(n)
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 proc enumerate*(x:var Value, cb:KeyValueCallback): uint32 =
     #xDefPtr(x, v)
     ValueEnumElements(x.unsafeAddr, cb, nil)
 
 proc `[]`*[I: Ordinal, VT:Value|Value](x:var Value; i: I): Value =
     #xDefPtr(x, v)
+<<<<<<< HEAD
     result = nullValue()
     ValueNthElementValue(x.unsafeAddr i, result)
 
+=======
+=======
+proc enumerate*(x:Value, cb:KeyValueCallback): uint32 =
+    xDefPtr(x, v)
+    v.ValueEnumElements(cb, nil)
+
+proc `[]`*[I: Ordinal, VT:Value|Value](x:Value; i: I): Value =
+    xDefPtr(x, v)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+    result = nullValue()
+    ValueNthElementValue(x.unsafeAddr i, result)
+
+<<<<<<< HEAD
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 proc `[]=`*[I: Ordinal, VT:Value|Value](x:var Value; i: I; y: VT) =
     #xDefPtr(x, v)
     #xDefPtr(y, yp)
@@ -206,18 +332,57 @@ proc `[]=`*(x:var Value; name:string; y: Value) =
     var key = newValue(name)
     #echo "name"
     ValueSetValueToKey(x.unsafeAddr, key.addr, y.unsafeAddr)
+<<<<<<< HEAD
+=======
+=======
+proc `[]=`*[I: Ordinal, VT:Value|Value](x:Value; i: I; y: VT) =
+    xDefPtr(x, v)
+    xDefPtr(y, yp)
+    ValueNthElementValueSet(v, i, yp)
+
+proc `[]`*(x:Value; name:string): Value =
+    xDefPtr(x, v)
+    var key = newValue(name)
+    result = nullValue()
+    v.ValueGetValueOfKey(key.addr, result.addr)
+
+proc `[]=`*(x:Value; name:string; y: Value) =
+    xDefPtr(x, v)
+    var yy = y
+    var key = newValue(name)
+    ValueSetValueToKey(v, key.addr, yy.addr)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 
 ## value functions calls
 
 proc invokeWithSelf*(x:Value, self:Value, args:varargs[Value]):Value =
     result = Value()
+<<<<<<< HEAD
     #var xx = x
     #var ss = self
+=======
+<<<<<<< HEAD
+    #var xx = x
+    #var ss = self
+=======
+    var xx = x
+    var ss = self
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     var clen = len(args)
     var cargs = newSeq[Value](clen)
     for i in 0..clen-1:
         cargs[i] = args[i]
+<<<<<<< HEAD
     ValueInvoke(x.unsafeAddr, self.unsafeAddr, uint32(len(args)), cargs[0].addr, result.addr, nil)
+=======
+<<<<<<< HEAD
+    ValueInvoke(x.unsafeAddr, self.unsafeAddr, uint32(len(args)), cargs[0].addr, result.addr, nil)
+=======
+    ValueInvoke(xx.addr, ss.addr, uint32(len(args)), cargs[0].addr, result.addr, nil)
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
     
 proc invoke*(x:Value, args:varargs[Value]):Value =
     var self = newValue()
@@ -228,6 +393,10 @@ var nfs = newSeq[NativeFunctor]()
 proc pinvoke(tag: pointer; 
              argc: uint32; 
              argv: ptr Value;
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
              retval: ptr Value) {.stdcall.} =
     var idx = cast[int](tag)
     var nf = nfs[idx]
@@ -244,3 +413,25 @@ proc setNativeFunctor*(v:var Value, nf:NativeFunctor):uint32 =
     #var vv = v
     #echo "setNativeFunctor: " , repr v.unsafeAddr
     result = ValueNativeFunctorSet(v.unsafeAddr, pinvoke, prelease, tag)    
+<<<<<<< HEAD
+=======
+=======
+             retval: ptr Value) {.cdecl.} =
+    var idx = cast[int](tag)
+    var nf = nfs[idx]
+    var args = newSeq[Value](1)
+    retval.ValueInit()
+    var r = nf(args)
+    retval.ValueCopy(r.addr)
+
+proc prelease(tag: pointer) {.cdecl.} =
+    discard
+
+proc setNativeFunctor*(v:Value, nf:NativeFunctor) =
+    nfs.add(nf)
+    var tag = cast[pointer](nfs.len()-1)
+    var vv = v
+    ValueNativeFunctorSet(vv.addr, pinvoke, prelease, tag)
+
+>>>>>>> 78e3256c96b1c99d1d791a1385f41a5201aadf7e
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99

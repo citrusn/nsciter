@@ -77,10 +77,13 @@ var testFn = proc() =
     echo "o:", o
 testFn()
 
+<<<<<<< HEAD
 proc nf(args: seq[Value]):Value=
     echo "NativeFunction called"
     return newValue("nf ok")
 
+=======
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 var testVptr = proc() =
     var i: int16 = 100
     var v = newValue(i)
@@ -108,6 +111,13 @@ proc testCallback() =
     )
 testCallback()
 
+<<<<<<< HEAD
+=======
+proc nf(args: seq[Value]):Value=
+    echo "NativeFunction called"
+    return newValue("nf ok")
+
+>>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
 proc testNativeFunctor() =
     wnd.defineScriptingFunction("api", proc(args:seq[Value]):Value =
         result = newValue()
