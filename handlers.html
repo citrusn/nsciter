@@ -22,9 +22,9 @@
         size:*;
         overflow: scroll;
         background-color: green;
-        //assigned!: self::opacity = 1.0, self.start-timer(100);
-        //timer!: self::opacity > 0.0?
-        //  self::opacity = self::opacity - 0.1 # return cancel /* to stop the timer */;
+        assigned!: self::opacity = 1.0, self.start-timer(100);
+        timer!: self::opacity > 0.0?
+          self::opacity = self::opacity - 0.1 # return cancel /* to stop the timer */;
       }
       button#native {
         color: yellow;
@@ -36,7 +36,7 @@
       }
     </style>
     <script type="text/tiscript">
-      view.connectToInspector();
+      //view.connectToInspector();
       // for host calls
       function gFunc(a,b){
         return String.printf("script defined function with arg, a:%v, b:%v", a, b);

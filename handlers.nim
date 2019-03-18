@@ -68,7 +68,7 @@ proc testCallback() =
                 sumall = sumall + getInt32(v.unsafeAddr)
             return newValue(sumall)
     )
-    echo "kkk set: ", wnd.defineScriptingFunction("kkk+",
+    echo "kkk set: ", wnd.defineScriptingFunction("kkk",
         proc (args: seq[Value]): Value =
                 result = newValue()
                 result["i"] = newValue(1000)
