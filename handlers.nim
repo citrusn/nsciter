@@ -43,16 +43,11 @@ r.right = 800
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR, addr r, nil, nil, nil)
 SciterSetCallback(wnd, shCallBack, nil)
 
-<<<<<<< HEAD
 echo "SciterLoadFile: ", wnd.SciterLoadFile("D:/Spc/nim-0.19.4/nsciter-master/handlers.html")
-=======
-echo "SciterLoadFile: ", wnd.SciterLoadFile("D:/Soft/nim-0.19.4/nsciter-master/handlers.html")
->>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
                                             
 var root: HELEMENT
 wnd.SciterGetRootElement(root.addr)
 
-<<<<<<< HEAD
 proc nf(args: seq[Value]): Value =
     echo "NativeFunction called with args:" , $(args)
     return newValue("nf ok")
@@ -100,25 +95,3 @@ test_call()
 
 wnd.run
 
-=======
-proc testCallback() =
-    echo "gprintln set: ", wnd.defineScriptingFunction("gprintln",
-            proc(args: seq[Value]): Value =
-        echo "gprintln call:" , $(args)        
-    )
-    echo "mcall set: ", root.defineScriptingFunction("mcall",
-            proc(args: seq[Value]): Value =
-        echo "mcall call:" , $(args)
-    )
-    echo "sumall set: ", wnd.defineScriptingFunction("sumall",
-            proc(args: seq[Value]): Value =
-        echo "sumall call:" , $(args)
-    )
-    echo "kkk set: ", wnd.defineScriptingFunction("kkk",
-            proc(args: seq[Value]): Value =
-        echo "kkk call:" , $(args)
-    )
-testCallback()
-
-wnd.run
->>>>>>> 2cc30b4abe2b9cdb203d945708cb2964c87fbb99
