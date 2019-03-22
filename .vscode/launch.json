@@ -8,14 +8,15 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileBasenameNoExtension}.exe",
+            //"program": "D:/Spc/nim-0.19.4/nsciter-master/output/${fileBasenameNoExtension}.exe",
+            "program": "${workspaceFolder}/output/${fileBasenameNoExtension}.exe",            
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
+            "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "D:\Spc\nim-0.19.4\tools\nim-gdb.cmd",
+            "miDebuggerPath": "D:/Spc/nim-0.19.4/bin/nim-gdb.cmd",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

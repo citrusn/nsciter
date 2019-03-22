@@ -59,8 +59,8 @@ var evct = newCountTable[EventHandler]()
 
 proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32; prms: pointer): uint {.stdcall.} =
     var pThis:EventHandler = cast[EventHandler](tag)
-    if evtg > uint32(256):
-      debugEcho "element_proc: tag " , repr tag ,  evtg , " prms:", repr prms
+    #if evtg > uint32(256):
+    #  debugEcho "element_proc: tag " , repr pThis ,  cast[EVENT_GROUPS](evtg) , " prms:", repr prms
     if pThis == nil:
         echo "pThis is nil"
         return 0
