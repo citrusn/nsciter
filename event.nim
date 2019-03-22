@@ -59,8 +59,8 @@ var evct = newCountTable[EventHandler]()
 
 proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32; prms: pointer): uint {.stdcall.} =
     var pThis:EventHandler = cast[EventHandler](tag)
-    if evtg > uint32(256):
-      debugEcho "element_proc: tag " , repr tag ,  evtg , " prms:", repr prms
+    #if evtg > uint32(256):
+    #  debugEcho "element_proc: tag " , repr pThis ,  cast[EVENT_GROUPS](evtg) , " prms:", repr prms
     if pThis == nil:
         echo "pThis is nil"
         return 0
@@ -112,12 +112,12 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32; prms: pointer): uint
       ## # call using sciter::value's (from CSSS!)
     of uint32(HANDLE_SCRIPTING_METHOD_CALL):
       var p: ptr SCRIPTING_METHOD_PARAMS = cast[ptr SCRIPTING_METHOD_PARAMS](prms)
-      echo "HANDLE_SCRIPTING_METHOD_CALL: " #, repr p
+      echo "HANDLE_SCRIPTING_METHOD_CALL: " ,  p.name
       return pThis.handle_scripting_call(he, p)
       ## # call using tiscript::value's (from the script)
     of uint32(HANDLE_TISCRIPT_METHOD_CALL):
       var p: ptr TISCRIPT_METHOD_PARAMS = cast[ptr TISCRIPT_METHOD_PARAMS](prms)
-      echo "HANDLE_TISCRIPT_METHOD_CALL: " #, repr p
+      echo "HANDLE_TISCRIPT_METHOD_CALL: " ,  p.tag
       return pThis.handle_tiscript_call(he, p)
     of uint32(HANDLE_GESTURE):
       var p: ptr GESTURE_PARAMS = cast[ptr GESTURE_PARAMS](prms)

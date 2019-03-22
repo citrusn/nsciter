@@ -14,11 +14,9 @@ SciterSetupDebugOutput(nil, nil, dbg)
 
 proc OnLoadData(pns: LPSCN_LOAD_DATA) =
     echo "LPSCN_LOAD_DATA: " , repr pns.uri
-    #echo pns.uri
 
 proc OnDataLoaded(pns: LPSCN_DATA_LOADED ) = 
     echo "LPSCN_DATA_LOADED: " , repr pns.uri
-    #echo pns.uri
 
 proc sciterHostCallback(pns: LPSCITER_CALLBACK_NOTIFICATION;
     callbackParam: pointer): uint32 {.stdcall.} =
@@ -43,7 +41,7 @@ r.right = 800
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR, addr r, nil, nil, nil)
 SciterSetCallback(wnd, shCallBack, nil)
 
-echo "SciterLoadFile: ", wnd.SciterLoadFile("D:/Spc/nim-0.19.4/nsciter-master/handlers.html")
+echo "SciterLoadFile: ", wnd.SciterLoadFile("./handlers.html")
                                             
 var root: HELEMENT
 wnd.SciterGetRootElement(root.addr)
@@ -65,7 +63,8 @@ proc testCallback() =
         proc(args: seq[Value]): Value =
             var sumall:int32 = 0
             for v in args:
-                sumall = sumall + getInt32(v.unsafeAddr)
+                var p = cast[VALUE](v)
+                sumall = sumall + getInt32(p)
             return newValue(sumall)
     )
     echo "kkk set: ", wnd.defineScriptingFunction("kkk",

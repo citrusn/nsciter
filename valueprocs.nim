@@ -135,14 +135,14 @@ proc `$`*(v: Value):string =
     discard convertToString(nv.addr, CVT_SIMPLE)
     return nv.getString()
 
-proc getInt32*(x:ptr Value): int32 =
-    discard ValueIntData(x, addr result)   
+proc getInt32*(x:var Value): int32 =
+    discard ValueIntData(addr x, addr result)
     
-proc getInt*(x:Value): int =
+proc getInt*(x:var Value): int =
     #var xx = x       
-    result = cast[int](getInt32(x.unsafeAddr))
+    result = cast[int](getInt32(x))
 
-proc getBool*(x:Value): bool =
+proc getBool*(x:var Value): bool =
     var i = getInt(x)
     if i == 0:
         return false
@@ -236,7 +236,7 @@ proc pinvoke(tag: pointer;
     var r = nf(args)
     discard retval.ValueCopy(r.addr)
 
-proc prelease(tag: pointer) {.stdcall.} =    discard
+proc prelease(tag: pointer) {.stdcall.} = discard
 
 proc setNativeFunctor*(v:var Value, nf:NativeFunctor):uint32 =
     nfs.add(nf)

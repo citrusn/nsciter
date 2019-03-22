@@ -11,7 +11,7 @@ echo "SciterVersion:", toHex(int(SciterVersion(false)), 5)
 
 #echo "SciterCreateWindow:", repr SciterCreateWindow
 #echo "s.SciterCreateWindow:", repr s.SciterCreateWindow
-# to connect with Inspector
+# for connect to Inspector
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
     ALLOW_FILE_IO or ALLOW_SOCKET_IO or ALLOW_EVAL or ALLOW_SYSINFO)
@@ -58,6 +58,7 @@ var testFn = proc() =
     var i: int8 = 100
     var p = newValue(i)
     echo "p: ", p.getInt()
+    echo "p as boolean: " , getBool(p)
     var s = "a test string"
     var sv = newValue(s)
     var s2 = sv.getString()
@@ -68,10 +69,11 @@ var testFn = proc() =
     var fv = newValue(f)
     echo "float value:", f, "\t", fv, "\t", fv.getFloat()
     var b: seq[byte] = @[byte(1), byte(2), byte(3), byte(4)]
-    echo b
+    echo "b: ",b
     var bv = nullValue()
+    echo "bv as boolean: " , getBool(p)
     setBytes(bv.addr, b)
-    echo "bv:", bv.getBytes()
+    echo "set butes bv:", bv.getBytes()
     var o = nullValue()
     o["key"] = newValue(i)
     echo "o:", o
