@@ -5,25 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Terminal (integrated)",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "stopOnEntry": true
-        },
-        {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "D:\\Soft\\nim-0.19.4\\nsciter-master\\handlers.exe",
+            "program": "${fileBasenameNoExtension}.exe",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "C:\\Progs\\MinGW\\bin\\gdb.exe",
+            "miDebuggerPath": "D:\Spc\nim-0.19.4\tools\nim-gdb.cmd",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

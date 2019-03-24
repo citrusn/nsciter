@@ -38,13 +38,15 @@ when defined(posix):
 
 when defined(windows):
     proc SetWindowText(wnd: HWINDOW, lpString: WideCString): bool {.stdcall,
-                                             dynlib: "user32", importc: "SetWindowTextW".}
+                       dynlib: "user32", importc: "SetWindowTextW".}
     proc GetMessage(lpMsg: ptr MSG, wnd: HWINDOW, wMsgFilterMin: uint32,
                     wMsgFilterMax: uint32): bool {.stdcall, dynlib: "user32", importc: "GetMessageW".}
     proc TranslateMessage(lpMsg: ptr MSG): bool {.stdcall, dynlib: "user32", importc: "TranslateMessage".}
     proc DispatchMessage(lpMsg: ptr MSG): LONG{.stdcall, dynlib: "user32", importc: "DispatchMessageW".}
     proc UpdateWindow(wnd: HWINDOW): bool{.stdcall, dynlib: "user32", importc: "UpdateWindow".}
     proc OleInitialize*(pvReserved: pointer): HRESULT {.stdcall,discardable , dynlib: "ole32", importc: "OleInitialize".}
+    proc OleUninitialize*(): HRESULT {.stdcall,discardable , dynlib: "ole32", importc: "OleUninitialize".}
+    
     proc ShowWindow(wnd: HWINDOW, nCmdShow: int32): WINBOOL{.stdcall, dynlib: "user32", importc: "ShowWindow".}
     proc setTitle*(h:HWINDOW, title:string) = 
         discard SetWindowText(h, newWideCString(title))

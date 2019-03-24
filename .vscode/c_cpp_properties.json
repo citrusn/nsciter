@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:/Spc/sciter-sdk-4/include/*",                
+                "C:/Program Files/Microsoft Visual Studio 9.0/VC/include/*",
+                "C:/Program Files/Microsoft SDKs/Windows/v6.0A/Include/*"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}

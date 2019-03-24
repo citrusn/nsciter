@@ -43,28 +43,55 @@ r.right = 800
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR, addr r, nil, nil, nil)
 SciterSetCallback(wnd, shCallBack, nil)
 
-echo "SciterLoadFile: ", wnd.SciterLoadFile("./handlers.html")
+echo "SciterLoadFile: ", wnd.SciterLoadFile("D:/Spc/nim-0.19.4/nsciter-master/handlers.html")
                                             
 var root: HELEMENT
 wnd.SciterGetRootElement(root.addr)
 
+proc nf(args: seq[Value]): Value =
+    echo "NativeFunction called with args:" , $(args)
+    return newValue("nf ok")
+
 proc testCallback() =
     echo "gprintln set: ", wnd.defineScriptingFunction("gprintln",
-            proc(args: seq[Value]): Value =
-        echo "gprintln call:" , $(args)        
+        proc(args: seq[Value]): Value =
+            echo "gprintln call:" , $(args)        
     )
     echo "mcall set: ", root.defineScriptingFunction("mcall",
-            proc(args: seq[Value]): Value =
-        echo "mcall call:" , $(args)
+        proc(args: seq[Value]): Value =
+            echo "mcall call:" , $(args)
     )
     echo "sumall set: ", wnd.defineScriptingFunction("sumall",
-            proc(args: seq[Value]): Value =
-        echo "sumall call:" , $(args)
+        proc(args: seq[Value]): Value =
+            var sumall:int32 = 0
+            for v in args:
+                sumall = sumall + getInt32(v.unsafeAddr)
+            return newValue(sumall)
     )
     echo "kkk set: ", wnd.defineScriptingFunction("kkk",
-            proc(args: seq[Value]): Value =
-        echo "kkk call:" , $(args)
+        proc (args: seq[Value]): Value =
+                result = newValue()
+                result["i"] = newValue(1000)
+                result["str"] = newValue("a string")
+                var fn = newValue()
+                discard fn.setNativeFunctor(nf)
+                result["f"] = fn
     )
 testCallback()
 
+proc test_call()=
+    #test sciter call
+    var v = wnd.call_function("gFunc", newValue("kkk"), newValue(555))
+    echo "sciter   call successfully:", $(v)
+
+    #test method call    
+    v = root.call_method("mfn", newValue("method call"), newValue(10300))
+    echo "method   call successfully:", $(v)
+
+    #test function call
+    v = root.call_function("gFunc", newValue("function call"), newValue(10300))
+    echo "function call successfully:", $(v)
+test_call()
+
 wnd.run
+
