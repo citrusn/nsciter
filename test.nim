@@ -25,11 +25,11 @@ var dbg: DEBUG_OUTPUT_PROC = proc (param: pointer;
 s.SciterSetupDebugOutput(nil, nil, dbg)
 
 var r = cast[ptr Rect](alloc0(sizeof(Rect)))
-r.top = 200
-r.left = 500
+r.top = 10
+r.left = 10
 r.bottom = 500
 r.right = 800
-var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR, r, nil, nil, nil)
+var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or SW_RESIZEABLE, r, nil, nil, nil)
 #var wnd = SciterCreateWindow(0, nil, nil, nil, nil)
 if wnd == nil:
     quit("wnd is nil")
@@ -38,7 +38,8 @@ echo "wnd:", repr wnd
 var htmlw: string = """<html> <head><title>Test Html Page</title></head> hello world! </html>"""
 #echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
 echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.html") # for test debuger
-echo "SciterLoadFile: " , wnd.SciterLoadFile("./test.html")
+#echo "SciterLoadFile: " , wnd.SciterLoadFile("./test.html")
+echo "SciterLoadFile: " , wnd.SciterLoadFile("./particles-demo.html")
 
 #testInsertFn("hello, world#0" , 0)
 #testInsertFn("hello, world#5" , 5)
