@@ -34,6 +34,11 @@
         color:blue;
         click!:gprintln("hello world", 11,22,33,44);
       }
+      malevich {
+        behavior: gdi-drawing; 
+        display:block;
+        size:400dip;
+      }
     </style>
     <script type="text/tiscript">
       //view.connectToInspector();
@@ -77,8 +82,11 @@
       <label>Y (Ctrl+2):</label><input type="integer" name="y" step="20" accesskey="^2" />
     </form>
   </div>
-  <div id="output">
+  <div id="output">  </div>
 
-  </div>
+  <h2>Native GDI drawing behavior demo</h2>
+  <p>See: sdk/include/behaviors/behavior_drawing-gdi.cpp</p>
+  <malevich></malevich>
+
 </body>
 </html>

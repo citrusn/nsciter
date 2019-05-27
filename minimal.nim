@@ -8,8 +8,8 @@ var s = SAPI()
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 #SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_SYSINFO)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
-    #ALLOW_FILE_IO or ALLOW_EVAL or  ALLOW_SYSINFO
-    ALLOW_SOCKET_IO # or #needs for conection to inspector
+    ALLOW_FILE_IO or ALLOW_EVAL or  ALLOW_SYSINFO or
+    ALLOW_SOCKET_IO # needs for conection to inspector
 )
 #sciter.runtime_features(allow_sysinfo=True)
 var i = newValue(100)
