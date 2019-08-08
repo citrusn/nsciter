@@ -1,6 +1,6 @@
 include xapi, event, valueprocs
 
-when defined(posix):
+when defined(posix1):
     # {.passC: "-std=c++11".}
     {.passC: gorge("pkg-config gtk+-3.0 --cflags").}
     {.passL: gorge("pkg-config gtk+-3.0 --libs").}

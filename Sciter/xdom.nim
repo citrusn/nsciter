@@ -44,7 +44,7 @@ type
 ## # 
 
 const
-  int32* = int32
+  #int32* = int32
   SCDOM_OK* = 0
   SCDOM_INVALID_HWND* = 1
   SCDOM_INVALID_HANDLE* = 2

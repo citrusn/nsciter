@@ -24,13 +24,13 @@ r.right = 800
 var frame = SciterCreateWindow(SW_MAIN or  SW_TITLEBAR or SW_CONTROLS, r, nil, nil, nil)
 
 #echo sciter.version(True)
-#echo sciter.classname())
+#echo sciter.classname()
+
 echo "SciterClassName:", SciterClassName()
 echo "SciterVersion:", toHex(int(SciterVersion(true)), 5)
 echo "SciterVersion:", toHex(int(SciterVersion(false)), 5)
 
 #frame.load_file(".\\minimal.htm")
 discard frame.SciterLoadFile("minimal.htm")
-#frame.set_title("mininal test")	
 frame.setTitle("mininal test")
 frame.run

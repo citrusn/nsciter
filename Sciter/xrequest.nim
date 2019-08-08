@@ -11,37 +11,46 @@
 ## #  Sciter's get resource request object - represents requests made by Element/View.request() functions.
 ## #  
 ## # 
-
+{.push checks: off.} # don't work
 type
   HREQUEST* = pointer
-type
-  REQUEST_RESULT* = enum
-    REQUEST_PANIC = - 1,         ## # e.g. not enough memory
-    REQUEST_OK = 0, REQUEST_BAD_PARAM = 1, ## # bad parameter
-    REQUEST_FAILURE = 2,        ## # operation failed, e.g. index out of bounds
+
+  REQUEST_RESULT* {.size: sizeof(cint).} = enum
+    REQUEST_PANIC = - 1,   ## # e.g. not enough memory
+    REQUEST_OK = 0,
+    REQUEST_BAD_PARAM = 1, ## # bad parameter
+    REQUEST_FAILURE = 2,   ## # operation failed, e.g. index out of bounds
     REQUEST_NOTSUPPORTED = 3
 
 
 type
-  REQUEST_RQ_TYPE* = enum
-    RRT_GET = 1, RRT_POST = 2, RRT_PUT = 3, RRT_DELETE = 4, RRT_FORCE_DWORD = 0xFFFFFFFF
+  REQUEST_RQ_TYPE* {.size: sizeof(uint32).} = enum    
+    RRT_FORCE_DWORD =  0xFFFFFFFF'i32,
+    RRT_GET = 1, 
+    RRT_POST = 2, 
+    RRT_PUT = 3, 
+    RRT_DELETE = 4  
+  
+
+type
+  SciterResourceType* {.size: sizeof(cint).} = enum
+    RT_DATA_FORCE_DWORD = 0xFFFFFFFF'i32
+    RT_DATA_HTML = 0, RT_DATA_IMAGE = 1, RT_DATA_STYLE = 2, 
+    RT_DATA_CURSOR = 3,
+    RT_DATA_SCRIPT = 4, RT_DATA_RAW = 5, RT_DATA_FONT, RT_DATA_SOUND ## # wav bytes
+    
+
+type
+  REQUEST_STATE* {.size: sizeof(cint).} = enum
+    RS_FORCE_DWORD = 0xFFFFFFFF'i32,
+    RS_PENDING = 0,
+    RS_SUCCESS = 1, ## # completed successfully
+    RS_FAILURE = 2  ## # completed with failure
+    
 
 
 type
-  SciterResourceType* = enum
-    RT_DATA_HTML = 0, RT_DATA_IMAGE = 1, RT_DATA_STYLE = 2, RT_DATA_CURSOR = 3,
-    RT_DATA_SCRIPT = 4, RT_DATA_RAW = 5, RT_DATA_FONT, RT_DATA_SOUND, ## # wav bytes
-    RT_DATA_FORCE_DWORD = 0xFFFFFFFF
-
-
-type
-  REQUEST_STATE* = enum
-    RS_PENDING = 0, RS_SUCCESS = 1, ## # completed successfully
-    RS_FAILURE = 2,             ## # completed with failure
-    RS_FORCE_DWORD = 0xFFFFFFFF
-
-
-type
+  LPSciterRequestAPI* = ptr SciterRequestAPI
   SciterRequestAPI* = object
     RequestUse*: proc (rq: HREQUEST): REQUEST_RESULT {.stdcall.} ## # a.k.a AddRef()
     ## # a.k.a Release()
@@ -112,5 +121,4 @@ type
     ## # get received (so far) data
     RequestGetData*: proc (rq: HREQUEST; rcv: ptr LPCBYTE_RECEIVER; 
                      rcv_param: pointer): REQUEST_RESULT {.stdcall.}
-
-  LPSciterRequestAPI* = ptr SciterRequestAPI
+{.pop.}

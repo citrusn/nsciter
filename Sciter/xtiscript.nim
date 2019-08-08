@@ -108,7 +108,7 @@ const
   TISCRIPT_CONST_STRING* = 2
 
 type
-  INNER_C_UNION_375812332* = object {.union.}
+  INNER_C_UNION_375812332*{.union.} = object
     i*: cint
     f*: float64
     str*: ptr Utf16Char
@@ -134,13 +134,15 @@ type
     create_vm*: proc (features: cuint; ## # create new tiscript_VM [and make it current for the thread].
     ## # destroy tiscript_VM
     ## #= 0xffffffff
-                    heap_size: cuint; ## #= 1*1024*1024
-                    stack_size: cuint): ptr tiscript_VM {.stdcall.} ## #= 64*1024
+    heap_size: cuint; ## #= 1*1024*1024
+    stack_size: cuint): ptr tiscript_VM {.stdcall.} ## #= 64*1024
+
     destroy_vm*: proc (pvm: ptr tiscript_VM) {.stdcall.} ## # invoke GC
     invoke_gc*: proc (pvm: ptr tiscript_VM) {.stdcall.} ## # set stdin, stdout and stderr for this tiscript_VM
     set_std_streams*: proc (pvm: ptr tiscript_VM; input: ptr tiscript_stream;
                           output: ptr tiscript_stream; error: ptr tiscript_stream) {.
         stdcall.}               ## # get tiscript_VM attached to the current thread
+
     get_current_vm*: proc (): ptr tiscript_VM {.stdcall.} ## # get global namespace (Object)
     get_global_ns*: proc (a2: ptr tiscript_VM): tiscript_value {.stdcall.} ## # get current namespace (Object)
     get_current_ns*: proc (a2: ptr tiscript_VM): tiscript_value {.stdcall.}
@@ -223,49 +225,61 @@ type
                                                                                   ## (method)
     call*: proc (a2: ptr tiscript_VM; obj: tiscript_value; function: tiscript_value;
                argv: ptr tiscript_value; argn: cuint; pretval: ptr tiscript_value): bool {.
-        stdcall.}               ## # compiled bytecodes
+        stdcall.}               
+    ## # compiled bytecodes
     compile*: proc (pvm: ptr tiscript_VM; input: ptr tiscript_stream;
                   output_bytecodes: ptr tiscript_stream; template_mode: bool): bool {.
         stdcall.}
     loadbc*: proc (pvm: ptr tiscript_VM; input_bytecodes: ptr tiscript_stream): bool {.
-        stdcall.}               ## # throw error
-    throw_error*: proc (a2: ptr tiscript_VM; error: ptr Utf16Char) {.stdcall.} ## # arguments access
+        stdcall.}
+    ## # throw error
+    throw_error*: proc (a2: ptr tiscript_VM; error: ptr Utf16Char) {.stdcall.}
+    ## # arguments access
     get_arg_count*: proc (pvm: ptr tiscript_VM): cuint {.stdcall.}
-    get_arg_n*: proc (pvm: ptr tiscript_VM; n: cuint): tiscript_value {.stdcall.} ## # path here is global "path" of the object, something like
+    get_arg_n*: proc (pvm: ptr tiscript_VM; n: cuint): tiscript_value {.stdcall.}
+     ## # path here is global "path" of the object, something like
                                                                        ## # "one"
                                                                        ## # 
                                                                        ## "one.two", etc.
     get_value_by_path*: proc (pvm: ptr tiscript_VM; v: ptr tiscript_value; path: cstring): bool {.
-        stdcall.}               ## # pins
+        stdcall.}               
+    ## # pins
     pin*: proc (a2: ptr tiscript_VM; pp: ptr tiscript_pvalue) {.stdcall.}
-    unpin*: proc (pp: ptr tiscript_pvalue) {.stdcall.} ## # create native_function_value and native_property_value,
-                                               ## # use this if you want to add native functions/properties in runtime to exisiting classes or namespaces (including global ns)
+    unpin*: proc (pp: ptr tiscript_pvalue) {.stdcall.} 
+    ## # create native_function_value and native_property_value,
+    ## # use this if you want to add native functions/properties 
+    ## in runtime to exisiting classes or namespaces (including global ns)
     native_function_value*: proc (pvm: ptr tiscript_VM;
                                 p_method_def: ptr tiscript_method_def): tiscript_value {.
         stdcall.}
     native_property_value*: proc (pvm: ptr tiscript_VM;
                                 p_prop_def: ptr tiscript_prop_def): tiscript_value {.
-        stdcall.} ## # Schedule execution of the pfunc(prm) in the thread owning this VM.
-               ## # Used when you need to call scripting methods from threads other than main (GUI) thread
-               ## # It is safe to call tiscript functions inside the pfunc.
-               ## # returns 'true' if scheduling of the call was accepted, 'false' when failure (VM has no dispatcher attached).
+        stdcall.} 
+    ## # Schedule execution of the pfunc(prm) in the thread owning this VM.
+    ## # Used when you need to call scripting methods from threads other than main (GUI) thread
+    ## # It is safe to call tiscript functions inside the pfunc.
+    ## # returns 'true' if scheduling of the call was accepted, 'false' when failure (VM has no dispatcher attached).
     post*: proc (pvm: ptr tiscript_VM; pfunc: ptr tiscript_callback; prm: pointer): bool {.
-        stdcall.} ## # Introduce alien VM to the host VM:
-               ## # Calls method found on "host_method_path" (if there is any) on the pvm_host
-               ## # notifying the host about other VM (alien) creation. Return value of script function "host_method_path" running in pvm_host is passed
-               ## # as a parametr of a call to function at "alien_method_path".
-               ## # One of possible uses of this function:
-               ## # Function at "host_method_path" creates async streams that will serve a role of stdin, stdout and stderr for the alien vm.
-               ## # This way two VMs can communicate with each other.
-               ## #unsigned      (TISAPI *introduce_vm)(tiscript_VM* pvm_host, const char* host_method_path,  tiscript_VM* pvm_alien, const char* alien_method_path);
+        stdcall.}
+    # # Introduce alien VM to the host VM:
+    ## # Calls method found on "host_method_path" (if there is any) on the pvm_host
+    ## # notifying the host about other VM (alien) creation. Return value of script function "host_method_path" running in pvm_host is passed
+    ## # as a parametr of a call to function at "alien_method_path".
+    ## # One of possible uses of this function:
+    ## # Function at "host_method_path" creates async streams that will serve a role of stdin, stdout and stderr for the alien vm.
+    ## # This way two VMs can communicate with each other.
+    ## #unsigned      (TISAPI *introduce_vm)(tiscript_VM* pvm_host, const char* host_method_path,  tiscript_VM* pvm_alien, const char* alien_method_path);
     set_remote_std_streams*: proc (pvm: ptr tiscript_VM; input: ptr tiscript_pvalue;
                                  output: ptr tiscript_pvalue;
-                                 error: ptr tiscript_pvalue): bool {.stdcall.} ## # support of 
-                                                                        ## multi-return values from native 
-                                                                        ## fucntions, n here is a number 1..64
+                                 error: ptr tiscript_pvalue): bool {.stdcall.} 
+    ## # support of 
+    ## multi-return values from native 
+    ## fucntions, n here is a number 1..64
     set_nth_retval*: proc (pvm: ptr tiscript_VM; n: cint; ns: tiscript_value): bool {.
-        stdcall.}               ## # returns number of props in object, elements in array, or bytes in byte array.
-    get_length*: proc (pvm: ptr tiscript_VM; obj: tiscript_value): cint {.stdcall.} ## # for( var val in coll ) {...}
+        stdcall.}               
+    ## # returns number of props in object, elements in array, or bytes in byte array.
+    get_length*: proc (pvm: ptr tiscript_VM; obj: tiscript_value): cint {.stdcall.} 
+    ## # for( var val in coll ) {...}
     get_next*: proc (pvm: ptr tiscript_VM; obj: ptr tiscript_value;
                    pos: ptr tiscript_value; val: ptr tiscript_value): bool {.stdcall.} ## # 
                                                                              ## for( var 
