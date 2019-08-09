@@ -2,27 +2,28 @@
     <head>
         <title>Test Html Page</title>
     </head>
-    asdfadfa
-    <button>Click</button>
+    Test page for sciter script function
+    <button>Click</button> <!--Call wnd.onClick  -->
     <button id="hello">Hello</button>
     <button id="nf">NativeFunctor</button>
     <script type="text/tiscript">
         function self.ready() {
-            //view.connectToInspector();
-            var btn = $(button#hello)
-            function cb(a,b) {
-                view.hello(this, a, b)
-                return 101010
+            view.connectToInspector();
+            var btn = $(button#hello); // 
+            function cb(a,b) { // callback function from native code
+                view.hello(this, a, b);
+                stdout.printf( "%s" , this );
+                return 101010;
             }
-            btn.onClick = function(){
-                view.hello(1,2,"asdf", true, false)
-                view.cbCall(cb)
+            btn.onClick = function(){ // calling from hello btn
+                view.hello(1, 2, "view.hello", true, false);  //defineScriptingFunction "hello",   native method
+                view.cbCall(cb);  //test callback function. defineScriptingFunction "cbCall",   native method
             }
             var nf = $(button#nf)
             nf.onClick = function(){
-                var api = view.api()
-                view.hello("api field:", api.i, api.str, api.fn)
-                view.hello("api.fn():", api.fn())
+                var api = view.api(); // 
+                view.hello("api field:", api.i, api.str, api.fn);
+                view.hello("api.fn():", api.fn());
             }            
         }
     </script>

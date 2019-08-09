@@ -20,6 +20,7 @@
 
 type
   EVENT_GROUPS* {.size: sizeof(uint32).} = enum
+    SUBSCRIPTIONS_REQUEST = 0xFFFFFFFF'i32 ## #* special value for getting subscription flags 
     HANDLE_INITIALIZATION = 0x00000000, ## #* attached/detached 
     HANDLE_MOUSE = 0x00000001,  ## #* mouse events 
     HANDLE_KEY = 0x00000002,    ## #* key events 
@@ -37,9 +38,8 @@ type
     HANDLE_TISCRIPT_METHOD_CALL = 0x00000800, ## #* behavior specific methods using direct tiscript::value's 
     HANDLE_EXCHANGE = 0x00001000, ## #* system drag-n-drop 
     HANDLE_GESTURE = 0x00002000, ## #* touch input events 
-    HANDLE_ALL = 0x0000FFFF,    ## # all of them 
-    SUBSCRIPTIONS_REQUEST = 0xFFFFFFFF ## #* special value for getting subscription flags 
-
+    HANDLE_ALL = 0x0000FFFF    ## # all of them 
+    
 
 ## #*Element callback function for all types of events. Similar to WndProc
 ## #  \param tag \b LPVOID, tag assigned by SciterAttachEventHandler function (like GWL_USERDATA)

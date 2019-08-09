@@ -5,7 +5,7 @@ converter toWideCString*(s: string):WideCString =
 #  converter toUint32*(x: typ): uint32 =
 #    return uint32(x)
 
-template enumToInt*(typ: untyped): typed =
+template enumToInt*(typ: untyped): void =
   converter toUint32*(x: typ): uint32 =
     return uint32(x)
 

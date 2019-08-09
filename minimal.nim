@@ -8,20 +8,20 @@ var s = SAPI()
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 #SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_SYSINFO)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
-    ALLOW_FILE_IO or ALLOW_EVAL or  ALLOW_SYSINFO or
+    ALLOW_FILE_IO or ALLOW_EVAL or ALLOW_SYSINFO or
     ALLOW_SOCKET_IO # needs for conection to inspector
 )
 #sciter.runtime_features(allow_sysinfo=True)
 var i = newValue(100)
-echo "i:" , i
+echo "i:", i
 
 #var frame = sciter.Window(ismain=True, uni_theme=True)
 var r = cast[ptr Rect](alloc0(sizeof(Rect)))
-r.top = 200
-r.left = 500
+r.top = 20
+r.left = 200
 r.bottom = 500
 r.right = 800
-var frame = SciterCreateWindow(SW_MAIN or  SW_TITLEBAR or SW_CONTROLS, r, nil, nil, nil)
+var frame = SciterCreateWindow(SW_MAIN or SW_TITLEBAR or SW_CONTROLS, r, nil, nil, nil)
 
 #echo sciter.version(True)
 #echo sciter.classname()

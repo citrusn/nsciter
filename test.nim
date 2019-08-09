@@ -1,25 +1,27 @@
-import sciter, os, strutils
-
+import os, sciter, strutils
 
 OleInitialize(nil)
 var s = SAPI()
-#echo "spi:", repr s
-#echo "s.version:", s.version
+    #echo "spi:", repr s
+    #echo "s.version:", s.version
 echo "SciterClassName:", SciterClassName() # NOW IT'S WORKED !!!!
 echo "SciterVersion:", toHex(int(SciterVersion(true)), 5)
 echo "SciterVersion:", toHex(int(SciterVersion(false)), 5)
 
+#echo HANDLE_SCRIPTING_METHOD_CALL, "->", ord(HANDLE_SCRIPTING_METHOD_CALL)
+#echo 1024, "->", cast[EVENT_GROUPS](1024)
 #echo "SciterCreateWindow:", repr SciterCreateWindow
 #echo "s.SciterCreateWindow:", repr s.SciterCreateWindow
+
 # for connect to Inspector
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
     ALLOW_FILE_IO or ALLOW_SOCKET_IO or ALLOW_EVAL or ALLOW_SYSINFO)
 
-var dbg: DEBUG_OUTPUT_PROC = proc (param: pointer;
-    subsystem: uint32; ## #OUTPUT_SUBSYTEMS
-    severity: uint32; text: WideCString;
-    text_length: uint32) {.stdcall.} =
+var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
+                                    subsystem: uint32; ## #OUTPUT_SUBSYTEMS
+                                    severity: uint32; text: WideCString;
+                                    text_length: uint32) {.stdcall.} =
     echo "subsystem: ", cast[OUTPUT_SUBSYTEMS](subsystem),
          " severity: ", cast[OUTPUT_SEVERITY](severity), " msg: ", text
 s.SciterSetupDebugOutput(nil, nil, dbg)
@@ -29,20 +31,19 @@ r.top = 10
 r.left = 10
 r.bottom = 500
 r.right = 800
-var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or SW_RESIZEABLE, r, nil, nil, nil)
+var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or
+        SW_RESIZEABLE, r, nil, nil, nil)
 #var wnd = SciterCreateWindow(0, nil, nil, nil, nil)
 if wnd == nil:
     quit("wnd is nil")
 echo "wnd:", repr wnd
 
 var htmlw: string = """<html> <head><title>Test Html Page</title></head> hello world! </html>"""
+# test load html string into Sciter
 #echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
-echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.htm") # for test debuger
-#echo "SciterLoadFile: " , wnd.SciterLoadFile("./test.htm")
-echo "SciterLoadFile: " , wnd.SciterLoadFile("./particles-demo.htm")
-
-#testInsertFn("hello, world#0" , 0)
-#testInsertFn("hello, world#5" , 5)
+echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.htm") # for test debugger
+echo "SciterLoadFile: ", wnd.SciterLoadFile(addFileExt(paramStr(0), ".htm"))
+echo "SciterLoadFile: ", wnd.SciterLoadFile("./particles-demo.htm")
 
 #wnd.run
 var testInsertFn = proc(text: string; index: uint32) =
@@ -51,6 +52,8 @@ var testInsertFn = proc(text: string; index: uint32) =
     var dv: HELEMENT
     SciterCreateElement("div", text, dv.addr)
     echo "InsertElem:", dv.SciterInsertElement(root, index)
+#testInsertFn("hello, world#0", 0)
+#testInsertFn("hello, world#5", 5)
 
 #wnd.setTitle("test") - # windows only proc calling
 wnd.onClick(proc() = echo "generic click")
@@ -59,7 +62,7 @@ var testFn = proc() =
     var i: int8 = 100
     var p = newValue(i)
     echo "p: ", p.getInt()
-    echo "p as boolean: " , getBool(p)
+    echo "p as boolean: ", getBool(p)
     var s = "a test string"
     var sv = newValue(s)
     var s2 = sv.getString()
@@ -70,17 +73,17 @@ var testFn = proc() =
     var fv = newValue(f)
     echo "float value:", f, "\t", fv, "\t", fv.getFloat()
     var b: seq[byte] = @[byte(1), byte(2), byte(3), byte(4)]
-    echo "b: ",b
+    echo "b: ", b
     var bv = nullValue()
-    echo "bv as boolean: " , getBool(p)
+    echo "bv as boolean: ", getBool(p)
     setBytes(bv.addr, b)
-    echo "set butes bv:", bv.getBytes()
+    echo "set bytes bv:", bv.getBytes()
     var o = nullValue()
     o["key"] = newValue(i)
     echo "o:", o
-testFn()
+#testFn()
 
-proc nf(args: seq[Value]):Value=
+proc nf(args: seq[Value]): Value =
     echo "NativeFunction called"
     return newValue("nf ok")
 
@@ -88,39 +91,45 @@ var testVptr = proc() =
     var i: int16 = 100
     var v = newValue(i)
     echo v, "\tv.isNativeFunctor():", v.isNativeFunctor()
-    var vvv = newValue("ssss")
+    var vvv = newValue("ssss") 
+    echo "vvv: " , vvv
     echo "setNativeFunctor: ", vvv.setNativeFunctor(nf)
     echo vvv, "\tvvv.isNativeFunctor():", vvv.isNativeFunctor()
 testVptr()
 
-echo "dfm hello ret: ", wnd.defineScriptingFunction("hello", proc(args: seq[
-        Value]): Value =
-    echo "hello from script method"
-    echo "args:", args
+echo "dfm hello ret: ", 
+    wnd.defineScriptingFunction("hello", 
+        proc(args: seq[Value]): Value =
+            echo "hello from sciter script method"
+            echo "\targs:", args
 )
 
 proc testCallback() =
-    echo "dfm cbCall ret: ", wnd.defineScriptingFunction("cbCall",
+    echo "dfm cbCall ret: ", 
+        wnd.defineScriptingFunction("cbCall", 
             proc(args: seq[Value]): Value =
-        echo "cbCall args:", args
-        var fn = args[0]
-        var ret = fn.invoke(newValue(100), newValue("arg2"))
-        echo "cb ret:", ret
-        ret = fn.invokeWithSelf(newValue("string as this"), newValue(100),
-                newValue("arg2"))
-    )
+                echo "cbCall args:", args, repr args, isFunction(args[0])
+                var fn = args[0]
+                var ret = fn.invoke(newValue(100), newValue("arg2"))
+                echo "cb ret:", ret
+                ret = fn.invokeWithSelf(
+                    newValue("string as this"), 
+                    newValue(100),
+                    newValue("arg2"))
+        )
 testCallback()
 
 proc testNativeFunctor() =
-    wnd.defineScriptingFunction("api", proc(args:seq[Value]):Value =
-        result = newValue()
-        result["i"] = newValue(1000)
-        result["str"] = newValue("a string")
-        var fn = newValue()
-        discard fn.setNativeFunctor(nf)
-        result["fn"] = fn
+    wnd.defineScriptingFunction("api", 
+        proc(args: seq[Value]): Value =
+            result = newValue()
+            result["i"] = newValue(1000)
+            result["str"] = newValue("a string")
+            var fn = newValue()
+            discard fn.setNativeFunctor(nf)
+            result["fn"] = fn
     )
 testNativeFunctor()
-#echo HANDLE_SCRIPTING_METHOD_CALL, "->", ord(HANDLE_SCRIPTING_METHOD_CALL)
-echo 1024, "->" , cast[EVENT_GROUPS](1024)
+
+echo paramStr(0)
 wnd.run

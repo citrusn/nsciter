@@ -1,4 +1,4 @@
-#import xvalue
+import strformat # xvalue
 
 ######## for value operations ##########
 
@@ -127,13 +127,14 @@ proc getString*(x:Value):string =
     return $(ws)
 
 proc `$`*(v: Value):string =
+    result = fmt"({cast[VTYPE](v.t)}) "
     if v.isString():
-        return v.getString()
+        return (result & v.getString())
     if v.isFunction() or v.isNativeFunctor() or v.isObjectFunction():
-        return "<functor>"
+        return (result & "<functor>")
     var nv = v.clone()
     discard convertToString(nv.addr, CVT_SIMPLE)
-    return nv.getString()
+    return result & nv.getString()
 
 proc getInt32*(x:var Value): int32 =
     discard ValueIntData(addr x, addr result)
@@ -243,7 +244,7 @@ proc setNativeFunctor*(v:var Value, nf:NativeFunctor):uint32 =
     var tag = cast[pointer](nfs.len()-1)
     #var vv = v
     #echo "setNativeFunctor: " , repr v.unsafeAddr
-    result = ValueNativeFunctorSet(v.unsafeAddr, pinvoke, prelease, tag)    
+    return ValueNativeFunctorSet(v.unsafeAddr, pinvoke, prelease, tag)    
 
 
 # sds proc for python compatible
