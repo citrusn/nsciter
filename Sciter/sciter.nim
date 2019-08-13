@@ -1,6 +1,6 @@
 include xapi, event, valueprocs
 
-when defined(posix1):
+when defined(posix):
     # {.passC: "-std=c++11".}
     {.passC: gorge("pkg-config gtk+-3.0 --cflags").}
     {.passL: gorge("pkg-config gtk+-3.0 --libs").}
@@ -58,3 +58,8 @@ when defined(windows):
         while GetMessage(m.addr, nil, 0, 0):
             discard TranslateMessage(m.addr)
             discard DispatchMessage(m.addr)
+
+#cast[ptr Rect](alloc0(sizeof(Rect))) 
+var defaultRect = Rect(left: 50, top:50, right:800, bottom:500)
+let defaultRectPtr* = defaultRect.addr
+

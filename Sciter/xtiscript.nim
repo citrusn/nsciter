@@ -38,14 +38,16 @@ type
 
 type
   tiscript_method* = proc (c: ptr tiscript_VM): tiscript_value {.stdcall.}
-  tiscript_tagged_method* = proc (c: ptr tiscript_VM; self: tiscript_value; tag: pointer): tiscript_value {.
+  tiscript_tagged_method* = proc (c: ptr tiscript_VM; self: tiscript_value;
+                                  tag: pointer): tiscript_value {.
       stdcall.}
 
 ## # [] accessors implementation
 
 type
   tiscript_get_item* = proc (c: ptr tiscript_VM; obj: tiscript_value;
-                          key: tiscript_value): tiscript_value {.stdcall.}
+                          key: tiscript_value): tiscript_value {.
+      stdcall.}
   tiscript_set_item* = proc (c: ptr tiscript_VM; obj: tiscript_value;
                           key: tiscript_value; tiscript_value: tiscript_value) {.
       stdcall.}

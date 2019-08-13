@@ -11,19 +11,21 @@
 ## #  DOM access methods, plain C interface
 ## # 
 
+import encodings
+
 type
   HELEMENT* = distinct pointer
 
 ## #*DOM node handle.
-
 type
   HNODE* = pointer
 
 ## #*DOM range handle.
-
 type
   HRANGE* = pointer
+
   HSARCHIVE* = pointer
+  
   HPOSITION* = object
     hn*: HNODE
     pos*: int32
@@ -84,7 +86,6 @@ type
 
 
 ## #*Callback function used with #SciterVisitElement().
-
 type
   SciterElementCallback* = proc (he: HELEMENT; param: pointer): bool {.stdcall.}
   SET_ELEMENT_HTML* = enum
@@ -102,7 +103,6 @@ type
 ## #  \param prms \b LPVOID, pointer to group specific parameters structure.
 ## #  \return TRUE if event was handled, FALSE otherwise.
 ## # 
-
 type
   ElementEventProc* = proc (tag: pointer; he: HELEMENT; evtg: uint32; prms: pointer): uint {.stdcall.}
   LPELEMENT_EVENT_PROC* = ptr ElementEventProc
@@ -151,7 +151,6 @@ type
 ## #*Callback comparator function used with #SciterSortElements().
 ## #   Shall return -1,0,+1 values to indicate result of comparison of two elements
 ## # 
-
 type
   ELEMENT_COMPARATOR* = proc (he1: HELEMENT; he2: HELEMENT; param: pointer): int32 {.stdcall.}
   CTL_TYPE* = enum
@@ -192,3 +191,27 @@ type
 type
   NODE_INS_TARGET* = enum
     NIT_BEFORE, NIT_AFTER, NIT_APPEND, NIT_PREPEND
+
+proc LPCBYTE2ASTRING* (bytes: cstring; str_length: cuint; param: pointer) {.stdcall.} =
+    # proc (bytes: ptr array[256, byte];num_bytes: uint32 ; param: void ) {.stdcall.} = 
+    # sciter::astring* s = (sciter::astring*)param;
+    # *s = sciter::astring((const char*)bytes,num_bytes);
+    var s1 = cast[ptr string](param)
+    #s1[].setLen(str_length)
+    #for i in 0..str_length-1:
+    #  s1[i]=bytes[i]
+    var s:string 
+    add(s, bytes)
+    s1[]= convert(s, srcEncoding = "UTF-8", destEncoding = "CP1251")
+
+proc LPCSTR2ASTRING*(str: cstring; str_length: cuint; param: pointer) {.stdcall.} =
+  # sciter::astring* s = (sciter::astring*)param;
+  # *s = sciter::astring(str,str_length);
+  LPCBYTE2ASTRING(str, str_length, param)
+
+proc LPCWSTR2STRING*(str: WideCString, str_length: cuint, param: pointer) {.stdcall.} =
+  #sciter::string* s = (sciter::string*)param;
+  #*s = sciter::string(str,str_length);  
+  var s1 = cast[ptr string](param)
+  #echo "LPCWSTR2STRING:" , str_length , str
+  s1[]=convert($str, srcEncoding = "UTF-8", destEncoding = "CP1251")

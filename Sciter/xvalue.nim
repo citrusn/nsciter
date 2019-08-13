@@ -24,10 +24,10 @@ type
     T_MAP, 
     T_FUNCTION,               ## # named tuple , like array but with name tag
     T_BYTES,                  ## # sequence of bytes - e.g. image data
-    T_OBJECT,                 ## # scripting object proxy (TISCRIPT/SCITER) //13
-    T_DOM_OBJECT,             ## # DOM object (CSSS!), use get_object_data to get HELEMENT 
-    #T_RESOURCE = 15,         ## # 15 - other thing derived from tool::resource 
-    #T_RANGE = 16,            ## # 16 - N..M, integer range. 
+    T_OBJECT = 13,            ## # scripting object proxy (TISCRIPT/SCITER) //13
+    T_DOM_OBJECT =14          ## # DOM object (CSSS!), use get_object_data to get HELEMENT 
+    T_RESOURCE = 15,          ## # 15 - other thing derived from tool::resource 
+    T_RANGE = 16,             ## # 16 - N..M, integer range. 
     T_DURATION = 17,          ## # double, seconds 
     T_ANGLE = 18,             ## # double, radians 
     T_COLOR = 19              ## # [unsigned] INT, ABGR 

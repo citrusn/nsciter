@@ -1,12 +1,15 @@
-import sciter, os, strutils
+import sciter #, os, strutils
 
-var s = SAPI()
+let s = SAPI()
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
     ALLOW_FILE_IO or ALLOW_SOCKET_IO or ALLOW_EVAL or ALLOW_SYSINFO)
 
-var dbg: DEBUG_OUTPUT_PROC = proc (param: pointer; subsystem: uint32; ## #OUTPUT_SUBSYTEMS
-                severity: uint32; text: WideCString; text_length: uint32) {.stdcall.} =
+var dbg: DEBUG_OUTPUT_PROC = proc (param: pointer; 
+                                    subsystem: uint32; ## #OUTPUT_SUBSYTEMS
+                                    severity: uint32;
+                                    text: WideCString;
+                                    text_length: uint32) {.stdcall.} =
     echo "subsystem: ", cast[OUTPUT_SUBSYTEMS](subsystem),
          " severity: ", cast[OUTPUT_SEVERITY](severity), 
          " msg: ", text
@@ -19,7 +22,7 @@ proc OnDataLoaded(pns: LPSCN_DATA_LOADED ) =
     echo "LPSCN_DATA_LOADED: " , repr pns.uri
 
 proc sciterHostCallback(pns: LPSCITER_CALLBACK_NOTIFICATION;
-    callbackParam: pointer): uint32 {.stdcall.} =
+                        callbackParam: pointer): uint32 {.stdcall.} =
     # callbackParam; // we are not using callbackParam in the sample,
     # use it when you need this to be a method of some class
     echo "pns.code: ", pns.code
@@ -31,14 +34,10 @@ proc sciterHostCallback(pns: LPSCITER_CALLBACK_NOTIFICATION;
         return 0    
     return 0
 
-var shCallBack: SciterHostCallback = sciterHostCallback
+var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR,
+                             defaultRectPtr, nil, nil, nil)
 
-var r: Rect = Rect()
-r.top = 100
-r.left = 100
-r.bottom = 500
-r.right = 800
-var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR, addr r, nil, nil, nil)
+var shCallBack: SciterHostCallback = sciterHostCallback
 SciterSetCallback(wnd, shCallBack, nil)
 
 echo "SciterLoadFile: ", wnd.SciterLoadFile("./handlers.htm")
@@ -81,15 +80,15 @@ testCallback()
 proc test_call()=
     #test sciter call
     var v = wnd.call_function("gFunc", newValue("kkk"), newValue(555))
-    echo "sciter   call successfully:", $(v)
+    echo "sciter   call successfully:", $v
 
     #test method call    
     v = root.call_method("mfn", newValue("method call"), newValue(10300))
-    echo "method   call successfully:", $(v)
+    echo "method   call successfully:", $v
 
     #test function call
     v = root.call_function("gFunc", newValue("function call"), newValue(10300))
-    echo "function call successfully:", $(v)
+    echo "function call successfully:", $v
 test_call()
 
 wnd.run

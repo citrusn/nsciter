@@ -29,9 +29,9 @@ type
     cx*: int32
     cy*: int32
 
-  LPCWSTR_RECEIVER* = proc (str: ptr WideCString; str_length: cuint; param: pointer) {.stdcall.}
+  LPCWSTR_RECEIVER* = proc (str: WideCString; str_length: cuint; param: pointer) {.stdcall.}
   LPCSTR_RECEIVER*  = proc (str: cstring; str_length: cuint; param: pointer) {.stdcall.}
-  LPCBYTE_RECEIVER* = proc (str: ptr byte; num_bytes: cuint; param: pointer) {.stdcall.}
+  LPCBYTE_RECEIVER* = proc (str: cstring; num_bytes: cuint; param: pointer) {.stdcall.}
 
 when defined(windows):
   import winlean

@@ -173,8 +173,7 @@ proc setBytes*(x:ptr Value, dat: var openArray[byte]) =
 proc setBytes*(x:var Value, dat: var openArray[byte]) =
     setBytes(x.addr, dat)
     
-# for array and object types
-
+## for array and object types
 proc len*(x:Value): int =
     #xDefPtr(x, v)
     var n:int32 = 0
@@ -209,7 +208,6 @@ proc `[]=`*(x:var Value; name:string; y: Value) =
     ValueSetValueToKey(x.unsafeAddr, key.addr, y.unsafeAddr)
 
 ## value functions calls
-
 proc invokeWithSelf*(x:Value, self:Value, args:varargs[Value]):Value =
     result = Value()
     #var xx = x
@@ -219,7 +217,8 @@ proc invokeWithSelf*(x:Value, self:Value, args:varargs[Value]):Value =
     for i in 0..clen-1:
         cargs[i] = args[i]
     ValueInvoke(x.unsafeAddr, self.unsafeAddr, uint32(len(args)), cargs[0].addr, result.addr, nil)
-    
+
+## value functions calls    
 proc invoke*(x:Value, args:varargs[Value]):Value =
     var self = newValue()
     invokeWithSelf(x, self, args)

@@ -20,30 +20,31 @@ SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
 
 var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
                                     subsystem: uint32; ## #OUTPUT_SUBSYTEMS
-                                    severity: uint32; text: WideCString;
+                                    severity: uint32; 
+                                    text: WideCString;
                                     text_length: uint32) {.stdcall.} =
     echo "subsystem: ", cast[OUTPUT_SUBSYTEMS](subsystem),
          " severity: ", cast[OUTPUT_SEVERITY](severity), " msg: ", text
 s.SciterSetupDebugOutput(nil, nil, dbg)
 
-var r = cast[ptr Rect](alloc0(sizeof(Rect)))
-r.top = 10
-r.left = 10
-r.bottom = 500
-r.right = 800
+#var r = cast[ptr Rect](alloc0(sizeof(Rect)))
+#r.top = 10
+#r.left = 10
+#r.bottom = 500
+#r.right = 800
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or
-        SW_RESIZEABLE, r, nil, nil, nil)
+        SW_RESIZEABLE, defaultRectPtr, nil, nil, nil)
 #var wnd = SciterCreateWindow(0, nil, nil, nil, nil)
 if wnd == nil:
     quit("wnd is nil")
 echo "wnd:", repr wnd
 
-var htmlw: string = """<html> <head><title>Test Html Page</title></head> hello world! </html>"""
+var htmlw: string="""<html> <head><title>Тестовая страница</title></head>привет, hello world! </html>"""
 # test load html string into Sciter
 #echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
 echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.htm") # for test debugger
 echo "SciterLoadFile: ", wnd.SciterLoadFile(addFileExt(paramStr(0), ".htm"))
-echo "SciterLoadFile: ", wnd.SciterLoadFile("./particles-demo.htm")
+echo "SciterLoadFile: ", wnd.SciterLoadFile("./particles-demo.htm") # bad path
 
 #wnd.run
 var testInsertFn = proc(text: string; index: uint32) =
@@ -108,7 +109,7 @@ proc testCallback() =
     echo "dfm cbCall ret: ", 
         wnd.defineScriptingFunction("cbCall", 
             proc(args: seq[Value]): Value =
-                echo "cbCall args:", args, repr args, isFunction(args[0])
+                echo "cbCall args:", args, repr args, isObject(args[0])
                 var fn = args[0]
                 var ret = fn.invoke(newValue(100), newValue("arg2"))
                 echo "cb ret:", ret
@@ -120,7 +121,7 @@ proc testCallback() =
 testCallback()
 
 proc testNativeFunctor() =
-    wnd.defineScriptingFunction("api", 
+    wnd.defineScriptingFunction("api",  # calling from html script
         proc(args: seq[Value]): Value =
             result = newValue()
             result["i"] = newValue(1000)
@@ -131,5 +132,15 @@ proc testNativeFunctor() =
     )
 testNativeFunctor()
 
-echo paramStr(0)
+proc testGetFunction() = 
+    var root: HELEMENT
+    var t: string = "приветик, hello world" # test for console code page 1251
+    echo "t:", t
+    wnd.SciterGetRootElement(root.addr)
+    root.SciterGetElementHtmlCB(false, LPCBYTE2ASTRING, addr(t))
+    echo "Root html =" , len(t), t
+    root.SciterGetElementTextCB(LPCWSTR2STRING, addr(t))
+    echo "Root text =" , len(t), t
+testGetFunction()
+
 wnd.run
