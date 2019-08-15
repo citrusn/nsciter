@@ -88,6 +88,7 @@ type
 ## #*Callback function used with #SciterVisitElement().
 type
   SciterElementCallback* = proc (he: HELEMENT; param: pointer): bool {.stdcall.}
+  
   SET_ELEMENT_HTML* = enum
     SIH_REPLACE_CONTENT = 0, 
     SIH_INSERT_AT_START = 1, 
@@ -193,7 +194,7 @@ type
     NIT_BEFORE, NIT_AFTER, NIT_APPEND, NIT_PREPEND
 
 proc LPCBYTE2ASTRING* (bytes: cstring; str_length: cuint; param: pointer) {.stdcall.} =
-    # proc (bytes: ptr array[256, byte];num_bytes: uint32 ; param: void ) {.stdcall.} = 
+    # proc (bytes: ptr array[256, byte];num_bytes: uint32 ; param: void ) 
     # sciter::astring* s = (sciter::astring*)param;
     # *s = sciter::astring((const char*)bytes,num_bytes);
     var s1 = cast[ptr string](param)

@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "echo",
+            "label": "View HTML in Sciter",
             "type": "shell",
-            "command": "echo Hello",
+            "command": "D:/Spc/sciter-sdk-4/bin/32/sciter.exe ${workspaceFolder}\\${fileBasename}" ,
             "group": {
                 "kind": "build",
                 "isDefault": true

@@ -9,14 +9,16 @@
 ## #
 
 ## #* #SC_LOAD_DATA notification return codes
-
 type
   SC_LOAD_DATA_RETURN_CODES* = enum
-    LOAD_OK = 0, ## #*< do default loading if data not set
+    LOAD_OK = 0,      ## #*< do default loading if data not set
     LOAD_DISCARD = 1, ## #*< discard request completely
     LOAD_DELAYED = 2, ## #*< data will be delivered later by the host application.
-                      ## # Host application must call SciterDataReadyAsync(,,, requestId) on each LOAD_DELAYED request to avoid memory leaks.
-    LOAD_MYSELF = 3 ## #*< you return LOAD_MYSELF result to indicate that your (the host) application took or will take care about HREQUEST in your code completely.
+                      ## # Host application must call SciterDataReadyAsync(,,, requestId)
+                      ## # on each LOAD_DELAYED request to avoid memory leaks.
+    LOAD_MYSELF = 3   ## #*< you return LOAD_MYSELF result to indicate that your 
+                      ## # (the host) application took or will take care 
+                      ## # about HREQUEST in your code completely.
                       ## # Use sciter-x-request.h[pp] API functions with SCN_LOAD_DATA::requestId handle .
 
 
@@ -102,22 +104,23 @@ const
 
 ## #*Notification callback structure.
 ## #
-
 type
+  LPSCITER_CALLBACK_NOTIFICATION* = ptr SCITER_CALLBACK_NOTIFICATION
   SCITER_CALLBACK_NOTIFICATION* = object
-    code*: uint32             ## #*< [in] one of the codes above.
+    code*: uint32  ## #*< [in] one of the codes above.
     hwnd*: HWINDOW ## #*< [in] HWINDOW of the window this callback was attached to.
 
-  LPSCITER_CALLBACK_NOTIFICATION* = ptr SCITER_CALLBACK_NOTIFICATION
+type
+  LPSciterHostCallback* = ptr SciterHostCallback
   SciterHostCallback* = proc (pns: LPSCITER_CALLBACK_NOTIFICATION;
                            callbackParam: pointer): uint32 {.stdcall.}
-  LPSciterHostCallback* = ptr SciterHostCallback
+  
 
 ## #*This structure is used by #SC_LOAD_DATA notification.
 ## # \copydoc SC_LOAD_DATA
 ## #
-
 type
+  LPSCN_LOAD_DATA* = ptr SCN_LOAD_DATA
   SCN_LOAD_DATA* = object
     code*: uint32     ## #*< [in] one of the codes above.
     hwnd*: HWINDOW    ## #*< [in] HWINDOW of the window this callback was attached to.
@@ -129,32 +132,31 @@ type
     principal*: HELEMENT
     initiator*: HELEMENT
 
-  LPSCN_LOAD_DATA* = ptr SCN_LOAD_DATA
+  
 
 ## #*This structure is used by #SC_DATA_LOADED notification.
 ## # \copydoc SC_DATA_LOADED
 ## #
-
 type
+  LPSCN_DATA_LOADED* = ptr SCN_DATA_LOADED
   SCN_DATA_LOADED* = object
     code*: uint32     ## #*< [in] one of the codes above.
-    hwnd*: HWINDOW ## #*< [in] HWINDOW of the window this callback was attached to.
+    hwnd*: HWINDOW    ## #*< [in] HWINDOW of the window this callback was attached to.
     uri*: WideCString ## #*< [in] zero terminated string, fully qualified uri, for example "http://server/folder/file.ext".
     data*: pointer    ## #*< [in] pointer to loaded data.
     dataSize*: uint32 ## #*< [in] loaded data size (in bytes).
     dataType*: uint32 ## #*< [in] SciterResourceType
     status*: uint32   ## #*< [in]
-    ## #status = 0 (dataSize == 0) - unknown error.
-    ## #status = 100..505 - http response status, Note: 200 - OK!
-    ## #status > 12000 - wininet error code, see ERROR_INTERNET_*** in wininet.h
-    ## #
+                      ## #status = 0 (dataSize == 0) - unknown error.
+                      ## #status = 100..505 - http response status, Note: 200 - OK!
+                      ## #status > 12000 - wininet error code, see ERROR_INTERNET_*** in wininet.h
+                      ## #
 
-  LPSCN_DATA_LOADED* = ptr SCN_DATA_LOADED
 
 ## #*This structure is used by #SC_ATTACH_BEHAVIOR notification.
 ## # \copydoc SC_ATTACH_BEHAVIOR *
-
 type
+  LPSCN_ATTACH_BEHAVIOR* = ptr SCN_ATTACH_BEHAVIOR
   SCN_ATTACH_BEHAVIOR* = object
     code*: uint32          ## #*< [in] one of the codes above.
     hwnd*: HWINDOW ## #*< [in] HWINDOW of the window this callback was attached to.
@@ -163,22 +165,20 @@ type
     elementProc*: ptr ElementEventProc ## #*< [out] pointer to ElementEventProc function.
     elementTag*: pointer ## #*< [out] tag value, passed as is into pointer ElementEventProc function.
 
-  LPSCN_ATTACH_BEHAVIOR* = ptr SCN_ATTACH_BEHAVIOR
-
+  
 ## #*This structure is used by #SC_ENGINE_DESTROYED notification.
 ## # \copydoc SC_ENGINE_DESTROYED *
-
 type
+  LPSCN_ENGINE_DESTROYED* = ptr SCN_ENGINE_DESTROYED
   SCN_ENGINE_DESTROYED* = object
     code*: uint32  ## #*< [in] one of the codes above.
     hwnd*: HWINDOW ## #*< [in] HWINDOW of the window this callback was attached to.
-
-  LPSCN_ENGINE_DESTROYED* = ptr SCN_ENGINE_DESTROYED
+  
 
 ## #*This structure is used by #SC_ENGINE_DESTROYED notification.
 ## # \copydoc SC_ENGINE_DESTROYED *
-
 type
+  LPSCN_POSTED_NOTIFICATION* = ptr SCN_POSTED_NOTIFICATION
   SCN_POSTED_NOTIFICATION* = object
     code*: uint32  ## #*< [in] one of the codes above.
     hwnd*: HWINDOW ## #*< [in] HWINDOW of the window this callback was attached to.
@@ -186,17 +186,16 @@ type
     lparam*: uint32
     lreturn*: uint32
 
-  LPSCN_POSTED_NOTIFICATION* = ptr SCN_POSTED_NOTIFICATION
 
 ## #*This structure is used by #SC_GRAPHICS_CRITICAL_FAILURE notification.
 ## # \copydoc SC_GRAPHICS_CRITICAL_FAILURE *
-
 type
+  LPSCN_GRAPHICS_CRITICAL_FAILURE* = ptr SCN_GRAPHICS_CRITICAL_FAILURE
   SCN_GRAPHICS_CRITICAL_FAILURE* = object
     code*: uint32  ## #*< [in] = SC_GRAPHICS_CRITICAL_FAILURE
     hwnd*: HWINDOW ## #*< [in] HWINDOW of the window this callback was attached to.
 
-  LPSCN_GRAPHICS_CRITICAL_FAILURE* = ptr SCN_GRAPHICS_CRITICAL_FAILURE
+
   SCRIPT_RUNTIME_FEATURES* = enum
     ALLOW_FILE_IO = 0x00000001,
     ALLOW_SOCKET_IO = 0x00000002,
@@ -218,7 +217,8 @@ type
     SCITER_FONT_SMOOTHING = 4, ## # value: 0 - system default, 1 - no smoothing, 2 - std smoothing, 3 - clear type
     SCITER_TRANSPARENT_WINDOW = 6, ## # Windows Aero support, value:
                                 ## # 0 - normal drawing,
-                                ## # 1 - window has transparent background after calls DwmExtendFrameIntoClientArea() or DwmEnableBlurBehindWindow().
+                                ## # 1 - window has transparent background after calls DwmExtendFrameIntoClientArea() 
+                                ## # or DwmEnableBlurBehindWindow().
     SCITER_SET_GPU_BLACKLIST = 7, ## # hWnd = NULL,
                                ## # value = LPCBYTE, json - GPU black list, see: gpu-blacklist.json resource.
     SCITER_SET_SCRIPT_RUNTIME_FEATURES = 8, ## # value - combination of SCRIPT_RUNTIME_FEATURES flags.
@@ -233,7 +233,7 @@ type
 type
   URL_DATA* = object
     requestedUrl*: cstring    ## # requested URL
-    realUrl*: cstring ## # real URL data arrived from (after possible redirections)
+    realUrl*: cstring         ## # real URL data arrived from (after possible redirections)
     requestedType*: SciterResourceType ## # requested data category: html, script, image, etc.
     httpHeaders*: cstring     ## # if any
     mimeType*: cstring        ## # mime type reported by server (if any)
@@ -245,13 +245,13 @@ type
 
 when defined(osx):
   type
-    SciterWindowDelegate* = pointer
-  ## # Obj-C id, NSWindowDelegate and NSResponder
+    SciterWindowDelegate* = pointer ## # Obj-C id, NSWindowDelegate and NSResponder
 elif defined(windows):
   type
-    SciterWindowDelegate* = proc (hwnd: HWINDOW; msg: uint32; wParam: WPARAM;
-                              lParam: LPARAM; pParam: pointer;
-                              handled: ptr bool): LRESULT {.stdcall.}
+    SciterWindowDelegate* = proc (hwnd: HWINDOW; msg: uint32;
+                                  wParam: WPARAM;
+                                  lParam: LPARAM; pParam: pointer;
+                                  handled: ptr bool): LRESULT {.stdcall.}
 elif defined(posix):
   type
     SciterWindowDelegate* = pointer
@@ -276,7 +276,6 @@ type
 ## #   found while loading html and css documents.
 ## # 
 ## #
-
 type
   OUTPUT_SUBSYTEMS* = enum
     OT_DOM = 0, ## # html parser & runtime
@@ -291,6 +290,7 @@ type
 
 
 type
-  DEBUG_OUTPUT_PROC* = proc (param: pointer; subsystem: uint32; ## #OUTPUT_SUBSYTEMS
+  DEBUG_OUTPUT_PROC* = proc (param: pointer; 
+                            subsystem: uint32; ## #OUTPUT_SUBSYTEMS
                             severity: uint32; text: WideCString;
                             text_length: uint32) {.stdcall.}

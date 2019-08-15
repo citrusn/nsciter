@@ -2,8 +2,8 @@ import os, sciter, strutils
 
 OleInitialize(nil)
 var s = SAPI()
-    #echo "spi:", repr s
-    #echo "s.version:", s.version
+#echo "spi:", repr s
+#echo "s.version:", s.version
 echo "SciterClassName:", SciterClassName() # NOW IT'S WORKED !!!!
 echo "SciterVersion:", toHex(int(SciterVersion(true)), 5)
 echo "SciterVersion:", toHex(int(SciterVersion(false)), 5)
@@ -27,24 +27,20 @@ var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
          " severity: ", cast[OUTPUT_SEVERITY](severity), " msg: ", text
 s.SciterSetupDebugOutput(nil, nil, dbg)
 
-#var r = cast[ptr Rect](alloc0(sizeof(Rect)))
-#r.top = 10
-#r.left = 10
-#r.bottom = 500
-#r.right = 800
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or
         SW_RESIZEABLE, defaultRectPtr, nil, nil, nil)
 #var wnd = SciterCreateWindow(0, nil, nil, nil, nil)
 if wnd == nil:
     quit("wnd is nil")
-echo "wnd:", repr wnd
+#echo "wnd:", repr wnd
 
-var htmlw: string="""<html> <head><title>Тестовая страница</title></head>привет, hello world! </html>"""
 # test load html string into Sciter
+var htmlw: string="""<html> <head><title>Тестовая страница</title></head>привет, hello world! </html>"""
 #echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
+# test load html file into Sciter
 echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.htm") # for test debugger
-echo "SciterLoadFile: ", wnd.SciterLoadFile(addFileExt(paramStr(0), ".htm"))
-echo "SciterLoadFile: ", wnd.SciterLoadFile("./particles-demo.htm") # bad path
+echo "SciterLoadFile: ", wnd.SciterLoadFile(addFileExt(paramStr(0), ".htm")) # work file
+#echo "SciterLoadFile: ", wnd.SciterLoadFile(getCurrentDir() / "particles-demo.html") # bad path
 
 #wnd.run
 var testInsertFn = proc(text: string; index: uint32) =
@@ -53,10 +49,13 @@ var testInsertFn = proc(text: string; index: uint32) =
     var dv: HELEMENT
     SciterCreateElement("div", text, dv.addr)
     echo "InsertElem:", dv.SciterInsertElement(root, index)
-#testInsertFn("hello, world#0", 0)
-#testInsertFn("hello, world#5", 5)
+    var html:string = "<div> inserted div node </div>" 
+    echo dv.SciterSetElementHtml(cast[ptr byte](html[0].addr), (cuint)html.len(), SIH_APPEND_AFTER_LAST)
+    #echo dv.SciterSetElementHtml(cast[ptr byte](html.addr), (cuint)html.len(), SIH_APPEND_AFTER_LAST)
+testInsertFn("hello, world#1", 1)
+testInsertFn("hello, world#5", 8)
 
-#wnd.setTitle("test") - # windows only proc calling
+#wnd.setTitle("test setTitle window caption") - # windows only proc calling
 wnd.onClick(proc() = echo "generic click")
 wnd.onClick(proc() = echo "generic click 2")
 var testFn = proc() =
@@ -102,8 +101,7 @@ echo "dfm hello ret: ",
     wnd.defineScriptingFunction("hello", 
         proc(args: seq[Value]): Value =
             echo "hello from sciter script method"
-            echo "\targs:", args
-)
+            echo "\targs:", args)
 
 proc testCallback() =
     echo "dfm cbCall ret: ", 
@@ -141,6 +139,6 @@ proc testGetFunction() =
     echo "Root html =" , len(t), t
     root.SciterGetElementTextCB(LPCWSTR2STRING, addr(t))
     echo "Root text =" , len(t), t
-testGetFunction()
+#testGetFunction()
 
 wnd.run
