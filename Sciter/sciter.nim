@@ -8,8 +8,8 @@ when defined(posix):
         gtkhdr = "<gtk/gtk.h>"
         gtklib = "libgtk-3.so.0"
     type
-        GtkWidget {.final, header:gtkhdr, importc.} = object
-        GtkWindow {.final, header:gtkhdr, importc.} = object
+        GtkWidget {.final, header: gtkhdr, importc.} = object
+        GtkWindow {.final, header: gtkhdr, importc.} = object
     {.emit:
         """
         #include <gtk/gtk.h>
@@ -19,14 +19,17 @@ when defined(posix):
         }
         """
     .}
-    proc gwindow(h:ptr GtkWidget):ptr GtkWindow {.importc:"gwindow".}
-    proc gtk_init(a,b:int) {.dynlib:gtklib, importc:"gtk_init".}
-    proc gtk_main() {.dynlib:gtklib, importc:"gtk_main".}
-    proc gtk_window_present(w:ptr GtkWindow) {.dynlib:gtklib, importc:"gtk_window_present".}
-    proc gtk_window_set_title(w:ptr GtkWindow, title:cstring) {.dynlib:gtklib, importc:"gtk_window_set_title".}
-    proc gtk_widget_get_toplevel(w:ptr GtkWidget):ptr GtkWidget {.dynlib:gtklib, importc:"gtk_widget_get_toplevel".}
-    gtk_init(0,0)
-    proc setTitle*(h:HWINDOW, title:string) = 
+    proc gwindow(h: ptr GtkWidget): ptr GtkWindow {.importc: "gwindow".}
+    proc gtk_init(a, b: int) {.dynlib: gtklib, importc: "gtk_init".}
+    proc gtk_main() {.dynlib: gtklib, importc: "gtk_main".}
+    proc gtk_window_present(w: ptr GtkWindow) {.
+        dynlib: gtklib, importc: "gtk_window_present".}
+    proc gtk_window_set_title(w: ptr GtkWindow, title: cstring) {.
+        dynlib: gtklib, importc: "gtk_window_set_title".}
+    proc gtk_widget_get_toplevel(w: ptr GtkWidget): ptr GtkWidget {.
+        dynlib: gtklib, importc: "gtk_widget_get_toplevel".}
+    gtk_init(0, 0)
+    proc setTitle*(h: HWINDOW, title: string) =
         # setTitle set the window title for the GTK window
         var w = gwindow(cast[ptr GtkWidget](h))
         gtk_window_set_title(w, cstring(title))
@@ -37,29 +40,36 @@ when defined(posix):
         gtk_main()
 
 when defined(windows):
-    proc SetWindowText(wnd: HWINDOW, lpString: WideCString): bool {.stdcall,
-                       dynlib: "user32", importc: "SetWindowTextW".}
+    proc SetWindowText(wnd: HWINDOW, lpString: WideCString): bool {.
+        stdcall, dynlib: "user32", importc: "SetWindowTextW".}
     proc GetMessage(lpMsg: ptr MSG, wnd: HWINDOW, wMsgFilterMin: uint32,
-                    wMsgFilterMax: uint32): bool {.stdcall, dynlib: "user32", importc: "GetMessageW".}
-    proc TranslateMessage(lpMsg: ptr MSG): bool {.stdcall, dynlib: "user32", importc: "TranslateMessage".}
-    proc DispatchMessage(lpMsg: ptr MSG): LONG{.stdcall, dynlib: "user32", importc: "DispatchMessageW".}
-    proc UpdateWindow(wnd: HWINDOW): bool{.stdcall, dynlib: "user32", importc: "UpdateWindow".}
-    proc OleInitialize*(pvReserved: pointer): HRESULT {.stdcall,discardable , dynlib: "ole32", importc: "OleInitialize".}
-    proc OleUninitialize*(): HRESULT {.stdcall,discardable , dynlib: "ole32", importc: "OleUninitialize".}
-    
-    proc ShowWindow(wnd: HWINDOW, nCmdShow: int32): WINBOOL{.stdcall, dynlib: "user32", importc: "ShowWindow".}
-    proc setTitle*(h:HWINDOW, title:string) = 
+                    wMsgFilterMax: uint32): bool {.
+        stdcall, dynlib: "user32", importc: "GetMessageW".}
+    proc TranslateMessage(lpMsg: ptr MSG): bool {.
+        stdcall, dynlib: "user32", importc: "TranslateMessage".}
+    proc DispatchMessage(lpMsg: ptr MSG): LONG{.
+        stdcall, dynlib: "user32", importc: "DispatchMessageW".}
+    proc UpdateWindow(wnd: HWINDOW): bool{.
+        stdcall, dynlib: "user32", importc: "UpdateWindow".}
+    proc OleInitialize*(pvReserved: pointer): HRESULT {.
+        stdcall, discardable, dynlib: "ole32", importc: "OleInitialize".}
+    proc OleUninitialize*(): HRESULT {.
+        stdcall, discardable, dynlib: "ole32", importc: "OleUninitialize".}
+
+    proc ShowWindow(wnd: HWINDOW, nCmdShow: int32): WINBOOL{.
+        stdcall, dynlib: "user32", importc: "ShowWindow".}
+    proc setTitle*(h: HWINDOW, title: string) =
         discard SetWindowText(h, newWideCString(title))
 
     proc run*(hwnd: HWINDOW) =
-        var m:MSG
+        var m: MSG
         discard hwnd.ShowWindow(5)
         discard hwnd.UpdateWindow()
         while GetMessage(m.addr, nil, 0, 0):
             discard TranslateMessage(m.addr)
             discard DispatchMessage(m.addr)
 
-#cast[ptr Rect](alloc0(sizeof(Rect))) 
-var defaultRect = Rect(left: 50, top:50, right:800, bottom:500)
+#cast[ptr Rect](alloc0(sizeof(Rect)))
+var defaultRect = Rect(left: 50, top: 50, right: 800, bottom: 500)
 let defaultRectPtr* = defaultRect.addr
 

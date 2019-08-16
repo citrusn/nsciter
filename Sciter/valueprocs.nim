@@ -84,21 +84,21 @@ proc nullValue*(): Value =
 proc clone*(x:Value):Value =
     #xDefPtr(x, v)
     var dst = nullValue()
-    discard ValueCopy(dst.addr, x.unsafeAddr)
+    ValueCopy(dst.addr, x.unsafeAddr)
     return dst
 
 proc newValue*():Value =    
     result = Value()
-    discard ValueInit(addr result)    
+    ValueInit(addr result)    
 
 proc newValue*(dat:string):Value =
     var ws = newWideCString(dat)
     result = newValue()    
-    discard ValueStringDataSet(result.addr, ws, uint32(ws.len()), uint32(0))
+    ValueStringDataSet(result.addr, ws, uint32(ws.len()), uint32(0))
 
 proc newValue*(dat:int32):Value=
     result = newValue()
-    discard ValueIntDataSet(result.addr, dat, T_INT, 0)
+    ValueIntDataSet(result.addr, dat, T_INT, 0)
 
 proc newValue*(dat:float64):Value =
     result = newValue()
@@ -107,9 +107,9 @@ proc newValue*(dat:float64):Value =
 proc newValue*(dat:bool):Value =
     result = newValue()
     if dat:
-        discard ValueIntDataSet(result.addr, 1, T_INT, 0)
+        ValueIntDataSet(result.addr, 1, T_INT, 0)
     else:
-        discard ValueIntDataSet(result.addr, 0, T_INT, 0)
+        ValueIntDataSet(result.addr, 0, T_INT, 0)
 
 proc convertFromString*(x:ptr Value, s:string, how:VALUE_STRING_CVT_TYPE) =
     var ws = newWideCString(s)
@@ -123,7 +123,7 @@ proc getString*(x:Value):string =
     #var xx = x
     var ws: WideCString
     var n:uint32
-    discard ValueStringData(x.unsafeAddr, addr ws, addr n)
+    ValueStringData(x.unsafeAddr, addr ws, addr n)
     return $(ws)
 
 proc `$`*(v: Value):string =
@@ -136,20 +136,21 @@ proc `$`*(v: Value):string =
     discard convertToString(nv.addr, CVT_SIMPLE)
     return result & nv.getString()
 
-proc getInt32*(x:var Value): int32 =
-    discard ValueIntData(addr x, addr result)
+proc getInt32*(x: Value): int32 =
+    ValueIntData(unsafeAddr x, addr result)
+    return result
     
-proc getInt*(x:var Value): int =
+proc getInt*(x: Value): int =
     #var xx = x       
-    result = cast[int](getInt32(x))
+    result = (int)getInt32(x)
 
-proc getBool*(x:var Value): bool =
+proc getBool*(x: Value): bool =
     var i = getInt(x)
     if i == 0:
         return false
     return true
 
-proc getFloat*(x:Value): float =
+proc getFloat*(x: Value): float =
     #xDefPtr(x, v)
     var f:float64
     ValueFloatData(x.unsafeAddr, f.addr)
@@ -162,22 +163,22 @@ proc getBytes*(x:ptr Value): seq[byte] =
     result = newSeq[byte](size)
     copyMem(result[0].addr, p, int(size)*sizeof(byte))
 
-proc getBytes*(x:var Value): seq[byte] =
-    return getBytes(x.addr)
+proc getBytes*(x: Value): seq[byte] =
+    return getBytes(x.unsafeAddr)
 
 proc setBytes*(x:ptr Value, dat: var openArray[byte]) =
     var p = dat[0].addr
     var size = dat.len()*sizeof(byte)
-    discard x.ValueBinaryDataSet(p, uint32(size), T_BYTES, 0)
+    x.ValueBinaryDataSet(p, uint32(size), T_BYTES, 0)
 
-proc setBytes*(x:var Value, dat: var openArray[byte]) =
-    setBytes(x.addr, dat)
+proc setBytes*(x: Value, dat: var openArray[byte]) =
+    setBytes(x.unsafeAddr, dat)
     
 ## for array and object types
 proc len*(x:Value): int =
     #xDefPtr(x, v)
     var n:int32 = 0
-    discard ValueElementsCount(x.unsafeAddr, addr n)
+    ValueElementsCount(x.unsafeAddr, addr n)
     return int(n)
 
 proc enumerate*(x:var Value, cb:KeyValueCallback): uint32 =
@@ -194,17 +195,16 @@ proc `[]=`*[I: Ordinal, VT:Value|Value](x:var Value; i: I; y: VT) =
     #xDefPtr(y, yp)
     ValueNthElementValueSet(x.unsafeAddr, i, y.unsafeAddr)
 
-proc `[]`*(x:var Value; name:string): Value =
+proc `[]`*(x: Value; name:string): Value =
     #xDefPtr(x, v)
     var key = newValue(name)
     result = nullValue()
-    discard ValueGetValueOfKey(x.unsafeAddr, key.addr, result.addr)
+    ValueGetValueOfKey(x.unsafeAddr, key.addr, result.addr)
 
 proc `[]=`*(x:var Value; name:string; y: Value) =
     #xDefPtr(x, v)
     #var yy = y
     var key = newValue(name)
-    #echo "name"
     ValueSetValueToKey(x.unsafeAddr, key.addr, y.unsafeAddr)
 
 ## value functions calls
@@ -232,9 +232,9 @@ proc pinvoke(tag: pointer;
     var idx = cast[int](tag)
     var nf = nfs[idx]
     var args = newSeq[Value](1)
-    discard retval.ValueInit()
+    retval.ValueInit()
     var r = nf(args)
-    discard retval.ValueCopy(r.addr)
+    retval.ValueCopy(r.addr)
 
 proc prelease(tag: pointer) {.stdcall.} = discard
 
@@ -246,7 +246,7 @@ proc setNativeFunctor*(v:var Value, nf:NativeFunctor):uint32 =
     return ValueNativeFunctorSet(v.unsafeAddr, pinvoke, prelease, tag)    
 
 
-# sds proc for python compatible
+## # sds proc for python compatible
 
 proc call_function*(hwnd: HWINDOW, name: cstring, args:varargs[Value]): Value = 
     ## Call scripting function defined in the global namespace."""

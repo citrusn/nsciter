@@ -35,7 +35,6 @@ type
 ## #  of filling these fields. This allows you to free your outData buffer
 ## #  immediately.
 ## #
-
 const
   SC_LOAD_DATA* = 0x00000001
 
@@ -48,7 +47,6 @@ const
 ## #  this resource has been completely downloaded. Sciter will send this
 ## #  notification asynchronously.
 ## #
-
 const
   SC_DATA_LOADED* = 0x00000002
 
@@ -69,7 +67,6 @@ const
 ## #  Application has to provide implementation of #sciter::behavior interface.
 ## #  Set #SCN_ATTACH_BEHAVIOR::impl to address of this implementation.
 ## #
-
 const
   SC_ATTACH_BEHAVIOR* = 0x00000004
 
@@ -79,7 +76,6 @@ const
 ## #  \param lParam #LPSCN_ENGINE_DESTROYED
 ## # 
 ## #
-
 const
   SC_ENGINE_DESTROYED* = 0x00000005
 
@@ -88,7 +84,6 @@ const
 ## #  \param lParam #LPSCN_POSTED_NOTIFICATION
 ## # 
 ## #
-
 const
   SC_POSTED_NOTIFICATION* = 0x00000006
 
@@ -98,7 +93,6 @@ const
 ## #  \param lParam #LPSCN_GRAPHICS_CRITICAL_FAILURE
 ## # 
 ## #
-
 const
   SC_GRAPHICS_CRITICAL_FAILURE* = 0x00000007
 

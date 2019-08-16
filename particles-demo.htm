@@ -79,7 +79,8 @@
                     gfx.line(p.x, p.y, p2.x, p2.y);
                 }
                 else if (dist < connectorDistanceOut) {
-                    gfx.strokeColor(Color.morph(pcolor, transcolor, (dist - connectorDistance) / (connectorDistanceOut - connectorDistance)));
+                    gfx.strokeColor(Color.morph(pcolor, transcolor, 
+                                    (dist - connectorDistance) / (connectorDistanceOut - connectorDistance)));
                     gfx.line(p.x, p.y, p2.x, p2.y);
                 }
             }

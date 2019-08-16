@@ -1,4 +1,4 @@
-import os, sciter, strutils
+import os, sciter/sciter, strutils
 
 OleInitialize(nil)
 var s = SAPI()
@@ -58,16 +58,18 @@ testInsertFn("hello, world#5", 8)
 #wnd.setTitle("test setTitle window caption") - # windows only proc calling
 wnd.onClick(proc() = echo "generic click")
 wnd.onClick(proc() = echo "generic click 2")
+# test value function
 var testFn = proc() =
+    echo "Test value function"
     var i: int8 = 100
     var p = newValue(i)
-    echo "p: ", p.getInt()
+    echo "p.getInt: ", p.getInt()
     echo "p as boolean: ", getBool(p)
     var s = "a test string"
     var sv = newValue(s)
     var s2 = sv.getString()
     echo s, "->", s2
-    echo s.len, s2.len
+    echo s.len, "=", s2.len
     echo "value:", p, "\t", sv
     var f = 6.341
     var fv = newValue(f)
@@ -75,13 +77,13 @@ var testFn = proc() =
     var b: seq[byte] = @[byte(1), byte(2), byte(3), byte(4)]
     echo "b: ", b
     var bv = nullValue()
-    echo "bv as boolean: ", getBool(p)
+    echo "bv as int: ", getInt(bv), " bv as boolean: ", getBool(p)
     setBytes(bv.addr, b)
     echo "set bytes bv:", bv.getBytes()
     var o = nullValue()
     o["key"] = newValue(i)
     echo "o:", o
-#testFn()
+testFn()
 
 proc nf(args: seq[Value]): Value =
     echo "NativeFunction called"
