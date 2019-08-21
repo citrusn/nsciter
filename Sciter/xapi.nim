@@ -77,7 +77,7 @@ type
     elif defined(posix):
       SciterCreateWidget*: proc (frame: ptr Rect): HWINDOW {.stdcall.}
     else:
-      SciterCreateWindow*: proc (creationFlags: uint32; frame: ptr Rect;
+      SciterCreateWindow*: proc (creationFlags: uint32; frame: ref Rect;
                                 delegate: SciterWindowDelegate;
                                 delegateParam: pointer; 
                                 parent: HWINDOW): HWINDOW {.stdcall.}
@@ -222,7 +222,8 @@ type
                               contentSize: ptr Size): int32 {.stdcall.}
     SciterSetScrollPos*: proc (he: HELEMENT; scrollPos: Point;
                               smooth: bool): int32 {.stdcall.}
-    SciterGetElementIntrinsicWidths*: proc (he: HELEMENT; pMinWidth: ptr int32;
+    SciterGetElementIntrinsicWidths*: proc (he: HELEMENT;
+                                            pMinWidth: ptr int32;
                                             pMaxWidth: ptr int32): int32 {.stdcall.}
     SciterGetElementIntrinsicHeight*: proc (he: HELEMENT; forWidth: int32;
                                             pHeight: ptr int32): int32 {.stdcall.}
@@ -522,7 +523,7 @@ when defined(osx):
       inline, discardable.}
     = return SAPI().SciterCreateNSView(frame)
 
-proc SciterCreateWindow*(creationFlags: uint32; frame: ptr Rect;
+proc SciterCreateWindow*(creationFlags: uint32; frame: ref Rect; #ptr
                         delegate: SciterWindowDelegate;
                         delegateParam: pointer;
                         parent: HWINDOW): HWINDOW {.

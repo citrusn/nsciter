@@ -4,7 +4,8 @@ import sciter/sciter
 let s = SAPI()
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
-    ALLOW_FILE_IO or ALLOW_SOCKET_IO or ALLOW_EVAL or ALLOW_SYSINFO)
+                ALLOW_FILE_IO or ALLOW_SOCKET_IO or
+                ALLOW_EVAL or ALLOW_SYSINFO)
 
 var dbg: DEBUG_OUTPUT_PROC = proc(param: pointer;
                                 subsystem: uint32; ## #OUTPUT_SUBSYTEMS
@@ -17,12 +18,22 @@ var dbg: DEBUG_OUTPUT_PROC = proc(param: pointer;
 SciterSetupDebugOutput(nil, nil, dbg)
 
 proc OnLoadData(pns: LPSCN_LOAD_DATA) =
-    echo "LPSCN_LOAD_DATA: ", pns.uri, "-",
-        cast[SciterResourceType](pns.dataType)
+    return
+    #echo "LPSCN_LOAD_DATA: ", pns.uri, "-",
+    #    cast[SciterResourceType](pns.dataType)
 
 proc OnDataLoaded(pns: LPSCN_DATA_LOADED) =
-    echo "LPSCN_DATA_LOADED: ", pns.uri, "-",
-        cast[SciterResourceType](pns.dataType)
+    return
+    #echo "LPSCN_DATA_LOADED: ", pns.uri, "-",
+    #    cast[SciterResourceType](pns.dataType)
+
+proc OnAttachBehavior(pnm: LPSCN_ATTACH_BEHAVIOR) =
+    echo "LPSCN_ATTACH_BEHAVIOR: " , "HE:", repr pnm.element, " ", pnm.behaviorName
+    if pnm.behaviorName == "gdi-drawing": 
+        echo "gdi-drawing: ", pnm.createBehavior( proc() = echo "gdi-drawing behavior" )
+
+proc OnEngineDestroyed() =
+    echo "Sciter Destroyed"
 
 proc sciterHostCallback(pns: LPSCITER_CALLBACK_NOTIFICATION;
                         callbackParam: pointer): uint32 {.stdcall.} =
@@ -34,13 +45,21 @@ proc sciterHostCallback(pns: LPSCITER_CALLBACK_NOTIFICATION;
     if pns.code == SC_DATA_LOADED:
         OnDataLoaded(cast[LPSCN_DATA_LOADED](pns))
         return 0
+    
+    if pns.code == SC_ATTACH_BEHAVIOR:
+        OnAttachBehavior(cast[LPSCN_ATTACH_BEHAVIOR](pns))
+        return 0
+
+    if pns.code == SC_ENGINE_DESTROYED:
+        OnEngineDestroyed()
+        return 0
+
     echo "sciterHostCallback pns.code: ", pns.code
     return 0
 
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR,
-                             defaultRectPtr, nil, nil, nil)
+                             defaultRect, nil, nil, nil)
 
-#var shCallBack: SciterHostCallback = sciterHostCallback
 SciterSetCallback(wnd, sciterHostCallback, nil)
 
 echo "SciterLoadFile: ", wnd.SciterLoadFile(getCurrentDir() / "handlers.htm")
@@ -80,7 +99,7 @@ proc testCallback() =
         discard fn.setNativeFunctor(nf)
         result["f"] = fn
     )
-testCallback()
+#testCallback()
 
 proc test_call() =
     #test sciter call
@@ -94,7 +113,7 @@ proc test_call() =
     #test function call
     v = root.call_function("gFunc", newValue("function call"), newValue(10300))
     echo "function call successfully:", $v
-test_call()
+#test_call()
 
 var fe: seq[HELEMENT]
 proc findFirst(el: HELEMENT; selector: cstring): HELEMENT =
@@ -107,9 +126,8 @@ proc findFirst(el: HELEMENT; selector: cstring): HELEMENT =
     if(fe.len() == 0): nil else: fe[0]
 
 proc downloadURL() =
-    #var url ="http://tdp-app/astue/j_security_check"
-    var url = "http://httpbin.org/html" # worked throo proxy server
-    #var url ="http://portal.vsmn.tn.corp/work/OOP/default.aspx"
+    var url ="http://tdp-app/astue/j_security_check"
+    #var url = "http://httpbin.org/html" # worked throo proxy server    
     # get span#url and frame#content:
     var span = root.findFirst("#url")
     var content = root.findFirst("#content")
@@ -120,12 +138,11 @@ proc downloadURL() =
     span.SciterSetElementHtml(cast[ptr byte](url[0].addr),
                              (cuint)url.len(), SIH_REPLACE_CONTENT)
     #Request HTML data download for this element.
-    #content.request_html(url)
     content.SciterRequestElementData(url, RT_DATA_HTML, nil)
     #content.SciterGetElementTextCB(LPCWSTR2STRING, addr(text))
     #echo text
 
-downloadURL()
+#downloadURL()
 
 wnd.run
 

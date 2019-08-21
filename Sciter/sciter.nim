@@ -69,7 +69,6 @@ when defined(windows):
             discard TranslateMessage(m.addr)
             discard DispatchMessage(m.addr)
 
-#cast[ptr Rect](alloc0(sizeof(Rect)))
-var defaultRect = Rect(left: 50, top: 50, right: 800, bottom: 500)
-let defaultRectPtr* = defaultRect.addr
+let defaultRect*: RectRef = RectRef(left: 10, top: 50, right: 800, bottom: 500)
+#proc defaultRect*(): ref Rect = #result = cast[ref Rect](alloc0(sizeof(Rect)))
 

@@ -61,7 +61,6 @@ type
 
 
 ## # Sciter or TIScript specific
-
 type
   VALUE_UNIT_TYPE_OBJECT* = enum
     UT_OBJECT_ARRAY = 0,        ## # type T_OBJECT of type Array

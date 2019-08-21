@@ -16,7 +16,8 @@ echo "SciterVersion:", toHex(int(SciterVersion(false)), 5)
 # for connect to Inspector
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
-    ALLOW_FILE_IO or ALLOW_SOCKET_IO or ALLOW_EVAL or ALLOW_SYSINFO)
+                ALLOW_FILE_IO or ALLOW_SOCKET_IO or
+                ALLOW_EVAL or ALLOW_SYSINFO)
 
 var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
                                     subsystem: uint32; ## #OUTPUT_SUBSYTEMS
@@ -28,7 +29,7 @@ var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
 s.SciterSetupDebugOutput(nil, nil, dbg)
 
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or
-        SW_RESIZEABLE, defaultRectPtr, nil, nil, nil)
+                            SW_RESIZEABLE, defaultRect, nil, nil, nil)
 #var wnd = SciterCreateWindow(0, nil, nil, nil, nil)
 if wnd == nil:
     quit("wnd is nil")
@@ -50,7 +51,8 @@ var testInsertFn = proc(text: string; index: uint32) =
     SciterCreateElement("div", text, dv.addr)
     echo "InsertElem:", dv.SciterInsertElement(root, index)
     var html:string = "<div> inserted div node </div>" 
-    echo dv.SciterSetElementHtml(cast[ptr byte](html[0].addr), (cuint)html.len(), SIH_APPEND_AFTER_LAST)
+    echo dv.SciterSetElementHtml(cast[ptr byte](html[0].addr), 
+                                (cuint)html.len(), SIH_APPEND_AFTER_LAST)
     #echo dv.SciterSetElementHtml(cast[ptr byte](html.addr), (cuint)html.len(), SIH_APPEND_AFTER_LAST)
 testInsertFn("hello, world#1", 1)
 testInsertFn("hello, world#5", 8)
@@ -58,6 +60,7 @@ testInsertFn("hello, world#5", 8)
 #wnd.setTitle("test setTitle window caption") - # windows only proc calling
 wnd.onClick(proc() = echo "generic click")
 wnd.onClick(proc() = echo "generic click 2")
+
 # test value function
 var testFn = proc() =
     echo "Test value function"

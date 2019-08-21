@@ -18,7 +18,7 @@
 ## #* event groups.
 ## #       
 
-type
+type  
   EVENT_GROUPS* {.size: sizeof(uint32).} = enum
     SUBSCRIPTIONS_REQUEST = 0xFFFFFFFF'i32 ## #* special value for getting subscription flags 
     HANDLE_INITIALIZATION = 0x00000000, ## #* attached/detached 
@@ -90,19 +90,21 @@ type
 
 
 ## # parameters of evtg == HANDLE_MOUSE
-
 type
   MOUSE_EVENTS* = enum
-    MOUSE_ENTER = 0, MOUSE_LEAVE, MOUSE_MOVE, MOUSE_UP, MOUSE_DOWN, MOUSE_DCLICK,
-    MOUSE_WHEEL, MOUSE_TICK,    ## # mouse pressed ticks
+    MOUSE_ENTER = 0, 
+    MOUSE_LEAVE, MOUSE_MOVE,
+    MOUSE_UP, MOUSE_DOWN,
+    MOUSE_DCLICK, MOUSE_WHEEL, 
+    MOUSE_TICK,                 ## # mouse pressed ticks
     MOUSE_IDLE,                 ## # mouse stay idle for some time
     DROP = 9,                   ## # item dropped, target is that dropped item 
     DRAG_ENTER = 0x0000000A,    ## # drag arrived to the target element that is one of current drop targets.  
     DRAG_LEAVE = 0x0000000B,    ## # drag left one of current drop targets. target is the drop target element.  
     DRAG_REQUEST = 0x0000000C,  ## # drag src notification before drag start. To cancel - return true from handler.
     MOUSE_CLICK = 0x000000FF,   ## # mouse click event
-    DRAGGING = 0x00000100 ## # This flag is 'ORed' with MOUSE_ENTER..MOUSE_DOWN codes if dragging operation is in effect.
-                       ## # E.g. event DRAGGING | MOUSE_MOVE is sent to underlying DOM elements while dragging.
+    DRAGGING = 0x00000100       ## # This flag is 'ORed' with MOUSE_ENTER..MOUSE_DOWN codes if dragging operation is in effect.
+                                ## # E.g. event DRAGGING | MOUSE_MOVE is sent to underlying DOM elements while dragging.
 
 
 type
@@ -138,7 +140,6 @@ type
 
 
 ## # parameters of evtg == HANDLE_KEY
-
 type
   KEY_EVENTS* = enum
     KEY_DOWN = 0, KEY_UP, KEY_CHAR
@@ -153,7 +154,6 @@ type
   
 
 ## # parameters of evtg == HANDLE_FOCUS
-
 type
   FOCUS_EVENTS* = enum
     FOCUS_LOST = 0,             ## # non-bubbling event, target is new focus element
@@ -172,11 +172,12 @@ type
   
 
 ## # parameters of evtg == HANDLE_SCROLL
-
 type
   SCROLL_EVENTS* = enum
-    SCROLL_HOME = 0, SCROLL_END, SCROLL_STEP_PLUS, SCROLL_STEP_MINUS,
-    SCROLL_PAGE_PLUS, SCROLL_PAGE_MINUS, SCROLL_POS, SCROLL_SLIDER_RELEASED,
+    SCROLL_HOME = 0, SCROLL_END,
+    SCROLL_STEP_PLUS, SCROLL_STEP_MINUS,
+    SCROLL_PAGE_PLUS, SCROLL_PAGE_MINUS,
+    SCROLL_POS, SCROLL_SLIDER_RELEASED,
     SCROLL_CORNER_PRESSED, SCROLL_CORNER_RELEASED
 
 
@@ -334,15 +335,16 @@ type
 
 type
   EVENT_REASON* = enum
-    BY_MOUSE_CLICK, BY_KEY_CLICK, SYNTHESIZED ## # synthesized, programmatically generated.
+    BY_MOUSE_CLICK, BY_KEY_CLICK,
+    SYNTHESIZED     ## # synthesized, programmatically generated.
 
 
 type
   EDIT_CHANGED_REASON* = enum
-    BY_INS_CHAR,              ## # single char insertion
-    BY_INS_CHARS,             ## # character range insertion, clipboard
-    BY_DEL_CHAR,              ## # single char deletion
-    BY_DEL_CHARS              ## # character range deletion (selection)
+    BY_INS_CHAR,      ## # single char insertion
+    BY_INS_CHARS,     ## # character range insertion, clipboard
+    BY_DEL_CHAR,      ## # single char deletion
+    BY_DEL_CHARS      ## # character range deletion (selection)
 
 
 type
@@ -362,10 +364,11 @@ type
 
 ## # identifiers of methods currently supported by intrinsic behaviors,
 ## # see function SciterCallBehaviorMethod
-
 type
   BEHAVIOR_METHOD_IDENTIFIERS* = enum
-    DO_CLICK = 0, GET_TEXT_VALUE = 1, SET_TEXT_VALUE, ## # p - TEXT_VALUE_PARAMS
+    DO_CLICK = 0,
+    #[/*  remnants of HTMLayout API, not used 
+    GET_TEXT_VALUE = 1, SET_TEXT_VALUE, ## # p - TEXT_VALUE_PARAMS
     TEXT_EDIT_GET_SELECTION,  ## # p - TEXT_EDIT_SELECTION_PARAMS
     TEXT_EDIT_SET_SELECTION,  ## # p - TEXT_EDIT_SELECTION_PARAMS
                               ## # Replace selection content or insert text at current caret position.
@@ -376,6 +379,8 @@ type
     TEXT_EDIT_GET_SELECTION_TEXT, ## # p - TEXT_SELECTION_PARAMS
     TEXT_EDIT_GET_SELECTION_HTML, ## # p - TEXT_SELECTION_PARAMS
     TEXT_EDIT_CHAR_POS_AT_XY,     ## # p - TEXT_EDIT_CHAR_POS_AT_XY_PARAMS
+    ]#
+    
     IS_EMPTY = 0x000000FC,        ## # p - IS_EMPTY_PARAMS // set VALUE_PARAMS::is_empty (false/true) reflects :empty state of the element.
     GET_VALUE = 0x000000FD,       ## # p - VALUE_PARAMS 
     SET_VALUE = 0x000000FE,       ## # p - VALUE_PARAMS 
@@ -397,32 +402,28 @@ type
   
 
 ## # GET_VALUE/SET_VALUE methods params
-
 type
   VALUE_PARAMS* = object
     methodID*: uint32
     val*: Value
-    invalid_field_to_bypass_c2nim*: byte
-
+    #invalid_field_to_bypass_c2nim*: byte
 
 ## # IS_EMPTY method params
-
 type
   IS_EMPTY_PARAMS* = object
     methodID*: uint32
     is_empty*: uint32          ## # !0 - is empty
-    invalid_field_to_bypass_c2nim*: byte
+    #invalid_field_to_bypass_c2nim*: byte
 
 
 ## # see SciterRequestElementData
-
 type
   DATA_ARRIVED_PARAMS* = object
-    initiator*: HELEMENT       ## # element intiator of SciterRequestElementData request,
-    data*: pointer             ## # data buffer
-    dataSize*: uint32          ## # size of data
-    dataType*: uint32          ## # data type passed "as is" from SciterRequestElementData
-    status*: uint32 ## # status = 0 (dataSize == 0) - unknown error. 
-                  ## # status = 100..505 - http response status, Note: 200 - OK! 
-                  ## # status > 12000 - wininet error code, see ERROR_INTERNET_*** in wininet.h
-    uri*: WideCString          ## # requested url 
+    initiator*: HELEMENT ## # element intiator of SciterRequestElementData request,
+    data*: pointer      ## # data buffer
+    dataSize*: uint32   ## # size of data
+    dataType*: uint32   ## # data type passed "as is" from SciterRequestElementData
+    status*: uint32     ## # status = 0 (dataSize == 0) - unknown error. 
+                        ## # status = 100..505 - http response status, Note: 200 - OK!
+                        ## # status > 12000 - wininet error code, see ERROR_INTERNET_*** in wininet.h
+    uri*: WideCString   ## # requested url 

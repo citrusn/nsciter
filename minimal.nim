@@ -8,16 +8,16 @@ var s = SAPI()
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 #SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_SYSINFO)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
-    ALLOW_FILE_IO or ALLOW_EVAL or ALLOW_SYSINFO or
-    ALLOW_SOCKET_IO # needs for conection to inspector
+                ALLOW_FILE_IO or ALLOW_EVAL or ALLOW_SYSINFO or
+                ALLOW_SOCKET_IO # needs for conection to inspector
 )
 var i = newValue(100)
 echo "i:", i
 
-#var frame = sciter.Window(ismain=True, uni_theme=True)
 var frame = SciterCreateWindow(SW_MAIN or SW_TITLEBAR or SW_CONTROLS, 
-                            defaultRectPtr, nil, nil, nil)
+                               defaultRect(), nil, nil, nil)
 
+#SciterSetCallback(frame, sciterHostCallback, nil)
 echo "SciterClassName:", SciterClassName()
 echo "SciterVersion:", toHex(int(SciterVersion(true)), 5)
 echo "SciterVersion:", toHex(int(SciterVersion(false)), 5)

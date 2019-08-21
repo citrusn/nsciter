@@ -19,18 +19,13 @@ type
   HIMG* = pointer
   HPATH* = pointer
   HTEXT* = pointer
+
+type
   REAL* = cfloat
   POS* = REAL ## # position
-
-type
   DIM* = REAL ## # dimension
-
-type
   ANGLE* = REAL ## # angle (radians)
-
-type
   COLOR* = cuint ## # COLOR
-
 
 type  
   COLOR_STOP* = object
@@ -112,6 +107,7 @@ type
     ## #      SCFN(imageGetPixels)( HIMG himg,
     ## #          image_write_function* dataReceiver );
     imageClear*: proc (himg: HIMG; byColor: COLOR): GRAPHIN_RESULT {.stdcall.}
+   
     ## # load png/jpeg/etc. image from stream of bytes
     imageLoad*: proc (bytes: ptr byte; num_bytes: uint32; 
                       pout_img: ptr HIMG): GRAPHIN_RESULT {.stdcall.}  
@@ -128,7 +124,7 @@ type
     RGBA*: proc (red: uint32; 
                 green: uint32;
                 blue: uint32;
-                alpha: uint32): COLOR {.stdcall.} ## #= 255
+                alpha: uint32 = 255): COLOR {.stdcall.}
     gCreate*: proc (img: HIMG; pout_gfx: ptr HGFX): GRAPHIN_RESULT {.stdcall.}
     gAddRef*: proc (gfx: HGFX): GRAPHIN_RESULT {.stdcall.}
     gRelease*: proc (gfx: HGFX): GRAPHIN_RESULT {.stdcall.} 
@@ -139,7 +135,7 @@ type
     ##   Draws rectangle using current lineColor/lineGradient and fillColor/fillGradient 
     ## # with (optional) rounded corners.
     gRectangle*: proc (hgfx: HGFX; x1: POS; y1: POS; 
-                                  x2: POS; y2: POS): GRAPHIN_RESULT {.stdcall.}
+                                   x2: POS; y2: POS): GRAPHIN_RESULT {.stdcall.}
     ## # Draws rounded rectangle using current lineColor/lineGradient and 
     ## # fillColor/fillGradient with (optional) rounded corners.
     gRoundedRectangle*: proc (hgfx: HGFX; x1: POS; y1: POS; 
@@ -174,84 +170,84 @@ type
                        relative: bool): GRAPHIN_RESULT {.stdcall.}
     pathArcTo*: proc (path: HPATH; x: POS; y: POS; angle: ANGLE; 
                       rx: DIM; ry: DIM; is_large_arc: bool; clockwise: bool;
-                      relative: bool): GRAPHIN_RESULT {.stdcall.}
+                      relative: bool): GRAPHIN_RESULT {.stdcall}
     pathQuadraticCurveTo*: proc (path: HPATH; xc: POS; yc: POS; x: POS; y: POS;
-                               relative: bool): GRAPHIN_RESULT {.stdcall.}
+                               relative: bool): GRAPHIN_RESULT {.stdcall}
     pathBezierCurveTo*: proc (path: HPATH; xc1: POS; yc1: POS;
                             xc2: POS; yc2: POS; x: POS;
-                            y: POS; relative: bool): GRAPHIN_RESULT {.stdcall.}
-    pathClosePath*: proc (path: HPATH): GRAPHIN_RESULT {.stdcall.}
+                            y: POS; relative: bool): GRAPHIN_RESULT {.stdcall}
+    pathClosePath*: proc (path: HPATH): GRAPHIN_RESULT {.stdcall}
     gDrawPath*: proc (hgfx: HGFX; path: HPATH; 
-                      dpm: DRAW_PATH_MODE): GRAPHIN_RESULT {.stdcall.}
+                      dpm: DRAW_PATH_MODE): GRAPHIN_RESULT {.stdcall}
     ## # end of path opearations
     ## # SECTION: affine tranformations:
     gRotate*: proc (hgfx: HGFX; radians: ANGLE; cx: ptr POS; ## #= 0
-                  cy: ptr POS): GRAPHIN_RESULT {.stdcall.} ## #= 0
-    gTranslate*: proc (hgfx: HGFX; cx: POS; cy: POS): GRAPHIN_RESULT {.stdcall.}
-    gScale*: proc (hgfx: HGFX; x: DIM; y: DIM): GRAPHIN_RESULT {.stdcall.}
-    gSkew*: proc (hgfx: HGFX; dx: DIM; dy: DIM): GRAPHIN_RESULT {.stdcall.}
+                  cy: ptr POS): GRAPHIN_RESULT {.stdcall} ## #= 0
+    gTranslate*: proc (hgfx: HGFX; cx: POS; cy: POS): GRAPHIN_RESULT {.stdcall}
+    gScale*: proc (hgfx: HGFX; x: DIM; y: DIM): GRAPHIN_RESULT {.stdcall}
+    gSkew*: proc (hgfx: HGFX; dx: DIM; dy: DIM): GRAPHIN_RESULT {.stdcall}
     ## # all above in one shot
     gTransform*: proc (hgfx: HGFX; m11: POS; m12: POS;
                        m21: POS; m22: POS; 
-                       dx: POS; dy: POS): GRAPHIN_RESULT {.stdcall.}
+                       dx: POS; dy: POS): GRAPHIN_RESULT {.stdcall}
     ## # end of affine tranformations.
     ## # SECTION: state save/restore
-    gStateSave*: proc (hgfx: HGFX): GRAPHIN_RESULT {.stdcall.}
-    gStateRestore*: proc (hgfx: HGFX): GRAPHIN_RESULT {.stdcall.}
+    gStateSave*: proc (hgfx: HGFX): GRAPHIN_RESULT {.stdcall}
+    gStateRestore*: proc (hgfx: HGFX): GRAPHIN_RESULT {.stdcall}
     ## # end of state save/restore
     ## # SECTION: drawing attributes
     ## # set line width for subsequent drawings.
-    gLineWidth*: proc (hgfx: HGFX; width: DIM): GRAPHIN_RESULT {.stdcall.}
+    gLineWidth*: proc (hgfx: HGFX; width: DIM): GRAPHIN_RESULT {.stdcall}
     gLineJoin*: proc (hgfx: HGFX;
-                     `type`: SCITER_LINE_JOIN_TYPE): GRAPHIN_RESULT {.stdcall.}
+                     `type`: SCITER_LINE_JOIN_TYPE): GRAPHIN_RESULT {.stdcall}
     gLineCap*: proc (hgfx: HGFX;
-                     `type`: SCITER_LINE_CAP_TYPE): GRAPHIN_RESULT {.stdcall.}
+                     `type`: SCITER_LINE_CAP_TYPE): GRAPHIN_RESULT {.stdcall}
     ## #GRAPHIN_RESULT SCFN
     ## #   (*gNoLine ( HGFX hgfx ) { gLineWidth(hgfx,0.0); }
     ## # COLOR for solid lines/strokes
-    gLineColor*: proc (hgfx: HGFX; c: COLOR): GRAPHIN_RESULT {.stdcall.}
+    gLineColor*: proc (hgfx: HGFX; c: COLOR): GRAPHIN_RESULT {.stdcall}
     ## # COLOR for solid fills
-    gFillColor*: proc (hgfx: HGFX; color: COLOR): GRAPHIN_RESULT {.stdcall.}
+    gFillColor*: proc (hgfx: HGFX; color: COLOR): GRAPHIN_RESULT {.stdcall}
     ## # inline void
     ## # graphics_no_fill ( HGFX hgfx ) { graphics_fill_color(hgfx, graphics_rgbt(0,0,0,0xFF)); }
     ## # setup parameters of linear gradient of lines.
     gLineGradientLinear*: proc (hgfx: HGFX; x1: POS; y1: POS;
                                 x2: POS; y2: POS; stops: ptr COLOR_STOP;
-                                nstops: uint32): GRAPHIN_RESULT {.stdcall.}
+                                nstops: uint32): GRAPHIN_RESULT {.stdcall}
     ## # setup parameters of linear gradient of fills.
     gFillGradientLinear*: proc (hgfx: HGFX; x1: POS; y1: POS;
                                x2: POS; y2: POS; stops: ptr COLOR_STOP;
-                               nstops: uint32): GRAPHIN_RESULT {.stdcall.}
+                               nstops: uint32): GRAPHIN_RESULT {.stdcall}
     ## # setup parameters of line gradient radial fills.
     gLineGradientRadial*: proc (hgfx: HGFX; x: POS; y: POS; 
                                 rx: DIM; ry: DIM; stops: ptr COLOR_STOP;
-                                nstops: uint32): GRAPHIN_RESULT {.stdcall.}
+                                nstops: uint32): GRAPHIN_RESULT {.stdcall}
     ## # setup parameters of gradient radial fills.
     gFillGradientRadial*: proc (hgfx: HGFX; x: POS; y: POS;
                                 rx: DIM; ry: DIM; stops: ptr COLOR_STOP;
-                                nstops: uint32): GRAPHIN_RESULT {.stdcall.}
-    gFillMode*: proc (hgfx: HGFX; even_odd: bool): GRAPHIN_RESULT {.stdcall.}
+                                nstops: uint32): GRAPHIN_RESULT {.stdcall}
+    gFillMode*: proc (hgfx: HGFX; even_odd: bool): GRAPHIN_RESULT {.stdcall}
     ## # SECTION: text
     ## # create text layout using element's styles
     ## # false - fill_non_zero 
     textCreateForElement*: proc (ptext: ptr HTEXT; text: WideCString;
                                textLength: uint32; 
-                               he: HELEMENT): GRAPHIN_RESULT {.stdcall.}
+                               he: HELEMENT): GRAPHIN_RESULT {.stdcall}
     ## # create text layout using explicit format declaration
     textCreate*: proc (ptext: ptr HTEXT; text: WideCString; textLength: uint32;
-                      format: ptr SCITER_TEXT_FORMAT): GRAPHIN_RESULT {.stdcall.}
+                      format: ptr SCITER_TEXT_FORMAT): GRAPHIN_RESULT {.stdcall}
     textGetMetrics*: proc (text: HTEXT; minWidth: ptr DIM; maxWidth: ptr DIM;
                           height: ptr DIM; ascent: ptr DIM; descent: ptr DIM;
-                          nLines: ptr uint32): GRAPHIN_RESULT {.stdcall.}
+                          nLines: ptr uint32): GRAPHIN_RESULT {.stdcall}
     textSetBox*: proc (text: HTEXT; width: DIM;
-                       height: DIM): GRAPHIN_RESULT {.stdcall.}
+                       height: DIM): GRAPHIN_RESULT {.stdcall}
     ## # 
     ## draw  text  with  position  (1..9 on  MUMPAD) at  px,py 
     ## Ex: 
     ## gDrawText(  100,100,5) 
     ## will  draw  text box  with its  center at  100,100 px
     gDrawText*: proc (hgfx: HGFX; text: HTEXT; px: POS; py: POS;
-                     position: uint32): GRAPHIN_RESULT {.stdcall.}
+                     position: uint32): GRAPHIN_RESULT {.stdcall}
     ## # SECTION: image rendering
     ## # draws img onto the graphics surface with current
     ## # transformation applied (scale, rotation).
@@ -261,17 +257,17 @@ type
                       iy: ptr uint32; ## #= 0
                       iw: ptr uint32; ## #= 0
                       ih: ptr uint32; 
-                      opacity: ptr cfloat): GRAPHIN_RESULT {.stdcall.} ## #= 0, if provided is in 0.0 .. 1.0
+                      opacity: ptr cfloat): GRAPHIN_RESULT {.stdcall} ## #= 0, if provided is in 0.0 .. 1.0
     ## # SECTION: coordinate space
     gWorldToScreen*: proc (hgfx: HGFX; inout_x: ptr POS;
-                          inout_y: ptr POS): GRAPHIN_RESULT {.stdcall.}
+                          inout_y: ptr POS): GRAPHIN_RESULT {.stdcall}
     ## #inline GRAPHIN_RESULT
     ## # graphics_world_to_screen ( HGFX hgfx, POS* length)
     ## # {
     ## #   return graphics_world_to_screen ( hgfx, length, 0);
     ## # }
     gScreenToWorld*: proc (hgfx: HGFX; inout_x: ptr POS;
-                           inout_y: ptr POS): GRAPHIN_RESULT {.stdcall.}
+                           inout_y: ptr POS): GRAPHIN_RESULT {.stdcall}
     ## # inline GRAPHIN_RESULT
     ## # graphics_screen_to_world ( HGFX hgfx, POS* length)
     ## # {
@@ -280,11 +276,11 @@ type
     ## # SECTION: clipping
     gPushClipBox*: proc (hgfx: HGFX; x1: POS; y1: POS;
                         x2: POS; y2: POS; 
-                        opacity: cfloat): GRAPHIN_RESULT {.stdcall.}
+                        opacity: cfloat): GRAPHIN_RESULT {.stdcall}
     ## #=1.f
     gPushClipPath*: proc (hgfx: HGFX; hpath: 
-                          HPATH; opacity: cfloat): GRAPHIN_RESULT {.stdcall.}
+                          HPATH; opacity: cfloat): GRAPHIN_RESULT {.stdcall}
     ## # pop clip layer previously set by gPushClipBox or gPushClipPath
     ## #=1.f
-    gPopClip*: proc (hgfx: HGFX): GRAPHIN_RESULT {.stdcall.}
+    gPopClip*: proc (hgfx: HGFX): GRAPHIN_RESULT {.stdcall}
 

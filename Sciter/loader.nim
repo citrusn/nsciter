@@ -2,13 +2,13 @@ import dynlib, os
 
 var api:ptr ISciterAPI = nil
 
-proc SAPI*():ptr ISciterAPI =  
+proc SAPI*():ptr ISciterAPI {.inline.} =  
   if api != nil:
     return api
   var libhandle = loadLib(SCITER_DLL_NAME)
   #echo "Load Library Sciter"
   if libhandle == nil:
-    libhandle = loadLib(getCurrentDir()&"/"&SCITER_DLL_NAME)
+    libhandle = loadLib(getCurrentDir() / SCITER_DLL_NAME)
   if libhandle == nil:
     quit "sciter runtime library not found: "&SCITER_DLL_NAME
     #return nil
@@ -17,8 +17,8 @@ proc SAPI*():ptr ISciterAPI =
   api = p()
   return api
   
-proc gapi*():LPSciterGraphicsAPI =
+proc gapi*():LPSciterGraphicsAPI {.inline.} =
   return SAPI().GetSciterGraphicsAPI()
   
-proc rapi*():LPSciterRequestAPI =
+proc rapi*():LPSciterRequestAPI {.inline.} =
   return SAPI().GetSciterRequestAPI()

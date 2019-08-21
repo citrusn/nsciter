@@ -24,7 +24,7 @@
         background-color: green;
         assigned!: self::opacity = 1.0, self.start-timer(100);
         timer!: self::opacity > 0.0?
-          self::opacity = self::opacity - 0.1 # return cancel /* to stop the timer */;
+          self::opacity = self::opacity - 0.05 # return cancel /* to stop the timer */;
       }
       button#native {
         color: yellow;
@@ -37,7 +37,7 @@
       malevich {
         behavior: gdi-drawing; 
         display:block;
-        size:400dip;
+        size:300dip;
       }
     </style>
     <script type="text/tiscript">
@@ -86,7 +86,7 @@
 
   <h2>Native GDI drawing behavior demo</h2>
   <p>See: sdk/include/behaviors/behavior_drawing-gdi.cpp</p>
-  <!--malevich></malevich-->
+  <malevich></malevich>
   
   <!-- Test download url --> 
   <p>Url to load: <span id='url'>placed here</span></p>

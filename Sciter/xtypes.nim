@@ -15,6 +15,7 @@ when not defined(windows):
   include widestr
 
 type
+  RectRef* = ref Rect
   Rect* = object
     left*: int32
     top*: int32
