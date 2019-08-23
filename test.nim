@@ -36,7 +36,7 @@ if wnd == nil:
 #echo "wnd:", repr wnd
 
 # test load html string into Sciter
-var htmlw: string="""<html> <head><title>Тестовая страница</title></head>привет, hello world! </html>"""
+var htmlw: string="""<html> <head><title>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</title></head>пїЅпїЅпїЅпїЅпїЅпїЅ, hello world! </html>"""
 #echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
 # test load html file into Sciter
 echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.htm") # for test debugger
@@ -86,7 +86,7 @@ var testFn = proc() =
     var o = nullValue()
     o["key"] = newValue(i)
     echo "o:", o
-testFn()
+#testFn()
 
 proc nf(args: seq[Value]): Value =
     echo "NativeFunction called"
@@ -121,7 +121,7 @@ proc testCallback() =
                     newValue(100),
                     newValue("arg2"))
         )
-testCallback()
+#testCallback()
 
 proc testNativeFunctor() =
     wnd.defineScriptingFunction("api",  # calling from html script
@@ -133,11 +133,11 @@ proc testNativeFunctor() =
             discard fn.setNativeFunctor(nf)
             result["fn"] = fn
     )
-testNativeFunctor()
+#testNativeFunctor()
 
 proc testGetFunction() = 
     var root: HELEMENT
-    var t: string = "приветик, hello world" # test for console code page 1251
+    var t: string = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, hello world" # test for console code page 1251
     echo "t:", t
     wnd.SciterGetRootElement(root.addr)
     root.SciterGetElementHtmlCB(false, LPCBYTE2ASTRING, addr(t))

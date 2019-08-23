@@ -120,7 +120,7 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
 
     of HANDLE_BEHAVIOR_EVENT:
         var p: ptr BEHAVIOR_EVENT_PARAMS = cast[ptr BEHAVIOR_EVENT_PARAMS](prms)
-        echo "BEHAVIOR_EVENT_PARAMS: " , cast[BEHAVIOR_EVENTS](p.cmd)
+        #echo "BEHAVIOR_EVENT_PARAMS: " , cast[BEHAVIOR_EVENTS](p.cmd and (SINKING.int - 1))
         return pThis.handle_event(he, p)
 
     of HANDLE_METHOD_CALL:
@@ -183,8 +183,7 @@ proc onClick*(target: EventTarget, handler: proc()): int32 {.discardable.} =
         return 0
     return target.Attach(eh, HANDLE_BEHAVIOR_EVENT) #HANDLE_ALL
 
-type
-    NativeFunctor* = proc(args: seq[Value]): Value
+type NativeFunctor* = proc(args: seq[Value]): Value
 
 proc defineScriptingFunction*(target: EventTarget, name: string,
         fn: NativeFunctor): int32 {.discardable.} =
@@ -207,29 +206,31 @@ proc defineScriptingFunction*(target: EventTarget, name: string,
 proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR, fn: proc()): int32 {.discardable.} =
     var eh = newEventHandler()
     eh.handle_mouse = proc (he: HELEMENT, params: ptr MOUSE_PARAMS): uint =
-        echo "handle_mouse cmd: ",  cast[MOUSE_EVENTS](params.cmd)
-        if params.cmd == MOUSE_DOWN:
-            echo "click at: " , params.pos
+        if (params.cmd and 0x7FFF) == MOUSE_DOWN:# or 
+        #  params.cmd == MOUSE_DCLICK:
+            echo "handle_mouse cmd: ", params.pos
+        #echo cast[MOUSE_EVENTS](params.cmd and (SINKING.int - 1)), " ", (params.cmd)
+        
         return 1
     eh.subscription = proc(he: HELEMENT, params: ref cuint): uint =  
         echo "gdi draw subscription"
         #if comment then full subscription events
-        params[] = HANDLE_DRAW or HANDLE_BEHAVIOR_EVENT #or HANDLE_MOUSE
+        params[] = HANDLE_DRAW or HANDLE_BEHAVIOR_EVENT or HANDLE_MOUSE
         return 1
     eh.handle_draw = proc(he: HELEMENT, params: ptr DRAW_PARAMS): uint = 
-        if params.cmd != DRAW_CONTENT: return 0
-        #echo "handle_draw: " #, repr params.area
-        let g = gapi()
-        let hgfx = params.gfx
-        #if hgfx != nil: discard g.gAddRef(hgfx)
-        discard g.gLineColor(hgfx, g.RGBA(15, 20, 240))
-        discard g.gLineWidth(hgfx, 2.0)
-        discard g.gFillColor(hgfx, g.RGBA(20, 20, 20))
-        discard g.gRectangle(hgfx, POS(params.area.left), POS(params.area.top),
-                            POS(params.area.right), POS(params.area.bottom))
-        discard g.gFillColor(hgfx, g.RGBA(255, 15, 0))
-        discard g.gRectangle(hgfx, POS(params.area.left+30), POS(params.area.top+30),
-                            POS(params.area.right-30), POS(params.area.bottom-30))
+        if params.cmd == DRAW_CONTENT: #return 0
+            #echo "handle_draw: " #, repr params.area
+            let g = gapi()
+            let hgfx = params.gfx
+            #if hgfx != nil: discard g.gAddRef(hgfx)
+            discard g.gLineColor(hgfx, g.RGBA(15, 20, 240))
+            discard g.gLineWidth(hgfx, 2.0)
+            discard g.gFillColor(hgfx, g.RGBA(20, 20, 20))
+            discard g.gRectangle(hgfx, POS(params.area.left), POS(params.area.top),
+                                POS(params.area.right), POS(params.area.bottom))
+            discard g.gFillColor(hgfx, g.RGBA(255, 15, 0))
+            discard g.gRectangle(hgfx, POS(params.area.left+30), POS(params.area.top+30),
+                                POS(params.area.right-30), POS(params.area.bottom-30))
         #echo g.gLine(hgfx, 10, 10, 500, 60) # not valid coords
         #if hgfx != nil: discard g.gRelease(hgfx)
         return 1

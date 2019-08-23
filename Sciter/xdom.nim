@@ -61,7 +61,7 @@ type
     name*: WideCString
     value*: WideCString
 
-  ELEMENT_AREAS* = enum
+  ELEMENT_AREAS* {.size: 4.} = enum
     CONTENT_BOX = 0x00000000,   ## # content (inner)  box
     ROOT_RELATIVE = 0x00000001, ## # - or this flag if you want to get Sciter window relative coordinates,
                                 ## # otherwise it will use nearest windowed container e.g. popup window.
@@ -78,7 +78,7 @@ type
 
 
 type
-  SCITER_SCROLL_FLAGS* = enum
+  SCITER_SCROLL_FLAGS* {.size: 4.} = enum
     SCROLL_TO_TOP = 0x00000001,
     SCROLL_SMOOTH = 0x00000010
 
@@ -87,7 +87,7 @@ type
 type
   SciterElementCallback* = proc (he: HELEMENT; param: pointer): bool {.stdcall.}
 
-  SET_ELEMENT_HTML* = enum
+  SET_ELEMENT_HTML* {.size: 4.} = enum
     SIH_REPLACE_CONTENT = 0,
     SIH_INSERT_AT_START = 1,
     SIH_APPEND_AFTER_LAST = 2,
@@ -104,9 +104,9 @@ type
 ## #
 type
   ElementEventProc* = proc (tag: pointer; he: HELEMENT; evtg: uint32;
-      prms: pointer): uint {.stdcall.}
+                           prms: pointer): uint {.stdcall.}
   LPELEMENT_EVENT_PROC* = ptr ElementEventProc
-  ELEMENT_STATE_BITS* = enum
+  ELEMENT_STATE_BITS* {.size: 4.} = enum
     STATE_LINK = 0x00000001, 
     STATE_HOVER = 0x00000002,
     STATE_ACTIVE = 0x00000004,
@@ -144,7 +144,7 @@ type
 
 
 type
-  REQUEST_TYPE* = enum
+  REQUEST_TYPE* {.size: 4.} = enum
     GET_ASYNC,  ## # async GET
     POST_ASYNC, ## # async POST
     GET_SYNC,   ## # synchronous GET
@@ -156,7 +156,7 @@ type
 ## #
 type
   ELEMENT_COMPARATOR* = proc (he1: HELEMENT; he2: HELEMENT; param: pointer): int32 {.stdcall.}
-  CTL_TYPE* = enum
+  CTL_TYPE* {.size: 4.} = enum
     CTL_NO,              ## #/< This dom element has no behavior at all.
     CTL_EDIT,            ## #/< Single line edit box.
     CTL_NUMERIC,         ## #/< Numeric input with optional spin buttons.
@@ -188,11 +188,11 @@ const
   CTL_UNKNOWN = CTL_NO ## #/< This dom element has no behavior at all.
 
 type
-  NODE_TYPE* = enum
+  NODE_TYPE* {.size: 4.} = enum
     NT_ELEMENT, NT_TEXT, NT_COMMENT
 
 type
-  NODE_INS_TARGET* = enum
+  NODE_INS_TARGET* {.size: 4.} = enum
     NIT_BEFORE, NIT_AFTER, NIT_APPEND, NIT_PREPEND
 
 proc LPCBYTE2ASTRING*(bytes: cstring; str_length: cuint; param: pointer) {.stdcall.} =

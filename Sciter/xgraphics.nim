@@ -32,7 +32,7 @@ type
     color*: COLOR
     offset*: cfloat         ## # 0.0 ... 1.0
   
-  GRAPHIN_RESULT* = enum
+  GRAPHIN_RESULT* {.size: 4.} = enum
     GRAPHIN_PANIC = - 1,    ## # e.g. not enough memory
     GRAPHIN_OK = 0, 
     GRAPHIN_BAD_PARAM = 1,  ## # bad parameter
@@ -41,31 +41,31 @@ type
 
 
 type
-  DRAW_PATH_MODE* = enum
+  DRAW_PATH_MODE* {.size: 4.} = enum
     DRAW_FILL_ONLY = 1, DRAW_STROKE_ONLY = 2, DRAW_FILL_AND_STROKE = 3
 
 
 type
-  SCITER_LINE_JOIN_TYPE* = enum
+  SCITER_LINE_JOIN_TYPE* {.size: 4.} = enum
     SCITER_JOIN_MITER = 0, SCITER_JOIN_ROUND = 1, 
     SCITER_JOIN_BEVEL = 2, SCITER_JOIN_MITER_OR_BEVEL = 3
 
 
 type
-  SCITER_LINE_CAP_TYPE* = enum
+  SCITER_LINE_CAP_TYPE* {.size: 4.} = enum
     SCITER_LINE_CAP_BUTT = 0,
     SCITER_LINE_CAP_SQUARE = 1,
     SCITER_LINE_CAP_ROUND = 2
 
 
 type
-  SCITER_TEXT_ALIGNMENT* = enum
+  SCITER_TEXT_ALIGNMENT* {.size: 4.} = enum
     TEXT_ALIGN_DEFAULT, TEXT_ALIGN_START,
     TEXT_ALIGN_END, TEXT_ALIGN_CENTER
 
 
 type
-  SCITER_TEXT_DIRECTION* = enum
+  SCITER_TEXT_DIRECTION* {.size: 4.} = enum
     TEXT_DIRECTION_DEFAULT, TEXT_DIRECTION_LTR, 
     TEXT_DIRECTION_RTL, TEXT_DIRECTION_TTB
 

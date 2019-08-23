@@ -1,80 +1,23 @@
+import sciter/sciter
+
 type
-  MyFlag* {.size: sizeof(cint).} = enum
-    A = -1
-    B = 0
-    C = 1
-    D = 2
-  MyFlags = set[MyFlag]
+  MOUSE_EVENTSs* = enum #{.size: sizeof(uint8)} 
+    MOUSE_ENTER = 0 
+    MOUSE_LEAVE = 1 
+    MOUSE_CLICK = 0xFF # = signed -1'i8
+    DRAGGING = 0x100   # how ? size is one byte
 
-proc toNum(f: MyFlags): int = cast[cint](f)
-proc toFlags(v: int): MyFlags = cast[MyFlags](v)
+  EVENT = object
+    cmd : MOUSE_EVENTS
+    c: char
+    n: int16
 
-#echo toFlags(255*256*256*256-1)
+echo "size in byte's: ", sizeof(MOUSE_EVENTS)
+echo "size in byte's: ", sizeof(MOUSE_PARAMS)
 
-echo cast[int]({A})
-echo cast[int]({B})
-echo cast[int]({C})
-echo cast[int]({D})
+#echo DRAGGING , "  ", repr DRAGGING 
+#echo MOUSE_CLICK , "  ", repr MOUSE_CLICK ," signed value: ",  cast[int8](MOUSE_CLICK)
+#echo "size: ", sizeof(DRAGGING), " but value: ", DRAGGING.int
 
-echo A.int
-echo B.int
-echo C.int
-echo D.int
-
-assert toNum({}) == 0
-assert toNum({A}) == 1
-assert toNum({D}) == 8
-assert toNum({A, C}) == 5
-assert toFlags(0) == {}
-assert toFlags(7) == {A, B, C}
-#echo sizeof(MyFlag)
-
-
-#[type EventTarget = string or int
-
-proc attach(p: EventTarget): string =
-  when p is string:
-    result = "string"
-  when p is int:
-    return "int"
-
-proc detach(p: EventTarget): string =
-  when p is string:
-    return "string"
-  when p is int:
-    return "int"
-
-echo attach("1")
-echo detach(1)
-]#
-
-#[import threadpool  
-{.experimental: "parallel".}
-proc useParallel() =
-  parallel:
-    for i in 0..1:
-        spawn echo "echo in parallel"  
-useParallel()
-]#
-
-#[template optMul{`*`(a, 2)}(a: int): int = {.noSideEffect.}: a+a
-proc f(): int =
-    echo "side effect!"
-    result = 55
-echo f()*2
-]#
-
-#[import threadpool
-{.experimental: "parallel".}
-proc useParallel() =
-  parallel:
-    for i in 0..4:
-      spawn echo("echo in parallel")
-useParallel()   
-
-template optMul{`*`(a, 2)}(a: int{noSideEffect}): int = a+a
-proc f(): int =
-  echo "side effect!"
-  result = 55
-echo f() * 2 # not optimized ;-)
-]#
+#var e: EVENT = EVENT(cmd:DRAGGING, c:'1', n:100)
+#echo e.cmd

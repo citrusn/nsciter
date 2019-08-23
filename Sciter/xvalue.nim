@@ -1,5 +1,5 @@
 type
-  VALUE_RESULT* = enum
+  VALUE_RESULT* {.size: 4.} = enum
     HV_OK_TRUE = - 1, 
     HV_OK = 0,
     HV_BAD_PARAMETER = 1,
@@ -35,7 +35,7 @@ type
     T_COLOR = 19              ## # [unsigned] INT, ABGR 
 
 type
-  VALUE_UNIT_TYPE* = enum
+  VALUE_UNIT_TYPE* {.size: 4.} = enum
     UT_EM = 1,                  ## #height of the element's font. 
     UT_EX = 2,                  ## #height of letter 'x' 
     UT_PR = 3,                  ## #%
@@ -62,7 +62,7 @@ type
 
 ## # Sciter or TIScript specific
 type
-  VALUE_UNIT_TYPE_OBJECT* = enum
+  VALUE_UNIT_TYPE_OBJECT* {.size: 4.} = enum
     UT_OBJECT_ARRAY = 0,        ## # type T_OBJECT of type Array
     UT_OBJECT_OBJECT = 1,       ## # type T_OBJECT of type Object
     UT_OBJECT_CLASS = 2,        ## # type T_OBJECT of type Type (class or namespace)
@@ -74,7 +74,7 @@ type
 ## # Sciter or TIScript specific
 
 type
-  VALUE_UNIT_TYPE_STRING* = enum
+  VALUE_UNIT_TYPE_STRING* {.size: 4.} = enum
     UT_STRING_STRING = 0,       ## # string
     UT_STRING_ERROR = 1,        ## # is an error string
     UT_STRING_SECURE = 2,       ## # secure string ("wiped" on destroy)
@@ -85,7 +85,7 @@ type
 
 type
   NATIVE_FUNCTOR_INVOKE* = proc (tag: pointer; argc: uint32; argv: ptr VALUE;
-                              retval: ptr VALUE) {.stdcall.}
+                                retval: ptr VALUE) {.stdcall.}
 
 ## # retval may contain error definition
 
@@ -98,7 +98,7 @@ type
 
 type
   KeyValueCallback* = proc (param: pointer; pkey: ptr VALUE; pval: ptr VALUE): bool {.stdcall.}
-  VALUE_STRING_CVT_TYPE* = enum
+  VALUE_STRING_CVT_TYPE* {.size: 4.} = enum
     CVT_SIMPLE,               ## #/< simple conversion of terminal values 
     CVT_JSON_LITERAL,         ## #/< json literal parsing/emission 
     CVT_JSON_MAP,             ## #/< json parsing/emission, it parses as if token '{' already recognized 

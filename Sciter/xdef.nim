@@ -10,7 +10,7 @@
 
 ## #* #SC_LOAD_DATA notification return codes
 type
-  SC_LOAD_DATA_RETURN_CODES* = enum
+  SC_LOAD_DATA_RETURN_CODES* {.size: 4.} = enum
     LOAD_OK = 0,      ## #*< do default loading if data not set
     LOAD_DISCARD = 1, ## #*< discard request completely
     LOAD_DELAYED = 2, ## #*< data will be delivered later by the host application.
@@ -190,7 +190,7 @@ type
     hwnd*: HWINDOW ## #*< [in] HWINDOW of the window this callback was attached to.
 
 
-  SCRIPT_RUNTIME_FEATURES* = enum
+  SCRIPT_RUNTIME_FEATURES* {.size: 4.} = enum
     ALLOW_FILE_IO = 0x00000001,
     ALLOW_SOCKET_IO = 0x00000002,
     ALLOW_EVAL = 0x00000004,
@@ -198,13 +198,13 @@ type
 
 
 type
-  GFX_LAYER* = enum
+  GFX_LAYER* {.size: 4.} = enum
     GFX_LAYER_GDI = 1, GFX_LAYER_WARP = 2, 
     GFX_LAYER_D2D = 3, GFX_LAYER_AUTO = 0x0000FFFF
 
 
 type
-  SCITER_RT_OPTIONS* = enum
+  SCITER_RT_OPTIONS* {.size: 4.} = enum
     SCITER_SMOOTH_SCROLL = 1, ## # value:TRUE - enable, value:FALSE - disable, enabled by default
     SCITER_CONNECTION_TIMEOUT = 2, ## # value: milliseconds, connection timeout of http client
     SCITER_HTTPS_ERROR = 3, ## # value: 0 - drop connection, 1 - use builtin dialog, 2 - accept connection silently
@@ -250,7 +250,7 @@ elif defined(posix):
   type
     SciterWindowDelegate* = pointer
 type
-  SCITER_CREATE_WINDOW_FLAGS* = enum
+  SCITER_CREATE_WINDOW_FLAGS* {.size: 4.} = enum
     SW_CHILD = (1 shl 0), ## # child window only, if this flag is set all other flags ignored
     SW_TITLEBAR = (1 shl 1), ## # toplevel window, has titlebar
     SW_RESIZEABLE = (1 shl 2), ## # has resizeable frame
@@ -271,15 +271,15 @@ type
 ## # 
 ## #
 type
-  OUTPUT_SUBSYTEMS* = enum
+  OUTPUT_SUBSYTEMS* {.size: 4.} = enum
     OT_DOM = 0, ## # html parser & runtime
-    OT_CSSS, ## # csss! parser & runtime
-    OT_CSS, ## # css parser
-    OT_TIS  ## # TIS parser & runtime
+    OT_CSSS,    ## # csss! parser & runtime
+    OT_CSS,     ## # css parser
+    OT_TIS      ## # TIS parser & runtime
 
 
 type
-  OUTPUT_SEVERITY* = enum
+  OUTPUT_SEVERITY* {.size: 4.} = enum
     OS_INFO, OS_WARNING, OS_ERROR
 
 

@@ -115,15 +115,15 @@ proc test_call() =
     echo "function call successfully:", $v
 #test_call()
 
-var fe: seq[HELEMENT]
-proc findFirst(el: HELEMENT; selector: cstring): HELEMENT =
-    #SciterElementCallback* = proc (he: HELEMENT; param: pointer): bool {.stdcall.}
+proc findFirst(el: HELEMENT; selector: cstring): HELEMENT =    
+    var fe: seq[HELEMENT]
     proc elementCB(he: HELEMENT; param: pointer): bool {.stdcall.} =
         fe.add(he)
         return true
+
     fe.setLen(0)
     el.SciterSelectElements(selector, elementCB, nil)
-    if(fe.len() == 0): nil else: fe[0]
+    if(fe.len() == 0): return nil else: return fe[0]
 
 proc downloadURL() =
     var url ="http://tdp-app/astue/j_security_check"
