@@ -430,7 +430,7 @@ type
                     ## # application specific value.
     data*: Value    ## # auxiliary data accompanied with the event.
                     ## # E.g. FORM_SUBMIT event is using this field to pass collection of values.
-    #name*: WideCString  ## # name of custom event (when cmd == CUSTOM)
+    name*: WideCString  ## # name of custom event (when cmd == CUSTOM)
   
   TIMER_PARAMS* = object
     timerId*: uint32    ## # timerId that was used to create timer by using SciterSetTimer

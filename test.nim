@@ -1,4 +1,4 @@
-﻿import os, sciter, strutils, times
+﻿import os, sciter/sciter, strutils, times
 
 OleInitialize(nil)
 var s = SAPI()
@@ -25,16 +25,13 @@ var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
                                     text: WideCString;
                                     text_length: uint32) {.stdcall.} =
     echo "subsystem: ", cast[OUTPUT_SUBSYTEMS](subsystem),
-         " severity: ", cast[OUTPUT_SEVERITY](severity), text_length,
-         " msg: ", text
+         " severity: ", cast[OUTPUT_SEVERITY](severity), 
+         " len: ", text_length, " msg: ", text
 s.SciterSetupDebugOutput(nil, nil, dbg)
 
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or
                             SW_RESIZEABLE, defaultRect, nil, nil, nil)
-#var wnd = SciterCreateWindow(0, nil, nil, nil, nil)
-if wnd == nil:
-    quit("wnd is nil")
-#echo "wnd:", repr wnd
+assert wnd != nil, "wnd is nil"
 
 # test load html string into Sciter
 var htmlw: string="""<html> <head><title>Тестовая страница</title></head>пїЅпїЅпїЅпїЅпїЅпїЅ, hello world! </html>"""
@@ -58,10 +55,8 @@ testInsertFn("hello, world#1", 1)
 testInsertFn("hello, world#5", 8)
 
 #wnd.setTitle("test setTitle window caption") - # windows only proc calling
-proc h1() = echo "generic click"
-wnd.onClick(h1)
-proc h2() = echo "generic click 2"
-wnd.onClick(h2)
+wnd.onClick(proc():uint32 = echo "generic click" return 0)
+wnd.onClick(proc():uint32 = echo "generic click 2" return 1)
 
 # test value function
 var testFn = proc() =
@@ -133,7 +128,7 @@ proc testCallback() =
                     newValue(100),
                     newValue("arg2"))
         )
-#testCallback()
+testCallback()
 
 proc testNativeFunctor() =
     wnd.defineScriptingFunction("api",  # calling from html script
