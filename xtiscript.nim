@@ -6,7 +6,6 @@ type
 
 
 ## # tiscript_value
-
 type
   tiscript_value* = uint64
   HVM* = ptr tiscript_VM

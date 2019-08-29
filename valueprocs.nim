@@ -1,4 +1,5 @@
-import strformat # xvalue
+import strformat
+from times import toWinTime, fromWinTime, Time
 
 ######## for value operations ##########
 
@@ -59,6 +60,15 @@ proc isObjectError*[VT: Value | ptr Value](v:VT):bool =
 proc isDomElement*[VT: Value | ptr Value](v:VT):bool =
     return v.t == T_DOM_OBJECT
 
+proc isColor*[VT: Value | ptr Value](v:VT):bool =
+    return v.t == T_COLOR
+
+proc isDuration*[VT: Value | ptr Value](v:VT):bool =
+    return v.t == T_DURATION
+
+proc isAngle*[VT: Value | ptr Value](v:VT):bool =
+    return v.t == T_ANGLE
+
 proc isNull*[VT: Value | ptr Value](v:VT):bool =
     return v.t == T_NULL
 
@@ -77,11 +87,14 @@ proc isNativeFunctor*(x:Value):bool =
     #xDefPtr(x, v)    
     return ValueIsNativeFunctor(x.unsafeAddr)
 
+#proc `=destroy`(x: var Value) =
+#    ValueClear(x.addr)
+
 proc nullValue*(): Value =
     result = Value()
     result.t = T_NULL
 
-proc clone*(x:Value):Value =
+proc clone*(x: Value):Value =
     #xDefPtr(x, v)
     var dst = nullValue()
     ValueCopy(dst.addr, x.unsafeAddr)
@@ -89,17 +102,25 @@ proc clone*(x:Value):Value =
 
 proc newValue*():Value =    
     result = Value()
-    ValueInit(addr result)    
+    ValueInit(result.addr) 
 
 proc newValue*(dat:string):Value =
     var ws = newWideCString(dat)
     result = newValue()    
-    ValueStringDataSet(result.addr, ws, uint32(ws.len()), uint32(0))
+    ValueStringDataSet(result.addr, ws, uint32(ws.len()), 0'u32)
 
-proc newValue*(dat:int32):Value=
+proc newValue*(dat:int8|int16|int32|int64):Value=
     result = newValue()
-    ValueIntDataSet(result.addr, dat, T_INT, 0)
+    when dat is int64:
+        ValueInt64DataSet(result.addr, dat, T_INT, 0)   
+    else:        
+        ValueIntDataSet(result.addr, dat.int32, T_INT, 0)
 
+proc newValue*(dat: Time):Value=
+    result = newValue()
+    var s = toWinTime(dat)
+    ValueInt64DataSet(result.addr, s, T_DATE, DT_HAS_SECONDS)
+  
 proc newValue*(dat:float64):Value =
     result = newValue()
     ValueFloatDataSet(result.addr, dat, T_FLOAT, 0)
@@ -111,19 +132,21 @@ proc newValue*(dat:bool):Value =
     else:
         ValueIntDataSet(result.addr, 0, T_INT, 0)
 
-proc convertFromString*(x:ptr Value, s:string, how:VALUE_STRING_CVT_TYPE) =
+proc convertFromString*(x: var Value, s: string, 
+                        how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE ):uint32 {.discardable.} =
     var ws = newWideCString(s)
-    x.ValueFromString(ws, uint32(ws.len()), how)
+    return ValueFromString(x.addr, ws, uint32(ws.len()), how)
 
-proc convertToString*(x:ptr Value, how:VALUE_STRING_CVT_TYPE):uint32 =
+proc convertToString*(x: var Value, 
+                    how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE):uint32 {.discardable.} =
     # converts value to T_STRING inplace
-    x.ValueToString(how)
+    return ValueToString(x.addr, how)
 
 proc getString*(x:Value):string =
     #var xx = x
     var ws: WideCString
     var n:uint32
-    ValueStringData(x.unsafeAddr, addr ws, addr n)
+    ValueStringData(x.unsafeAddr, ws.addr, n.addr)
     return $(ws)
 
 proc `$`*(v: Value):string =
@@ -133,11 +156,15 @@ proc `$`*(v: Value):string =
     if v.isFunction() or v.isNativeFunctor() or v.isObjectFunction():
         return (result & "<functor>")
     var nv = v.clone()
-    discard convertToString(nv.addr, CVT_SIMPLE)
+    discard convertToString(nv, CVT_SIMPLE)
     return result & nv.getString()
 
+proc getInt64*(x: Value): int64 =
+    ValueInt64Data(x.unsafeAddr, result.addr)
+    return result
+
 proc getInt32*(x: Value): int32 =
-    ValueIntData(unsafeAddr x, addr result)
+    ValueIntData(x.unsafeAddr, result.addr)
     return result
     
 proc getInt*(x: Value): int =
@@ -156,23 +183,48 @@ proc getFloat*(x: Value): float =
     ValueFloatData(x.unsafeAddr, f.addr)
     return float(f)
 
-proc getBytes*(x:ptr Value): seq[byte] =
+proc getBytes*(x:var Value): seq[byte] = # 
     var p:pointer
     var size:uint32
-    ValueBinaryData(x, addr p, addr size)
+    ValueBinaryData(addr x, addr p, addr size)
     result = newSeq[byte](size)
     copyMem(result[0].addr, p, int(size)*sizeof(byte))
 
-proc getBytes*(x: Value): seq[byte] =
-    return getBytes(x.unsafeAddr)
+#proc getBytes*(x: var Value): seq[byte] =
+#    return getBytes(x)
 
-proc setBytes*(x:ptr Value, dat: var openArray[byte]) =
+proc setBytes*(x:var Value, dat: var openArray[byte]) =
     var p = dat[0].addr
     var size = dat.len()*sizeof(byte)
-    x.ValueBinaryDataSet(p, uint32(size), T_BYTES, 0)
+    ValueBinaryDataSet(addr x, p, uint32(size), T_BYTES, 0)
 
-proc setBytes*(x: Value, dat: var openArray[byte]) =
-    setBytes(x.unsafeAddr, dat)
+#proc setBytes*(x: var Value, dat: var openArray[byte]) =
+#    setBytes(x, dat)
+
+proc getColor*(x: Value): uint32 =
+    assert x.isColor()
+    #ValueIntData(this, (INT*)&v);
+    return cast[uint32](getInt(x))
+    
+## returns radians if this->is_angle()
+proc getAngle*(x: Value): float32 = 
+      assert x.isAngle()
+      #ValueFloatData(this, &v);
+      return getFloat(x)
+    
+## returns seconds if this->is_duration()
+proc getDuration*(x: Value): float32 =    
+    assert x.isDuration()
+    #ValueFloatData(this, &v)
+    return getFloat(x)  
+
+proc getDate*(x: Value): Time = 
+    var v: int64
+    assert x.isDate()
+    if(ValueInt64Data(x.unsafeAddr, v.addr) == HV_OK): 
+        return fromWinTime(v)
+    else:
+        return fromWinTime(0)
     
 ## for array and object types
 proc len*(x:Value): int =
@@ -216,7 +268,8 @@ proc invokeWithSelf*(x:Value, self:Value, args:varargs[Value]):Value =
     var cargs = newSeq[Value](clen)
     for i in 0..clen-1:
         cargs[i] = args[i]
-    ValueInvoke(x.unsafeAddr, self.unsafeAddr, uint32(len(args)), cargs[0].addr, result.addr, nil)
+    ValueInvoke(x.unsafeAddr, self.unsafeAddr, uint32(len(args)),
+                cargs[0].addr, result.addr, nil)
 
 ## value functions calls    
 proc invoke*(x:Value, args:varargs[Value]):Value =
@@ -243,36 +296,44 @@ proc setNativeFunctor*(v:var Value, nf:NativeFunctor):uint32 =
     var tag = cast[pointer](nfs.len()-1)
     #var vv = v
     #echo "setNativeFunctor: " , repr v.unsafeAddr
-    return ValueNativeFunctorSet(v.unsafeAddr, pinvoke, prelease, tag)    
-
+    return ValueNativeFunctorSet(v.addr, pinvoke, prelease, tag)    
 
 ## # sds proc for python compatible
 
-proc call_function*(hwnd: HWINDOW, name: cstring, args:varargs[Value]): Value = 
-    ## Call scripting function defined in the global namespace."""
-    var rv = newValue()    
+proc call_function*(hwnd: HWINDOW | HELEMENT, name: cstring, args:varargs[Value]): Value =     
+    result = newValue()    
     var clen = len(args)
     var cargs = newSeq[Value](clen)
     for i in 0..clen-1:
         cargs[i] = args[i]
-    var ok = SciterCall(hwnd, name, uint32(clen), cargs[0].addr,  addr rv)
-    #sciter.Value.raise_from(rv, ok != False, name)
-    return rv
+    when hwnd is HWINDOW:
+        ## Call scripting function defined in the global namespace."""
+        var ok = SciterCall(hwnd, name, uint32(clen), cargs[0].addr,  addr rv)
+        assert ok == HV_OK
+        #sciter.Value.raise_from(rv, ok != False, name)
+    else:
+        ## Call scripting function defined in the namespace of the element (a.k.a. global function)
+        var ok = SciterCallScriptingFunction(he, name, cargs[0].addr, uint32(clen),addr rv)
+        assert ok == SCDOM_OK
+        #sciter.Value.raise_from(rv, ok == SCDOM_RESULT.SCDOM_OK, name)
+        #self._throw_if(ok)
+    return result
 
-proc call_function*(he: HELEMENT, name: cstring, args:varargs[Value]): Value = 
-    ## Call scripting function defined in the namespace of the element (a.k.a. global function)
-    var rv = newValue()
+## Call scripting function defined in the namespace of the element (a.k.a. global function)
+#[proc call_function*(he: HELEMENT, name: cstring, args:varargs[Value]): Value = 
+    result = newValue()
     var clen = len(args)
     var cargs = newSeq[Value](clen)
     for i in 0..clen-1:
         cargs[i] = args[i]
     var ok = SciterCallScriptingFunction(he, name, cargs[0].addr, uint32(clen),addr rv)
+    assert ok == SCDOM_RESULT.SCDOM_OK
     #sciter.Value.raise_from(rv, ok == SCDOM_RESULT.SCDOM_OK, name)
     #self._throw_if(ok)
-    return rv
+    return rv]#
 
+## Call scripting method defined for the element
 proc call_method*(he: HELEMENT, name: cstring, args:varargs[Value]): Value = 
-    ## Call scripting method defined for the element
     var rv = newValue()
     var clen = len(args)
     var cargs = newSeq[Value](clen)

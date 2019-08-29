@@ -1,34 +1,37 @@
 type
-    EventHandler* = ref EventHandlerObj
-    EventHandlerObj* = object
-        subscription*: proc(he: HELEMENT, event_groups: ref cuint) : uint
+    #EventHandler* = ref EventHandlerObj
+    EventHandler* =  ref object
+        subscription*: proc(he: HELEMENT, event_groups: var cuint) : uint
         handle_mouse*: proc(he: HELEMENT, params: ptr MOUSE_PARAMS): uint
         handle_key*: proc(he: HELEMENT, params: ptr KEY_PARAMS): uint
         handle_focus*: proc(he: HELEMENT, params: ptr FOCUS_PARAMS): uint
         handle_timer*: proc(he: HELEMENT, params: ptr TIMER_PARAMS): uint
         handle_size*: proc(he: HELEMENT): uint
         handle_scroll*: proc(he: HELEMENT, params: ptr SCROLL_PARAMS): uint
-        handle_gesture*: proc(he: HELEMENT, params: ptr GESTURE_PARAMS): uint
-        handle_draw*: proc(he: HELEMENT, params: ptr DRAW_PARAMS): uint
-        handle_method_call*: proc(he: HELEMENT, params: ptr METHOD_PARAMS): uint
-        handle_tiscript_call*: proc(he: HELEMENT, params: ptr TISCRIPT_METHOD_PARAMS): uint
         handle_event*: proc(he: HELEMENT, params: ptr BEHAVIOR_EVENT_PARAMS): uint
+        handle_method_call*: proc(he: HELEMENT, params: ptr METHOD_PARAMS): uint
         handle_data_arrived*: proc(he: HELEMENT, params: ptr DATA_ARRIVED_PARAMS): uint
+        handle_draw*: proc(he: HELEMENT, params: ptr DRAW_PARAMS): uint        
+        ## call using sciter::value's (from CSSS!)
         handle_scripting_call*: proc(he: HELEMENT, params: ptr SCRIPTING_METHOD_PARAMS): uint
-
+        ## call using tiscript::value's (from the script)
+        handle_tiscript_call*: proc(he: HELEMENT, params: ptr TISCRIPT_METHOD_PARAMS): uint    
+        handle_gesture*: proc(he: HELEMENT, params: ptr GESTURE_PARAMS): uint                
+        handle_exchange*: proc(he: HELEMENT, params: ptr EXCHANGE_PARAMS): uint                
         detached*: proc(he: HELEMENT)
         attached*: proc(he: HELEMENT)
 
 type
     EventTarget = HWINDOW or HELEMENT
 
-var fn_subscription = proc(he: HELEMENT, params: ref cuint): uint = return 0
+var fn_subscription = proc(he: HELEMENT, params: var cuint): uint = return 0
 var fn_handle_mouse = proc(he: HELEMENT, params: ptr MOUSE_PARAMS): uint = return 0
 var fn_handle_key = proc(he: HELEMENT, params: ptr KEY_PARAMS): uint  = return 0
 var fn_handle_focus = proc(he: HELEMENT, params: ptr FOCUS_PARAMS): uint  = return 0
 var fn_handle_timer = proc(he: HELEMENT, params: ptr TIMER_PARAMS): uint  = return 0
 var fn_handle_size = proc(he: HELEMENT): uint  = return 0
 var fn_handle_scroll = proc(he: HELEMENT, params: ptr SCROLL_PARAMS): uint  = return 0
+var fn_handle_exchange = proc(he: HELEMENT, params: ptr EXCHANGE_PARAMS): uint  = return 0
 var fn_handle_gesture = proc(he: HELEMENT, params: ptr GESTURE_PARAMS): uint  = return 0
 var fn_handle_draw = proc(he: HELEMENT, params: ptr DRAW_PARAMS): uint  = return 0
 var fn_handle_method_call = proc(he: HELEMENT,
@@ -54,6 +57,7 @@ proc newEventHandler*(): EventHandler =
     result.handle_size = fn_handle_size
     result.handle_scroll = fn_handle_scroll
     result.handle_gesture = fn_handle_gesture
+    result.handle_exchange = fn_handle_exchange
     result.handle_draw = fn_handle_draw
     result.handle_method_call = fn_handle_method_call
     result.handle_tiscript_call = fn_handle_tiscript_call
@@ -67,19 +71,21 @@ proc newEventHandler*(): EventHandler =
 import tables, hashes
 proc hash(x: EventHandler): Hash {.inline.} =
     return hash(addr x[])
-
-var evct = newCountTable[EventHandler]()
+#var evct = newCountTable[EventHandler]()
 
 proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32; 
                   prms: pointer): uint {.stdcall.} =
     var pThis: EventHandler = cast[EventHandler](tag)
     #if evtg > uint32(256):
     #  debugEcho "element_proc: tag " , repr pThis , evtg , " prms:", repr prms
-    #if pThis == nil: echo "pThis is nil"  return 0
+    assert pThis!=nil
+    if pThis == nil: 
+        echo "pThis is nil" 
+        return 0
     case cast[EVENT_GROUPS](evtg)
     of SUBSCRIPTIONS_REQUEST:
-        var p : ref cuint
-        var res = pThis.subscription(he, cast[ref cuint](prms))
+        var p = cast[ptr cuint](prms)    
+        var res = pThis.subscription(he, p[])
         echo "SUBSCRIPTIONS_REQUEST: ", cast[EVENT_GROUPS](p)
         return res
 
@@ -97,9 +103,10 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
         return 1
 
     of HANDLE_MOUSE:
-        var p: ptr MOUSE_PARAMS = cast[ptr MOUSE_PARAMS](prms)
-        #echo "HANDLE_MOUSE: " , cast[MOUSE_EVENTS](p.cmd)
-        return pThis.handle_mouse(he, p)
+        var p: ptr MOUSE_PARAMS = cast[ptr MOUSE_PARAMS](prms)        
+        var res = pThis.handle_mouse(he, p)
+        #echo "HANDLE_MOUSE: res " , res, " cmd: " , cast[MOUSE_EVENTS](p.cmd)
+        return res
 
     of HANDLE_KEY:
         var p: ptr KEY_PARAMS = cast[ptr KEY_PARAMS](prms)
@@ -112,7 +119,8 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
     of HANDLE_DRAW:
         var p: ptr DRAW_PARAMS = cast[ptr DRAW_PARAMS](prms)
         #echo "HANDLE_DRAW: " , repr prms
-        return pThis.handle_draw(he, p)
+        var res = pThis.handle_draw(he, p) 
+        return res
 
     of HANDLE_TIMER:
         var p: ptr TIMER_PARAMS = cast[ptr TIMER_PARAMS](prms)
@@ -120,12 +128,13 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
 
     of HANDLE_BEHAVIOR_EVENT:
         var p: ptr BEHAVIOR_EVENT_PARAMS = cast[ptr BEHAVIOR_EVENT_PARAMS](prms)
-        #echo "BEHAVIOR_EVENT_PARAMS: " , cast[BEHAVIOR_EVENTS](p.cmd and (SINKING.int - 1))
-        return pThis.handle_event(he, p)
+        var res = pThis.handle_event(he, p) 
+        #echo "BEHAVIOR_EVENT_PARAMS: res ", res, repr p
+        return res
 
     of HANDLE_METHOD_CALL:
         var p: ptr METHOD_PARAMS = cast[ptr METHOD_PARAMS](prms)
-        #echo "HANDLE_METHOD_CALL"
+        echo "HANDLE_METHOD_CALL: ",  cast[BEHAVIOR_METHOD_IDENTIFIERS](p.methodID)
         return pThis.handle_method_call(he, p)
 
     of HANDLE_DATA_ARRIVED:
@@ -137,8 +146,8 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
         return pThis.handle_scroll(he, p)
 
     of HANDLE_SIZE:
-        discard pThis.handle_size(he)
-        return 0
+        var res = pThis.handle_size(he)
+        return res
 
         ## # call using sciter::value's (from CSSS!)
     of HANDLE_SCRIPTING_METHOD_CALL:
@@ -149,36 +158,41 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
         ## # call using tiscript::value's (from the script)
     of HANDLE_TISCRIPT_METHOD_CALL:
         var p: ptr TISCRIPT_METHOD_PARAMS = cast[ptr TISCRIPT_METHOD_PARAMS](prms)
-        echo "HANDLE_TISCRIPT_METHOD_CALL: " , p.tag
+        #echo "HANDLE_TISCRIPT_METHOD_CALL: " , p.tag
         return pThis.handle_tiscript_call(he, p)
 
     of HANDLE_GESTURE:
         var p: ptr GESTURE_PARAMS = cast[ptr GESTURE_PARAMS](prms)
         return pThis.handle_gesture(he, p)
+        
+    #of HANDLE_EXCHANGE:
+    #    var p: ptr EXCHANGE_PARAMS = cast[ptr EXCHANGE_PARAMS](prms)
+    #    return pThis.handle_exchange(he, p)
 
     else:
-        return 0
-    return 0
+        return 0    
 
 proc Attach*(target: EventTarget, eh: EventHandler,
             mask: uint32 = HANDLE_ALL): int32 {.discardable.} =
     when EventTarget is HWINDOW:
-        result = SciterWindowAttachEventHandler(target, element_proc, addr eh[], mask)
-    when EventTarget is HELEMENT:
-        return SciterAttachEventHandler(target, element_proc, addr eh[])
+        return SciterWindowAttachEventHandler(target, element_proc, eh, mask)
+    elif EventTarget is HELEMENT:
+        return SciterAttachEventHandler(target, element_proc, eh.)
 
 proc Detach*(target: EventTarget, eh: EventHandler,
             mask: uint32 = HANDLE_ALL): int32 {.discardable.} =
     when EventTarget is HWINDOW:
         return SciterWindowDetachEventHandler(target, element_proc, addr eh[], mask)
-    when EventTarget is HELEMENT:
+    elif EventTarget is HELEMENT:
         return SciterDetachEventHandler(target, element_proc, addr eh[])
 
 proc onClick*(target: EventTarget, handler: proc()): int32 {.discardable.} =
     var eh = newEventHandler()
     eh.handle_event = proc(he: HELEMENT,
-            params: ptr BEHAVIOR_EVENT_PARAMS): uint =
+                           params: ptr BEHAVIOR_EVENT_PARAMS): uint =
+        echo "onClick: ",  cast[BEHAVIOR_EVENTS](params.cmd)
         if params.cmd == BUTTON_CLICK:
+            echo "handler"
             handler()
         return 0
     return target.Attach(eh, HANDLE_BEHAVIOR_EVENT) #HANDLE_ALL
@@ -186,10 +200,11 @@ proc onClick*(target: EventTarget, handler: proc()): int32 {.discardable.} =
 type NativeFunctor* = proc(args: seq[Value]): Value
 
 proc defineScriptingFunction*(target: EventTarget, name: string,
-        fn: NativeFunctor): int32 {.discardable.} =
+                            fn: NativeFunctor): int32 {.discardable.} =
         var eh = newEventHandler()
         eh.handle_scripting_call = proc(he: HELEMENT,
-                params: ptr SCRIPTING_METHOD_PARAMS): uint =
+                                    params: ptr SCRIPTING_METHOD_PARAMS): uint =            
+            echo "handle_scripting_call: ", params.name
             if params.name != name:
                 return 0
             var args = newSeq[Value](params.argc)
@@ -201,21 +216,26 @@ proc defineScriptingFunction*(target: EventTarget, name: string,
                     args[int(idx)] = p[]
             params.result = fn(args)
             return 1
-        return target.Attach(eh, HANDLE_ALL)
+        return target.Attach(eh, HANDLE_SCRIPTING_METHOD_CALL)
 
+var tlp* : HELEMENT
 proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR, fn: proc()): int32 {.discardable.} =
     var eh = newEventHandler()
-    eh.handle_mouse = proc (he: HELEMENT, params: ptr MOUSE_PARAMS): uint =
-        if (params.cmd and 0x7FFF) == MOUSE_DOWN:# or 
-        #  params.cmd == MOUSE_DCLICK:
-            echo "handle_mouse cmd: ", params.pos
-        #echo cast[MOUSE_EVENTS](params.cmd and (SINKING.int - 1)), " ", (params.cmd)
-        
-        return 1
-    eh.subscription = proc(he: HELEMENT, params: ref cuint): uint =  
+    eh.handle_mouse = proc (he: HELEMENT, params: ptr MOUSE_PARAMS): uint =        
+        var s: string
+        if (params.cmd and MOUSE_CLICK) == MOUSE_CLICK:
+            s = $cast[MOUSE_EVENTS](params.cmd and MOUSE_CLICK)
+            if (params.cmd and SINKING.uint32) != 0:
+                s = s & " SINKING"
+            if (params.cmd and HANDLED.uint32) != 0:
+                s = s & " HANDLED"
+            echo "handle_mouse cmd: ", s, " pos: ", params.pos,
+                " heTarget: ", repr params.target                               
+        return 0
+    eh.subscription = proc(he: HELEMENT, params: var cuint): uint =  
         echo "gdi draw subscription"
         #if comment then full subscription events
-        params[] = HANDLE_DRAW or HANDLE_BEHAVIOR_EVENT or HANDLE_MOUSE
+        params = HANDLE_DRAW or HANDLE_BEHAVIOR_EVENT or HANDLE_MOUSE
         return 1
     eh.handle_draw = proc(he: HELEMENT, params: ptr DRAW_PARAMS): uint = 
         if params.cmd == DRAW_CONTENT: #return 0
@@ -235,8 +255,12 @@ proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR, fn: proc()): int32 {.discard
         #if hgfx != nil: discard g.gRelease(hgfx)
         return 1
     eh.handle_event = proc(he: HELEMENT, params: ptr BEHAVIOR_EVENT_PARAMS): uint =
-        echo "handle_event: ", cast[BEHAVIOR_EVENTS](params.cmd)
-        fn() #
-        return 1
+        echo "handle_event: ", cast[BEHAVIOR_EVENTS](params.cmd and 0x7FFF)
+        #fn() #
+        if params.cmd == REQUEST_TOOLTIP:
+            echo repr params            
+            params.he = tlp
+            return 1           
+        return 0
 
     return target.element.Attach(eh, HANDLE_ALL)

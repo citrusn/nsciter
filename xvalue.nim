@@ -84,20 +84,17 @@ type
 ## # Native functor
 
 type
+  ## # retval may contain error definition
   NATIVE_FUNCTOR_INVOKE* = proc (tag: pointer; argc: uint32; argv: ptr VALUE;
                                 retval: ptr VALUE) {.stdcall.}
-
-## # retval may contain error definition
-
-type
   NATIVE_FUNCTOR_RELEASE* = proc (tag: pointer) {.stdcall.}
 
 ## #*Callback function used with #ValueEnumElements().
 ## #  return TRUE to continue enumeration
 ## # 
-
 type
   KeyValueCallback* = proc (param: pointer; pkey: ptr VALUE; pval: ptr VALUE): bool {.stdcall.}
+
   VALUE_STRING_CVT_TYPE* {.size: 4.} = enum
     CVT_SIMPLE,               ## #/< simple conversion of terminal values 
     CVT_JSON_LITERAL,         ## #/< json literal parsing/emission 

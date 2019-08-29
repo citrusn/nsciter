@@ -55,7 +55,7 @@ const
 
 type
   METHOD_PARAMS* = object
-    methodID*: uint32
+    methodID*: uint32 #BEHAVIOR_METHOD_IDENTIFIERS
 
   REQUEST_PARAM* = object
     name*: WideCString
@@ -185,7 +185,7 @@ type
     CTL_LABEL, CTL_IMAGE ## #/< image/object.
 
 const
-  CTL_UNKNOWN = CTL_NO ## #/< This dom element has no behavior at all.
+  CTL_UNKNOWN* = CTL_NO ## #/< This dom element has no behavior at all.
 
 type
   NODE_TYPE* {.size: 4.} = enum

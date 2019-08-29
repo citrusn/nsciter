@@ -35,7 +35,7 @@ type
   LPCBYTE_RECEIVER* = proc (str: cstring; num_bytes: cuint; param: pointer) {.stdcall.}
 
 when defined(windows):
-  import winlean
+  #import winlean
   const
     whdr = "<windows.h>"
     # d2hdr = "<D2d1.h>"
@@ -45,6 +45,11 @@ when defined(windows):
     LPARAM* = ByteAddress
     LRESULT* = ByteAddress
     HRESULT* = int
+    LONG* = int32
+    ULONG* = int32
+    PULONG* = ptr int
+    WINBOOL* = int32
+
     MSG* {.header:whdr, importc.} = object
     # ID2D1RenderTarget* {.header:d2hdr, importc.} = object
     # IDXGISwapChain* {.header:d2hdr, importc.} = object

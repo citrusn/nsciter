@@ -54,11 +54,13 @@ type
   SciterBehaviorFactory* = proc (a2: cstring; a3: HELEMENT; 
                                 a4: ptr LPElementEventProc;
                                 a5: ptr pointer): bool {.stdcall.}
+
   PHASE_MASK*  {.size: sizeof(uint32).} = enum
     BUBBLING = 0,               ## # bubbling (emersion) phase
     SINKING = 0x00008000,       ## # capture (immersion) phase, 
                                 ## # this flag is or'ed with EVENTS codes below
     HANDLED = 0x00010000
+    ## # see: http://www.w3.org/TR/xml-events/Overview.html#s_intro
 
 
 type
@@ -121,11 +123,13 @@ type
     alt_state*: uint32         ## # KEYBOARD_STATES
     cursor_type*: uint32       ## # CURSOR_TYPE to set, see CURSOR_TYPE
     is_on_icon*: bool          ## # mouse is over icon (foreground-image, foreground-repeat:no-repeat)
+    
     dragging*: HELEMENT        ## # element that is being dragged over, this field is not NULL if (cmd & DRAGGING) != 0
     dragging_mode*: uint32     ## # see DRAGGING_TYPE. 
   
   CURSOR_TYPE* {.size: sizeof(uint32).} = enum
-    CURSOR_ARROW,             ## #0
+    CURSOR_UNDEF = -1,        ## # Add after test me
+    CURSOR_ARROW = 0,         ## #0
     CURSOR_IBEAM,             ## #1
     CURSOR_WAIT,              ## #2
     CURSOR_CROSS,             ## #3
@@ -160,10 +164,11 @@ type
 ## # parameters of evtg == HANDLE_FOCUS
 type
   FOCUS_EVENTS* {.size: sizeof(uint32).} = enum
-    FOCUS_LOST = 0,             ## # non-bubbling event, target is new focus element
-    FOCUS_GOT = 1,              ## # non-bubbling event, target is old focus element
-    FOCUS_IN = 2,               ## # bubbling event/notification, target is an element that got focus
-    FOCUS_OUT = 3               ## # bubbling event/notification, target is an element that lost focus
+    FOCUS_OUT = 0      ## # < container lost focus from any element inside it, target is an element that lost focus 
+    FOCUS_IN = 1       ## # < container got focus on element inside it, target is an element that got focus 
+    FOCUS_GOT = 2      ## # < target element got focus 
+    FOCUS_LOST = 3     ## # < target element lost focus
+    FOCUS_REQUEST = 4  ## # < bubbling event/request, gets sent on child-parent chain to accept/reject focus to be set on the child (target) 
 
 
 type
@@ -172,8 +177,8 @@ type
     target*: HELEMENT          ## # target element, for FOCUS_LOST it is a handle of new focus element
                                ## # and for FOCUS_GOT it is a handle of old focus element, can be NULL
     by_mouse_click*: bool      ## # true if focus is being set by mouse click
-    cancel*: bool              ## # in FOCUS_LOST phase setting this field to true will cancel transfer focus from old element to the new one.
-  
+    cancel*: bool              ## # in FOCUS_REQUEST and FOCUS_LOST phase setting this field to
+                               ## # true will cancel transfer focus from old element to the new one. 
 
 ## # parameters of evtg == HANDLE_SCROLL
 type
@@ -182,15 +187,33 @@ type
     SCROLL_STEP_PLUS, SCROLL_STEP_MINUS,
     SCROLL_PAGE_PLUS, SCROLL_PAGE_MINUS,
     SCROLL_POS, SCROLL_SLIDER_RELEASED,
-    SCROLL_CORNER_PRESSED, SCROLL_CORNER_RELEASED
+    SCROLL_CORNER_PRESSED, SCROLL_CORNER_RELEASED,
+    SCROLL_SLIDER_PRESSED
 
+  SCROLL_SOURCE* {.size: sizeof(uint32).} = enum
+    SCROLL_SOURCE_UNKNOWN,
+    SCROLL_SOURCE_KEYBOARD,  ## # SCROLL_PARAMS::reason <- keyCode
+    SCROLL_SOURCE_SCROLLBAR, ## # SCROLL_PARAMS::reason <- SCROLLBAR_PART 
+    SCROLL_SOURCE_ANIMATOR,
+    SCROLL_SOURCE_WHEEL
+
+  SCROLLBAR_PART* {.size: sizeof(uint32).} = enum
+    SCROLLBAR_BASE,       
+    SCROLLBAR_PLUS,       
+    SCROLLBAR_MINUS,      
+    SCROLLBAR_SLIDER,     
+    SCROLLBAR_PAGE_MINUS, 
+    SCROLLBAR_PAGE_PLUS,  
+    SCROLLBAR_CORNER
 
 type
   SCROLL_PARAMS* = object
     cmd*: uint32               ## # SCROLL_EVENTS
     target*: HELEMENT          ## # target element
     pos*: int32                ## # scroll position if SCROLL_POS
-    vertical*: bool            ## # true if from vertical scrollbar
+    vertical*: bool            ## # true if from vertical scrollbar    
+    source: uint32             ## # SCROLL_SOURCE
+    reason: uint32             ## # key or scrollbar part
   
   GESTURE_CMD* {.size: sizeof(uint32).} = enum
     GESTURE_REQUEST = 0,      ## # return true and fill flags if it will handle gestures.
@@ -233,18 +256,46 @@ type
     delta_xy*: Size           ## # for GESTURE_PAN it is a direction vector 
     delta_v*: float64         ## # for GESTURE_ROTATE - delta angle (radians) 
                               ## # for GESTURE_ZOOM - zoom value, is less or greater than 1.0    
-  
-  DRAW_EVENTS* {.size: sizeof(uint32).} = enum
-    DRAW_BACKGROUND = 0, DRAW_CONTENT = 1, DRAW_FOREGROUND = 2
 
+type                              
+  EXCHANGE_CMD* {.size: sizeof(uint32).} = enum                            
+    X_DRAG_ENTER = 0, ## # drag enters the element
+    X_DRAG_LEAVE = 1, ## # drag leaves the element  
+    X_DRAG = 2,       ## # drag over the element
+    X_DROP = 3,       ## # data dropped on the element  
+    X_PASTE = 4,      ## # N/A
+    X_DRAG_REQUEST = 5, ## # N/A
+    X_DRAG_CANCEL = 6,  ## # drag cancelled (e.g. by pressing VK_ESCAPE)
+    X_WILL_ACCEPT_DROP = 7 ## # drop target element shall consume this event in order to receive X_DROP 
+    
+  DD_MODES* {.size: sizeof(uint32).} = enum                         
+    DD_MODE_NONE = 0, ## # DROPEFFECT_NONE	( 0 )
+    DD_MODE_COPY = 1, ## # DROPEFFECT_COPY	( 1 )
+    DD_MODE_MOVE = 2, ## # DROPEFFECT_MOVE	( 2 )
+    DD_MODE_COPY_OR_MOVE = 3, ## # DROPEFFECT_COPY	( 1 ) | DROPEFFECT_MOVE	( 2 )
+    DD_MODE_LINK = 4  ## # DROPEFFECT_LINK	( 4 )
+                            
+  EXCHANGE_PARAMS* = object
+    cmd*: uint32         ## EXCHANGE_EVENTS
+    target*: HELEMENT    ## target element
+    source*: HELEMENT    ## source element (can be null if D&D from external window)
+    pos*: POINT          ## position of cursor, element relative
+    pos_view*: POINT     ## position of cursor, view relative
+    mode*: uint32        ## DD_MODE 
+    data*: VALUE         ## packaged drag data                        
 
 type
+  DRAW_EVENTS* {.size: sizeof(uint32).} = enum
+    DRAW_BACKGROUND = 0, DRAW_CONTENT = 1,
+    DRAW_FOREGROUND = 2, DRAW_OUTLINE = 3
+
+
   DRAW_PARAMS* = object
     cmd*: uint32               ## # DRAW_EVENTS
     gfx*: HGFX                 ## # hdc to paint on
     area*: Rect                ## # element area, to get invalid area to paint use GetClipBox,
-    reserved*: uint32 ## # for DRAW_BACKGROUND/DRAW_FOREGROUND - it is a border box
-                    ## # for DRAW_CONTENT - it is a content box
+    reserved*: uint32          ## # for DRAW_BACKGROUND/DRAW_FOREGROUND - it is a border box
+                               ## # for DRAW_CONTENT - it is a content box
   
   ## # for CONTENT_CHANGED reason
   CONTENT_CHANGE_BITS* {.size: sizeof(uint32).} = enum       
@@ -330,14 +381,14 @@ type
     VIDEO_STARTED = 0x000000D2, ## # <video> playback started notification   
     VIDEO_STOPPED = 0x000000D3, ## # <video> playback stoped/paused notification   
     VIDEO_BIND_RQ = 0x000000D4, ## # <video> request for frame source binding, 
-                             ## #   If you want to provide your own video frames source for the given target <video> element do the following:
-                             ## #   1. Handle and consume this VIDEO_BIND_RQ request 
-                             ## #   2. You will receive second VIDEO_BIND_RQ request/event for the same <video> element
-                             ## #      but this time with the 'reason' field set to an instance of sciter::video_destination interface.
-                             ## #   3. add_ref() it and store it for example in worker thread producing video frames.
-                             ## #   4. call sciter::video_destination::start_streaming(...) providing needed parameters
-                             ## #      call sciter::video_destination::render_frame(...) as soon as they are available
-                             ## #      call sciter::video_destination::stop_streaming() to stop the rendering (a.k.a. end of movie reached)
+                            ## #   If you want to provide your own video frames source for the given target <video> element do the following:
+                            ## #   1. Handle and consume this VIDEO_BIND_RQ request 
+                            ## #   2. You will receive second VIDEO_BIND_RQ request/event for the same <video> element
+                            ## #      but this time with the 'reason' field set to an instance of sciter::video_destination interface.
+                            ## #   3. add_ref() it and store it for example in worker thread producing video frames.
+                            ## #   4. call sciter::video_destination::start_streaming(...) providing needed parameters
+                            ## #      call sciter::video_destination::render_frame(...) as soon as they are available
+                            ## #      call sciter::video_destination::stop_streaming() to stop the rendering (a.k.a. end of movie reached)
     PAGINATION_STARTS = 0x000000E0, ## # behavior:pager starts pagination
     PAGINATION_PAGE = 0x000000E1, ## # behavior:pager paginated page no, reason -> page no
     PAGINATION_ENDS = 0x000000E2, ## # behavior:pager end pagination, reason -> total pages
@@ -352,17 +403,19 @@ type
 
 
 type
-  EVENT_REASON* {.size: sizeof(uint32).} = enum
+  CLICK_REASON* {.size: sizeof(uint32).} = enum
     BY_MOUSE_CLICK, BY_KEY_CLICK,
-    SYNTHESIZED     ## # synthesized, programmatically generated.
+    SYNTHESIZED,     ## # synthesized, programmatically generated.
+    BY_MOUSE_ON_ICON
 
 
 type
   EDIT_CHANGED_REASON* {.size: sizeof(uint32).} = enum
-    BY_INS_CHAR,      ## # single char insertion
-    BY_INS_CHARS,     ## # character range insertion, clipboard
-    BY_DEL_CHAR,      ## # single char deletion
-    BY_DEL_CHARS      ## # character range deletion (selection)
+    BY_INS_CHAR      ## # single char insertion
+    BY_INS_CHARS     ## # character range insertion, clipboard
+    BY_DEL_CHAR      ## # single char deletion
+    BY_DEL_CHARS     ## # character range deletion (selection)
+    BY_UNDO_REDO     ## # undo/redo
 
 
 type
@@ -370,11 +423,14 @@ type
     cmd*: uint32        ## # BEHAVIOR_EVENTS
     heTarget*: HELEMENT ## # target element handler, in MENU_ITEM_CLICK this is owner element that caused this menu - e.g. context menu owner
                         ## # In scripting this field named as Event.owner
-    he*: HELEMENT       ## # source element e.g. in SELECTION_CHANGED it is new selected <option>, in MENU_ITEM_CLICK it is menu item (LI) element
+    he*: HELEMENT       ## # source element e.g. in SELECTION_CHANGED it is new selected <option>,
+                        ## # in MENU_ITEM_CLICK it is menu item (LI) element
     reason*: uint32 ## # EVENT_REASON or EDIT_CHANGED_REASON - UI action causing change.
                     ## # In case of custom event notifications this may be any
                     ## # application specific value.
-    data*: Value    ## # auxiliary data accompanied with the event. E.g. FORM_SUBMIT event is using this field to pass collection of values.
+    data*: Value    ## # auxiliary data accompanied with the event.
+                    ## # E.g. FORM_SUBMIT event is using this field to pass collection of values.
+    #name*: WideCString  ## # name of custom event (when cmd == CUSTOM)
   
   TIMER_PARAMS* = object
     timerId*: uint32    ## # timerId that was used to create timer by using SciterSetTimer

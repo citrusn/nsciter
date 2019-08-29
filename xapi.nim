@@ -170,7 +170,7 @@ type
     SciterShowPopup*: proc (hePopup: HELEMENT; heAnchor: HELEMENT;
                             placement: uint32): int32 {.stdcall.}
     SciterShowPopupAt*: proc (hePopup: HELEMENT; pos: Point;
-                              animate: bool): int32 {.stdcall.}
+                              placement: uint32): int32 {.stdcall.}
     SciterHidePopup*: proc (he: HELEMENT): int32 {.stdcall.}
     SciterGetElementState*: proc (he: HELEMENT;
                                   pstateBits: ptr uint32): int32 {.stdcall.}
@@ -198,10 +198,10 @@ type
                                           pep: ElementEventProc;
                                            tag: pointer): int32 {.stdcall.}
     SciterSendEvent*: proc (he: HELEMENT; appEventCode: uint32; 
-                            heSource: HELEMENT; reason: uint32;
+                            heSource: HELEMENT; reason: ptr uint32;
                             handled: ptr bool): int32 {.stdcall.} ## #out
     SciterPostEvent*: proc (he: HELEMENT; appEventCode: uint32; 
-                            heSource: HELEMENT; reason: uint32): int32 {.stdcall.}
+                            heSource: HELEMENT; reason: ptr uint32): int32 {.stdcall.}
     SciterCallBehaviorMethod*: proc (he: HELEMENT;
                                     params: ptr METHOD_PARAMS): int32 {.stdcall.}
     SciterRequestElementData*: proc (he: HELEMENT; url: WideCString; 
@@ -714,9 +714,10 @@ proc SciterShowPopup*(hePopup: HELEMENT; heAnchor: HELEMENT;
     inline, discardable.} =
   return SAPI().SciterShowPopup(hePopup, heAnchor, placement)
 
-proc SciterShowPopupAt*(hePopup: HELEMENT; pos: Point; animate: bool): int32 {.
+proc SciterShowPopupAt*(hePopup: HELEMENT; pos: Point; 
+                        placement: uint32): int32 {.
     inline, discardable.} =
-  return SAPI().SciterShowPopupAt(hePopup, pos, animate)
+  return SAPI().SciterShowPopupAt(hePopup, pos, placement)
 
 proc SciterHidePopup*(he: HELEMENT): int32 {.
     inline, discardable.} =
@@ -781,12 +782,12 @@ proc SciterWindowDetachEventHandler*(hwndLayout: HWINDOW; pep: ElementEventProc;
   return SAPI().SciterWindowDetachEventHandler(hwndLayout, pep, tag)
 
 proc SciterSendEvent*(he: HELEMENT; appEventCode: uint32; heSource: HELEMENT;
-                     reason: uint32; handled: ptr bool): int32 {.
+                     reason: ptr uint32; handled: ptr bool): int32 {.
     inline, discardable.} =  ## #out
   return SAPI().SciterSendEvent(he, appEventCode, heSource, reason, handled)
 
 proc SciterPostEvent*(he: HELEMENT; appEventCode: uint32; heSource: HELEMENT;
-                     reason: uint32): int32 {.
+                     reason: ptr uint32): int32 {.
     inline, discardable.} =
   return SAPI().SciterPostEvent(he, appEventCode, heSource, reason)
 
