@@ -47,12 +47,18 @@ namespace sciter
   {
     const std::vector<sciter::string>& argv();
     HINSTANCE                          hinstance();
+#ifdef WINDOWS
+    // this function will do PeekMessage/DispatchMessage, it is intended to be used in NodeJs environment.
+    bool pump_messages(); // returns false if it got WM_QUIT
+#endif 
+
   }
 
   class window : public aux::asset
                , public sciter::host<window>
                , public sciter::event_handler
   {
+    friend sciter::host<window>;
   public:
     window( UINT creationFlags, RECT frame = RECT() );
 
@@ -71,10 +77,10 @@ namespace sciter
     HINSTANCE get_resource_instance() const { return application::hinstance(); }
 
   protected:
-    virtual void detached  (HELEMENT /*he*/ ) override /*sciter::event_handler*/
-    {
-      // this happens when HWINDOW gets destroyed
-      _hwnd = 0; asset::release();
+    virtual LRESULT on_engine_destroyed() 
+    { 
+      _hwnd = 0; asset::release(); 
+      return 0; 
     }
 
 #if defined(WINDOWS)

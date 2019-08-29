@@ -24,7 +24,21 @@
     #define CPP11
   #endif
   #include <string>
+#else
+
+  #include <stdbool.h>
+
 #endif
+
+enum GFX_LAYER
+{
+    GFX_LAYER_GDI = 1, GFX_LAYER_CG = 1, /*Mac OS*/ GFX_LAYER_CAIRO = 1, /*GTK*/
+    GFX_LAYER_WARP = 2,
+    GFX_LAYER_D2D = 3,
+    GFX_LAYER_SKIA = 4,
+    GFX_LAYER_SKIA_OPENGL = 5,
+    GFX_LAYER_AUTO = 0xFFFF,
+};
 
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -43,17 +57,21 @@
   #endif
 
 #elif defined(__linux__)
-  #define LINUX
+  #ifndef LINUX
+    #define LINUX
+  #endif
 #else
   #error "This platform is not supported yet"
 #endif
 
 #if defined(WINDOWS)
+  #define WIN32_LEAN_AND_MEAN
+  #define _WINSOCKAPI_
   #include <specstrings.h>
   #include <windows.h>
   #include <oaidl.h>
 
-#if defined(__cplusplus) && !defined( PLAIN_API_ONLY )
+/*#if defined(__cplusplus) && !defined( PLAIN_API_ONLY )
   #include <d2d1.h>
   #include <dwrite.h>
 #else
@@ -64,8 +82,7 @@
   typedef struct _ID2D1RenderTarget ID2D1RenderTarget;
   typedef struct _ID2D1Factory ID2D1Factory;
   typedef struct _IDWriteFactory IDWriteFactory;
-
-#endif
+#endif*/
 
   #if defined(_MSC_VER) && _MSC_VER < 1900
   // Microsoft has finally implemented snprintf in Visual Studio 2015.
@@ -99,10 +116,8 @@
 
   #ifdef _WIN64
     #define TARGET_64
-    #define SCITER_DLL_NAME "sciter64.dll"
   #else
     #define TARGET_32
-    #define SCITER_DLL_NAME "sciter.dll"
   #endif
 
 #elif defined(OSX)
@@ -113,13 +128,18 @@
   #ifndef BOOL
     typedef signed char BOOL;
   #endif
+  #ifndef TRUE
+    #define TRUE (1)
+    #define FALSE (0)
+  #endif
+
   typedef unsigned int UINT;
   typedef int INT;
   typedef unsigned long long UINT64;
-  typedef int INT64;
+  typedef long long INT64;
 
   typedef unsigned char BYTE;
-  typedef uint16_t WCHAR;
+  typedef char16_t WCHAR;
   typedef const WCHAR* LPCWSTR;
   typedef WCHAR* LPWSTR;
   typedef char CHAR;
@@ -129,10 +149,12 @@
   typedef void* LPVOID;
   typedef const void* LPCVOID;
 
-  #define SCAPI  __cdecl
-  #define SCFN(name) (__cdecl *name)
-  #define SC_CALLBACK  __cdecl
-  #define CALLBACK __cdecl
+  #define SCAPI
+  #define SCFN(name) (*name)
+  #define SC_CALLBACK
+  #define CALLBACK
+
+
 
   typedef struct tagRECT
   {
@@ -157,7 +179,10 @@
 
   #define HWINDOW void*   // NSView*
   #define HINSTANCE void* // NSApplication*
+  #define HDC void*       // CGContextRef
+
   #define LRESULT long
+
 
   #ifdef __LP64__
     #define TARGET_64
@@ -173,13 +198,13 @@
   #include <string.h>
   #include <wctype.h>
 
-#ifndef BOOL
+  #ifndef BOOL
     typedef signed char BOOL;
   #endif
   typedef unsigned int UINT;
   typedef int INT;
   typedef unsigned long long UINT64;
-  typedef int INT64;
+  typedef long long INT64;
 
   typedef unsigned char BYTE;
   typedef char16_t WCHAR;
@@ -220,13 +245,17 @@
   #define HWINDOW GtkWidget* //
   #define HINSTANCE void*    //
   #define LRESULT long
+  #define HDC void*       // cairo_t
 
-  #ifdef __x86_64
+  #if defined(ARM) || defined(__arm__)
+    #define SCITER_DLL_NAME "libsciter-gtk.so"
+    #define TARGET_ARM
+  #elif defined(__x86_64)
     #define TARGET_64
-    #define SCITER_DLL_NAME "libsciter-gtk-64.so"
+    #define SCITER_DLL_NAME "libsciter-gtk.so"
   #else
     #define TARGET_32
-    #define SCITER_DLL_NAME "libsciter-gtk-32.so"
+    #define SCITER_DLL_NAME "libsciter-gtk.so"
   #endif
 
 

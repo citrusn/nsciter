@@ -17,6 +17,7 @@
 #define __sciter_x_host_callback_h__
 
 #include "sciter-x-api.h"
+#include "sciter-x-debug.h"
 #include <assert.h>
 
 #pragma warning(disable:4786) //identifier was truncated...
@@ -73,8 +74,8 @@ namespace sciter
   }
 
 
-/** \struct notification_handler
- *  \brief standard implementation of SCITER_CALLBACK_NOTIFY handler.
+/** \struct host
+ *  \brief standard implementation of SCITER_CALLBACK_NOTIFICATION handler.
  *  Supposed to be used as a C++ mixin, see: <a href="http://en.wikipedia.org/wiki/Curiously_Recurring_Template_Pattern">CRTP</a>
  **/
 
@@ -91,10 +92,9 @@ namespace sciter
       {
         SciterSetCallback(static_cast< BASE* >(this)->get_hwnd(),callback, static_cast< BASE* >( this ) );
       }
-
       void setup_callback(HWINDOW hwnd)
       {
-        SciterSetCallback(hwnd, callback, static_cast< BASE* >( this ) );
+        SciterSetCallback(hwnd,callback, static_cast< BASE* >( this ) );
       }
 
       // Sciter runtime callback
@@ -115,7 +115,7 @@ namespace sciter
         {
           case SC_LOAD_DATA:          return static_cast<BASE*>(this)->on_load_data((LPSCN_LOAD_DATA) pnm);
           case SC_DATA_LOADED:        return static_cast<BASE*>(this)->on_data_loaded((LPSCN_DATA_LOADED)pnm);
-        //case SC_DOCUMENT_COMPLETE:  return on_document_complete();
+          //case SC_DOCUMENT_COMPLETE: return on_document_complete();
           case SC_ATTACH_BEHAVIOR:    return static_cast<BASE*>(this)->on_attach_behavior((LPSCN_ATTACH_BEHAVIOR)pnm );
           case SC_ENGINE_DESTROYED:   return static_cast<BASE*>(this)->on_engine_destroyed();
           case SC_POSTED_NOTIFICATION: return static_cast<BASE*>(this)->on_posted_notification((LPSCN_POSTED_NOTIFICATION)pnm);
@@ -126,31 +126,58 @@ namespace sciter
 
       // Overridables
 
-      LRESULT on_load_data(LPSCN_LOAD_DATA pnmld)
+      virtual LRESULT on_load_data(LPSCN_LOAD_DATA pnmld)
       {
         LPCBYTE pb = 0; UINT cb = 0;
         aux::wchars wu = aux::chars_of(pnmld->uri);
+
         if(wu.like(WSTR("res:*")))
         {
           // then by calling possibly overloaded load_resource_data method
-          if(static_cast< BASE* >(this)->load_resource_data(wu.start+4, pb, cb))
-            ::SciterDataReady( pnmld->hwnd, pnmld->uri, pb,  cb);
+          if (static_cast<BASE*>(this)->load_resource_data(wu.start + 4, pb, cb))
+            ::SciterDataReady(pnmld->hwnd, pnmld->uri, pb, cb);
+          else {
+#ifdef _DEBUG
+            auto console = debug_output::instance();
+            if (console)
+              console->printf("LOAD FAILURE:%S\n", pnmld->uri);
+#endif
+            return LOAD_DISCARD;
+          }
         } else if(wu.like(WSTR("this://app/*"))) {
           // try to get them from archive first
           aux::bytes adata = archive::instance().get(wu.start+11);
-          if(adata.length)
-            ::SciterDataReady( pnmld->hwnd, pnmld->uri, adata.start, adata.length);
+          if (adata.length)
+            ::SciterDataReady(pnmld->hwnd, pnmld->uri, adata.start, adata.length);
+          else {
+#ifdef _DEBUG
+            auto console = debug_output::instance();
+            if (console)
+              console->printf("LOAD FAILURE:%S\n", pnmld->uri);
+#endif
+            return LOAD_DISCARD;
+          }
         }
-
         return LOAD_OK;
       }
 
-      LRESULT on_data_loaded(LPSCN_DATA_LOADED pnmld)  { return 0; }
-      LRESULT on_attach_behavior( LPSCN_ATTACH_BEHAVIOR lpab ) { return create_behavior(lpab); }
-      LRESULT on_engine_destroyed( ) { return 0; }
-      LRESULT on_posted_notification( LPSCN_POSTED_NOTIFICATION lpab ) { return 0; }
+      virtual LRESULT on_data_loaded(LPSCN_DATA_LOADED pnmld)  {
+#ifdef _DEBUG
+//        auto console = debug_output::instance();
+//        if (console) {
+//          if(!pnmld->data || !pnmld->dataSize)
+//            console->printf("SC_DATA_LOAD FAILURE (%d) :%S\n", pnmld->status, pnmld->uri);
+//          else
+//            console->printf("SC_DATA_LOADED:%S\n", pnmld->uri);
+//        }
+#endif
+        return 0; 
+      }
+      virtual LRESULT on_attach_behavior( LPSCN_ATTACH_BEHAVIOR lpab ) { return create_behavior(lpab); }
+      virtual LRESULT on_engine_destroyed( ) { return 0; }
+      virtual LRESULT on_posted_notification( LPSCN_POSTED_NOTIFICATION lpab ) { return 0; }
 
-      void on_graphics_critical_failure()
+      virtual void on_graphics_critical_failure()
       {
 #if defined(WINDOWS) && defined(_DEBUG)
         // Direct2D critical error (on layered window) - it rendered nothing. Most probably bad video driver.
@@ -181,6 +208,11 @@ namespace sciter
       }
       HELEMENT get_root() { return root(); }
 
+      HVM get_vm() 
+      { 
+        return SciterGetVM(static_cast< BASE* >(this)->get_hwnd());
+      }
+
 
       // call scripting function defined in the global namespace
       SCITER_VALUE  call_function(LPCSTR name, UINT argc, SCITER_VALUE* argv )
@@ -189,7 +221,7 @@ namespace sciter
         SCITER_VALUE rv;
         BOOL r = SciterCall(hwnd, name, argc, argv, &rv);
 #if !defined(SCITER_SUPPRESS_SCRIPT_ERROR_THROW)
-        if( (r != SCDOM_OK) && rv.is_error_string()) {
+        if( (r == FALSE) && rv.is_error_string()) {
           aux::w2a u8 (rv.get(WSTR("")));
           throw sciter::script_error(u8.c_str());
         }

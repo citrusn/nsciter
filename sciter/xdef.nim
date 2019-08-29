@@ -199,8 +199,14 @@ type
 
 type
   GFX_LAYER* {.size: 4.} = enum
-    GFX_LAYER_GDI = 1, GFX_LAYER_WARP = 2, 
-    GFX_LAYER_D2D = 3, GFX_LAYER_AUTO = 0x0000FFFF
+    GFX_LAYER_GDI = 1, 
+    ## GFX_LAYER_CG = 1,  ##*Mac OS*/
+    ## GFX_LAYER_CAIRO = 1, ##/*GTK*/
+    GFX_LAYER_WARP = 2,
+    GFX_LAYER_D2D = 3,
+    GFX_LAYER_SKIA = 4,
+    GFX_LAYER_SKIA_OPENGL = 5,
+    GFX_LAYER_AUTO = 0xFFFF
 
 
 type
@@ -222,6 +228,8 @@ type
                              ## # That UX theme is not using OS primitives for rendering input elements. Use it if you want exactly
                              ## # the same (modulo fonts) look-n-feel on all platforms.
     SCITER_ALPHA_WINDOW = 12 ## #  hWnd, value - TRUE/FALSE - window uses per pixel alpha (e.g. WS_EX_LAYERED/UpdateLayeredWindow() window)
+    SCITER_SET_INIT_SCRIPT = 13 ## # hWnd - N/A , value LPCSTR - UTF-8 encoded script source to be loaded into each view before any other script execution.
+                                ## #    The engine copies this string inside the call.
 
 
 type

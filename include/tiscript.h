@@ -1,80 +1,19 @@
 #ifndef __tis_h__
 #define __tis_h__
 
-#ifdef C2NIM
-  #cdecl
-  #skipinclude
-  #def SCFN(name) (*name)
-  #def SCAPI
-  #def SC_CALLBACK
-  #def TISAPI
-  #def EXTAPI
-  
-  #prefix _
-  
-  #discardableprefix Sciter
-  #discardableprefix Value
-  
-  #def UINT uint32
-  #def INT int32
-  #def UINT64 uint64
-  #def INT64 int64
-  #def BYTE byte
-  #def LPCBYTE pointer
-  #def WCHAR Utf16Char
-  #def LPCWSTR  WideCString
-  #def LPWSTR  WideCString
-  #def CHAR char
-  #def LPCSTR cstring
-  #def VOID void
-  #def UINT_PTR UINT
-  #def BOOL bool
-  #def double float64
-  #def FLOAT_VALUE float64
-  
-  #def WINDOWS windows
-  #def LINUX posix
-  #def OSX osx
-  
-  #def SCITER_VALUE Value
-  #def RECT Rect
-  #def POINT Point
-  #def SIZE Size
-  #def LPVOID pointer
-  #def LPCVOID pointer
-  #def LPRECT Rect*
-  #def LPCRECT Rect*
-  #def PPOINT Point*
-  #def LPPOINT Point*
-  #def PSIZE Size*
-  #def LPSIZE Size*
-  #def LPUINT UINT*
-  #def SCDOM_RESULT INT
-#endif
-
-#include "sciter-x-types.h"
-
-#ifndef C2NIM
-
 #if defined(__GNUC__)
-  #define __cdecl __attribute__((__cdecl__))
-#endif
-
-#if !defined(WINDOWS)
-  #define EXTAPI __cdecl
+  #define TIS_CDECL __attribute__((__cdecl__))
 #else
-  #define EXTAPI __stdcall
+  #define TIS_CDECL __cdecl
 #endif
 
-#define TISAPI __cdecl
-
-#if !defined(WINDOWS)
-  #define EXTAPI __cdecl
+#if defined(_WINDOWS) || defined(WIN32) || defined(WIN64)
+  #define EXTAPI __stdcall
 #else
-  #define EXTAPI __stdcall
+  #define EXTAPI TIS_CDECL
 #endif
 
-#endif
+#define TISAPI TIS_CDECL
 
 #pragma pack(push,8)
 
@@ -82,10 +21,7 @@ struct tiscript_VM; // TIScript virtual machine
 typedef struct tiscript_VM tiscript_VM;
 // tiscript_value
 typedef UINT64 tiscript_value;
-
-#ifndef C2NIM
 typedef unsigned char byte;
-#endif
 
 typedef tiscript_VM* HVM;
 
@@ -97,10 +33,7 @@ typedef struct tiscript_pvalue
    void *d1,*d2;
 } tiscript_pvalue;
 
-#ifndef C2NIM
 struct tiscript_stream;
-#endif
-
 typedef bool TISAPI  tiscript_stream_input(struct tiscript_stream* tag, int* pv);
 typedef bool TISAPI  tiscript_stream_output(struct tiscript_stream* tag, int v);
 typedef const WCHAR* TISAPI tiscript_stream_name(struct tiscript_stream* tag);
@@ -171,7 +104,7 @@ typedef struct tiscript_prop_def
 typedef struct tiscript_const_def
 {
   const char *name;
-  union
+  union _val
   {
     int          i;
     double       f;
@@ -327,7 +260,8 @@ typedef struct tiscript_native_interface
    bool  (TISAPI *set_remote_std_streams)(tiscript_VM* pvm, tiscript_pvalue* input, tiscript_pvalue* output, tiscript_pvalue* error);
 
    // support of multi-return values from native fucntions, n here is a number 1..64
-   bool  (TISAPI *set_nth_retval)(tiscript_VM* pvm, int n, tiscript_value ns );
+   tiscript_value (TISAPI *make_val_list)(tiscript_VM* pvm, int valc, const tiscript_value* va);
+
    // returns number of props in object, elements in array, or bytes in byte array.
    int   (TISAPI *get_length)(tiscript_VM* pvm, tiscript_value obj );
    // for( var val in coll ) {...}

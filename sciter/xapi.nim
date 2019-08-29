@@ -89,128 +89,128 @@ type
     ## # HWINDOW or null if this is global output handler
     ## # param to be passed "as is" to the pfOutput
     ## # output function, output stream alike thing.
-    Sciter_UseElement*: proc (he: HELEMENT): int32 {.stdcall.}
-    Sciter_UnuseElement*: proc (he: HELEMENT): int32 {.stdcall.}
+    Sciter_UseElement*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
+    Sciter_UnuseElement*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetRootElement*: proc (hwnd: HWINDOW; 
-                                phe: ptr HELEMENT): int32 {.stdcall.}
+                                phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetFocusElement*: proc (hwnd: HWINDOW; 
-                                phe: ptr HELEMENT): int32 {.stdcall.}
+                                phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterFindElement*: proc (hwnd: HWINDOW; pt: Point;
-                              phe: ptr HELEMENT): int32 {.stdcall.}
+                              phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetChildrenCount*: proc (he: HELEMENT;
-                                  count: ptr uint32): int32 {.stdcall.}
+                                  count: ptr uint32): SCDOM_RESULT {.stdcall.}
     SciterGetNthChild*: proc (he: HELEMENT; n: uint32;
-                              phe: ptr HELEMENT): int32 {.stdcall.}
+                              phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetParentElement*: proc (he: HELEMENT;
                                   p_parent_he: ptr HELEMENT): int32 {.stdcall.}
     SciterGetElementHtmlCB*: proc (he: HELEMENT; outer: bool;
                                   rcv: LPCBYTE_RECEIVER;
-                                  rcv_param: pointer): int32 {.stdcall.}
+                                  rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterGetElementTextCB*: proc (he: HELEMENT; rcv: LPCWSTR_RECEIVER;
-                                 rcv_param: pointer): int32 {.stdcall.}
+                                 rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterSetElementText*: proc (he: HELEMENT; utf16: WideCString;
-                                length: uint32): int32 {.stdcall.}
+                                length: uint32): SCDOM_RESULT {.stdcall.}
     SciterGetAttributeCount*: proc (he: HELEMENT; 
-                                  p_count: ptr uint32): int32 {.stdcall.}
+                                  p_count: ptr uint32): SCDOM_RESULT {.stdcall.}
     SciterGetNthAttributeNameCB*: proc (he: HELEMENT; n: uint32;
                                         rcv: LPCSTR_RECEIVER;
-                                        rcv_param: pointer): int32 {.stdcall.}
+                                        rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterGetNthAttributeValueCB*: proc (he: HELEMENT; n: uint32;
                                        rcv: LPCWSTR_RECEIVER;
-                                       rcv_param: pointer): int32 {.stdcall.}
+                                       rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterGetAttributeByNameCB*: proc (he: HELEMENT; name: cstring;
                                       rcv: LPCWSTR_RECEIVER;
-                                      rcv_param: pointer): int32 {.stdcall.}
+                                      rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterSetAttributeByName*: proc (he: HELEMENT; name: cstring;
-                                    value: WideCString): int32 {.stdcall.}
-    SciterClearAttributes*: proc (he: HELEMENT): int32 {.stdcall.}
+                                    value: WideCString): SCDOM_RESULT {.stdcall.}
+    SciterClearAttributes*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetElementIndex*: proc (he: HELEMENT; 
-                                  p_index: ptr uint32): int32 {.stdcall.}
+                                  p_index: ptr uint32): SCDOM_RESULT {.stdcall.}
     SciterGetElementType*: proc (he: HELEMENT; 
-                                p_type: ptr cstring): int32 {.stdcall.}
+                                p_type: ptr cstring): SCDOM_RESULT {.stdcall.}
     SciterGetElementTypeCB*: proc (he: HELEMENT; rcv: LPCSTR_RECEIVER;
-                                  rcv_param: pointer): int32 {.stdcall.}
+                                  rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterGetStyleAttributeCB*: proc (he: HELEMENT; name: cstring;
                                       rcv: LPCWSTR_RECEIVER;
-                                      rcv_param: pointer): int32 {.stdcall.}
+                                      rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterSetStyleAttribute*: proc (he: HELEMENT; name: cstring;
-                                    value: WideCString): int32 {.stdcall.}
+                                    value: WideCString): SCDOM_RESULT {.stdcall.}
     SciterGetElementLocation*: proc (he: HELEMENT; p_location: ptr Rect;
-                                    areas: uint32): int32 {.stdcall.}
+                                    areas: uint32): SCDOM_RESULT {.stdcall.}
     ## #ELEMENT_AREAS
     SciterScrollToView*: proc (he: HELEMENT;
-                              SciterScrollFlags: uint32): int32 {.stdcall.}
+                              SciterScrollFlags: uint32): SCDOM_RESULT {.stdcall.}
     SciterUpdateElement*: proc (he: HELEMENT; 
-                                andForceRender: bool): int32 {.stdcall.}
-    SciterRefreshElementArea*: proc (he: HELEMENT; rc: Rect): int32 {.stdcall.}
-    SciterSetCapture*: proc (he: HELEMENT): int32 {.stdcall.}
-    SciterReleaseCapture*: proc (he: HELEMENT): int32 {.stdcall.}
+                                andForceRender: bool): SCDOM_RESULT {.stdcall.}
+    SciterRefreshElementArea*: proc (he: HELEMENT; rc: Rect): SCDOM_RESULT {.stdcall.}
+    SciterSetCapture*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
+    SciterReleaseCapture*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetElementHwnd*: proc (he: HELEMENT; p_hwnd: ptr HWINDOW;
-                                rootWindow: bool): int32 {.stdcall.}
+                                rootWindow: bool): SCDOM_RESULT {.stdcall.}
     SciterCombineURL*: proc (he: HELEMENT; szUrlBuffer: WideCString;
-                           UrlBufferSize: uint32): int32 {.stdcall.}
+                           UrlBufferSize: uint32): SCDOM_RESULT {.stdcall.}
     SciterSelectElements*: proc (he: HELEMENT; CSS_selectors: cstring;
                                 callback: SciterElementCallback;
-                                param: pointer): int32 {.stdcall.}
+                                param: pointer): SCDOM_RESULT {.stdcall.}
     SciterSelectElementsW*: proc (he: HELEMENT; CSS_selectors: WideCString;
                                   callback: SciterElementCallback;
-                                  param: pointer): int32 {.stdcall.}
+                                  param: pointer): SCDOM_RESULT {.stdcall.}
     SciterSelectParent*: proc (he: HELEMENT; selector: cstring; depth: uint32;
-                              heFound: ptr HELEMENT): int32 {.stdcall.}
+                              heFound: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterSelectParentW*: proc (he: HELEMENT; selector: 
                                 WideCString; depth: uint32;
-                                heFound: ptr HELEMENT): int32 {.stdcall.}
+                                heFound: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterSetElementHtml*: proc (he: HELEMENT; html: ptr byte; 
                                 htmlLength: uint32;
-                                where: uint32): int32 {.stdcall.}
+                                where: uint32): SCDOM_RESULT {.stdcall.}
     SciterGetElementUID*: proc (he: HELEMENT; 
-                                puid: ptr uint32): int32 {.stdcall.}
+                                puid: ptr uint32): SCDOM_RESULT {.stdcall.}
     SciterGetElementByUID*: proc (hwnd: HWINDOW; uid: uint32;
-                                  phe: ptr HELEMENT): int32 {.stdcall.}
+                                  phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterShowPopup*: proc (hePopup: HELEMENT; heAnchor: HELEMENT;
-                            placement: uint32): int32 {.stdcall.}
+                            placement: uint32): SCDOM_RESULT {.stdcall.}
     SciterShowPopupAt*: proc (hePopup: HELEMENT; pos: Point;
-                              placement: uint32): int32 {.stdcall.}
-    SciterHidePopup*: proc (he: HELEMENT): int32 {.stdcall.}
+                              placement: uint32): SCDOM_RESULT {.stdcall.}
+    SciterHidePopup*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetElementState*: proc (he: HELEMENT;
-                                  pstateBits: ptr uint32): int32 {.stdcall.}
+                                  pstateBits: ptr uint32): SCDOM_RESULT {.stdcall.}
     SciterSetElementState*: proc (he: HELEMENT; stateBitsToSet: uint32;
                                   stateBitsToClear: uint32;
-                                  updateView: bool): int32 {.stdcall.}
+                                  updateView: bool): SCDOM_RESULT {.stdcall.}
     SciterCreateElement*: proc (tagname: cstring; textOrNull: WideCString;
-                              phe: ptr HELEMENT): int32 {.stdcall.} ## #out
+                              phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.} ## #out
     SciterCloneElement*: proc (he: HELEMENT; 
-                              phe: ptr HELEMENT): int32 {.stdcall.} ## #out
+                              phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.} ## #out
     SciterInsertElement*: proc (he: HELEMENT; hparent: HELEMENT;
-                                index: uint32): int32 {.stdcall.}
-    SciterDetachElement*: proc (he: HELEMENT): int32 {.stdcall.}
-    SciterDeleteElement*: proc (he: HELEMENT): int32 {.stdcall.}
+                                index: uint32): SCDOM_RESULT {.stdcall.}
+    SciterDetachElement*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
+    SciterDeleteElement*: proc (he: HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterSetTimer*: proc (he: HELEMENT; milliseconds: uint32;
-                          timer_id: uint32): int32 {.stdcall.}
+                          timer_id: uint32): SCDOM_RESULT {.stdcall.}
     SciterDetachEventHandler*: proc (he: HELEMENT; pep: ElementEventProc;
-                                    tag: pointer): int32 {.stdcall.}
+                                    tag: pointer): SCDOM_RESULT {.stdcall.}
     SciterAttachEventHandler*: proc (he: HELEMENT; pep: ElementEventProc;
-                                    tag: pointer): int32 {.stdcall.}
+                                    tag: pointer): SCDOM_RESULT {.stdcall.}
     SciterWindowAttachEventHandler*: proc (hwndLayout: HWINDOW; 
                                           pep: ElementEventProc; tag: pointer;
-                                          subscription: uint32): int32 {.stdcall.}
+                                          subscription: uint32): SCDOM_RESULT {.stdcall.}
     SciterWindowDetachEventHandler*: proc (hwndLayout: HWINDOW; 
                                           pep: ElementEventProc;
-                                           tag: pointer): int32 {.stdcall.}
+                                          tag: pointer): SCDOM_RESULT {.stdcall.}
     SciterSendEvent*: proc (he: HELEMENT; appEventCode: uint32; 
                             heSource: HELEMENT; reason: ptr uint32;
-                            handled: ptr bool): int32 {.stdcall.} ## #out
+                            handled: ptr bool): SCDOM_RESULT {.stdcall.} ## #out
     SciterPostEvent*: proc (he: HELEMENT; appEventCode: uint32; 
-                            heSource: HELEMENT; reason: ptr uint32): int32 {.stdcall.}
+                            heSource: HELEMENT; reason: ptr uint32): SCDOM_RESULT {.stdcall.}
     SciterCallBehaviorMethod*: proc (he: HELEMENT;
-                                    params: ptr METHOD_PARAMS): int32 {.stdcall.}
+                                    params: ptr METHOD_PARAMS): SCDOM_RESULT {.stdcall.}
     SciterRequestElementData*: proc (he: HELEMENT; url: WideCString; 
                                     dataType: uint32;
-                                    initiator: HELEMENT): int32 {.stdcall.}
+                                    initiator: HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterHttpRequest*: proc (he: HELEMENT; url: WideCString; dataType: uint32;
                               requestType: uint32; 
                               requestParams: ptr REQUEST_PARAM;
-                              nParams: uint32): int32 {.stdcall.}
+                              nParams: uint32): SCDOM_RESULT {.stdcall.}
     ## # element to deliver data
     ## # url
     ## # data type, see SciterResourceType.
@@ -219,83 +219,83 @@ type
     ## # number of parameters
     SciterGetScrollInfo*: proc (he: HELEMENT; scrollPos: ptr Point; 
                               viewRect: ptr Rect;
-                              contentSize: ptr Size): int32 {.stdcall.}
+                              contentSize: ptr Size): SCDOM_RESULT {.stdcall.}
     SciterSetScrollPos*: proc (he: HELEMENT; scrollPos: Point;
-                              smooth: bool): int32 {.stdcall.}
+                              smooth: bool): SCDOM_RESULT {.stdcall.}
     SciterGetElementIntrinsicWidths*: proc (he: HELEMENT;
                                             pMinWidth: ptr int32;
-                                            pMaxWidth: ptr int32): int32 {.stdcall.}
+                                            pMaxWidth: ptr int32): SCDOM_RESULT {.stdcall.}
     SciterGetElementIntrinsicHeight*: proc (he: HELEMENT; forWidth: int32;
-                                            pHeight: ptr int32): int32 {.stdcall.}
+                                            pHeight: ptr int32): SCDOM_RESULT {.stdcall.}
     SciterIsElementVisible*: proc (he: HELEMENT; 
-                                  pVisible: ptr bool): int32 {.stdcall.}
+                                  pVisible: ptr bool): SCDOM_RESULT {.stdcall.}
     SciterIsElementEnabled*: proc (he: HELEMENT; 
-                                  pEnabled: ptr bool): int32 {.stdcall.}
+                                  pEnabled: ptr bool): SCDOM_RESULT {.stdcall.}
     SciterSortElements*: proc (he: HELEMENT; firstIndex: uint32;
                               lastIndex: uint32;
                               cmpFunc: ptr ELEMENT_COMPARATOR;
-                              cmpFuncParam: pointer): int32 {.stdcall.}
-    SciterSwapElements*: proc (he1: HELEMENT; he2: HELEMENT): int32 {.stdcall.}
+                              cmpFuncParam: pointer): SCDOM_RESULT {.stdcall.}
+    SciterSwapElements*: proc (he1: HELEMENT; he2: HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterTraverseUIEvent*: proc (evt: uint32; eventCtlStruct: pointer;
-                                  bOutProcessed: ptr bool): int32 {.stdcall.}
+                                  bOutProcessed: ptr bool): SCDOM_RESULT {.stdcall.}
     SciterCallScriptingMethod*: proc (he: HELEMENT; name: cstring; 
                                       argv: ptr VALUE; argc: uint32;
-                                      retval: ptr VALUE): int32 {.stdcall.}
+                                      retval: ptr VALUE): SCDOM_RESULT {.stdcall.}
     SciterCallScriptingFunction*: proc (he: HELEMENT; name: cstring; 
                                         argv: ptr VALUE;
                                         argc: uint32; 
-                                        retval: ptr VALUE): int32 {.stdcall.}
+                                        retval: ptr VALUE): SCDOM_RESULT {.stdcall.}
     SciterEvalElementScript*: proc (he: HELEMENT; script: WideCString;
                                     scriptLength: uint32;
-                                    retval: ptr VALUE): int32 {.stdcall.}
+                                    retval: ptr VALUE): SCDOM_RESULT {.stdcall.}
     SciterAttachHwndToElement*: proc (he: HELEMENT; 
-                                      hwnd: HWINDOW): int32 {.stdcall.}
+                                      hwnd: HWINDOW): SCDOM_RESULT {.stdcall.}
     SciterControlGetType*: proc (he: HELEMENT; 
-                                pType: ptr uint32): int32 {.stdcall.} ## #CTL_TYPE
-    SciterGetValue*: proc (he: HELEMENT; pval: ptr VALUE): int32 {.stdcall.}
-    SciterSetValue*: proc (he: HELEMENT; pval: ptr VALUE): int32 {.stdcall.}
+                                pType: ptr uint32): SCDOM_RESULT {.stdcall.} ## #CTL_TYPE
+    SciterGetValue*: proc (he: HELEMENT; pval: ptr VALUE): SCDOM_RESULT {.stdcall.}
+    SciterSetValue*: proc (he: HELEMENT; pval: ptr VALUE): SCDOM_RESULT {.stdcall.}
     SciterGetExpando*: proc (he: HELEMENT; pval: ptr VALUE;
-                            forceCreation: bool): int32 {.stdcall.}
+                            forceCreation: bool): SCDOM_RESULT {.stdcall.}
     SciterGetObject*: proc (he: HELEMENT; pval: ptr tiscript_value;
-                            forceCreation: bool): int32 {.stdcall.}
+                            forceCreation: bool): SCDOM_RESULT {.stdcall.}
     SciterGetElementNamespace*: proc (he: HELEMENT;
-                                      pval: ptr tiscript_value): int32 {.stdcall.}
+                                      pval: ptr tiscript_value): SCDOM_RESULT {.stdcall.}
     SciterGetHighlightedElement*: proc (hwnd: HWINDOW;
-                                        phe: ptr HELEMENT): int32 {.stdcall.}
+                                        phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterSetHighlightedElement*: proc (hwnd: HWINDOW;
-                                        he: HELEMENT): int32 {.stdcall.}
+                                        he: HELEMENT): SCDOM_RESULT {.stdcall.}
     ## #|
     ## #| DOM Node API
     ## #|
-    SciterNodeAddRef*: proc (hn: HNODE): int32 {.stdcall.}
-    SciterNodeRelease*: proc (hn: HNODE): int32 {.stdcall.}
+    SciterNodeAddRef*: proc (hn: HNODE): SCDOM_RESULT {.stdcall.}
+    SciterNodeRelease*: proc (hn: HNODE): SCDOM_RESULT {.stdcall.}
     SciterNodeCastFromElement*: proc (he: HELEMENT;
-                                    phn: ptr HNODE): int32 {.stdcall.}
+                                    phn: ptr HNODE): SCDOM_RESULT {.stdcall.}
     SciterNodeCastToElement*: proc (hn: HNODE;
-                                   he: ptr HELEMENT): int32 {.stdcall.}
-    SciterNodeFirstChild*: proc (hn: HNODE; phn: ptr HNODE): int32 {.stdcall.}
-    SciterNodeLastChild*: proc (hn: HNODE; phn: ptr HNODE): int32 {.stdcall.}
-    SciterNodeNextSibling*: proc (hn: HNODE; phn: ptr HNODE): int32 {.stdcall.}
-    SciterNodePrevSibling*: proc (hn: HNODE; phn: ptr HNODE): int32 {.stdcall.}
+                                   he: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
+    SciterNodeFirstChild*: proc (hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.stdcall.}
+    SciterNodeLastChild*: proc (hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.stdcall.}
+    SciterNodeNextSibling*: proc (hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.stdcall.}
+    SciterNodePrevSibling*: proc (hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.stdcall.}
     SciterNodeParent*: proc (hnode: HNODE; 
-                            pheParent: ptr HELEMENT): int32 {.stdcall.}
+                            pheParent: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterNodeNthChild*: proc (hnode: HNODE; n: uint32;
-                               phn: ptr HNODE): int32 {.stdcall.}
+                               phn: ptr HNODE): SCDOM_RESULT {.stdcall.}
     SciterNodeChildrenCount*: proc (hnode: HNODE; 
-                                    pn: ptr uint32): int32 {.stdcall.}
-    SciterNodeType*: proc (hnode: HNODE; 
-                          pNodeType: ptr uint32): int32 {.stdcall.} ## #NODE_TYPE
+                                    pn: ptr uint32): SCDOM_RESULT {.stdcall.}
+    SciterNodeType*: proc (hnode: HNODE; ## #NODE_TYPE
+                          pNodeType: ptr uint32): SCDOM_RESULT {.stdcall.} 
     SciterNodeGetText*: proc (hnode: HNODE; rcv: LPCWSTR_RECEIVER;
-                            rcv_param: pointer): int32 {.stdcall.}
+                            rcv_param: pointer): SCDOM_RESULT {.stdcall.}
     SciterNodeSetText*: proc (hnode: HNODE; text: WideCString;
-                              textLength: uint32): int32 {.stdcall.}
+                              textLength: uint32): SCDOM_RESULT {.stdcall.}
     SciterNodeInsert*: proc (hnode: HNODE; where: uint32; ## #NODE_INS_TARGET
-                            what: HNODE): int32 {.stdcall.}
-    SciterNodeRemove*: proc (hnode: HNODE; finalize: bool): int32 {.stdcall.}
+                            what: HNODE): SCDOM_RESULT {.stdcall.}
+    SciterNodeRemove*: proc (hnode: HNODE; finalize: bool): SCDOM_RESULT {.stdcall.}
     SciterCreateTextNode*: proc (text: WideCString; textLength: uint32;
-                                phnode: ptr HNODE): int32 {.stdcall.}
+                                phnode: ptr HNODE): SCDOM_RESULT {.stdcall.}
     SciterCreateCommentNode*: proc (text: WideCString; textLength: uint32;
-                                  phnode: ptr HNODE): int32 {.stdcall.}
+                                  phnode: ptr HNODE): SCDOM_RESULT {.stdcall.}
     ## #|
     ## #| Value API
     ## #|

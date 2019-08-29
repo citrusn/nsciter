@@ -1,7 +1,7 @@
 import os #, strutils
-import sciter/sciter
+import sciter
 
-let s = SAPI()
+let api = SAPI()
 SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
 SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
                 ALLOW_FILE_IO or ALLOW_SOCKET_IO or
@@ -97,21 +97,21 @@ proc testCallback() =
         discard fn.setNativeFunctor(nf)
         result["f"] = fn
     )
-#testCallback()
+testCallback()
 
 proc test_call() =
     #test sciter call
-    var v = wnd.call_function("gFunc", newValue("kkk"), newValue(555))
+    var v = wnd.callFunction("gFunc", newValue("kkk"), newValue(555))
     echo "sciter   call successfully:", $v
 
     #test method call
-    v = root.call_method("mfn", newValue("method call"), newValue(10300))
+    v = root.callMethod("mfn", newValue("method call"), newValue(10300))
     echo "method   call successfully:", $v
 
     #test function call
-    v = root.call_function("gFunc", newValue("function call"), newValue(10300))
+    v = root.callFunction("gFunc", newValue("function call"), newValue(10300))
     echo "function call successfully:", $v
-#test_call()
+test_call()
 
 var fe: seq[HELEMENT]
 proc findFirst(el: HELEMENT; selector: cstring): HELEMENT =        

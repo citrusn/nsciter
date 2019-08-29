@@ -300,7 +300,8 @@ proc setNativeFunctor*(v:var Value, nf:NativeFunctor):uint32 =
 
 ## # sds proc for python compatible
 
-proc call_function*(hwnd: HWINDOW | HELEMENT, name: cstring, args:varargs[Value]): Value =     
+proc callFunction*(hwnd: HWINDOW | HELEMENT, 
+                name: cstring, args:varargs[Value]): Value =     
     result = newValue()    
     var clen = len(args)
     var cargs = newSeq[Value](clen)
@@ -308,12 +309,13 @@ proc call_function*(hwnd: HWINDOW | HELEMENT, name: cstring, args:varargs[Value]
         cargs[i] = args[i]
     when hwnd is HWINDOW:
         ## Call scripting function defined in the global namespace."""
-        var ok = SciterCall(hwnd, name, uint32(clen), cargs[0].addr,  addr rv)
-        assert ok == HV_OK
+        var ok = SciterCall(hwnd, name, uint32(clen), cargs[0].addr,  result.addr)
+        assert ok
         #sciter.Value.raise_from(rv, ok != False, name)
     else:
         ## Call scripting function defined in the namespace of the element (a.k.a. global function)
-        var ok = SciterCallScriptingFunction(he, name, cargs[0].addr, uint32(clen),addr rv)
+        var ok = SciterCallScriptingFunction(hwnd, name, cargs[0].addr,
+                                             uint32(clen), result.addr)
         assert ok == SCDOM_OK
         #sciter.Value.raise_from(rv, ok == SCDOM_RESULT.SCDOM_OK, name)
         #self._throw_if(ok)
@@ -333,13 +335,15 @@ proc call_function*(hwnd: HWINDOW | HELEMENT, name: cstring, args:varargs[Value]
     return rv]#
 
 ## Call scripting method defined for the element
-proc call_method*(he: HELEMENT, name: cstring, args:varargs[Value]): Value = 
-    var rv = newValue()
+proc callMethod*(he: HELEMENT, name: cstring, args:varargs[Value]): Value = 
+    result = newValue()
     var clen = len(args)
     var cargs = newSeq[Value](clen)
     for i in 0..clen-1:
         cargs[i] = args[i]
-    var ok =  SciterCallScriptingMethod(he,  name,  cargs[0].addr, uint32(clen), addr rv)
+    var ok =  SciterCallScriptingMethod(he,  name,  cargs[0].addr, 
+                                        uint32(clen), result.addr)
+    assert ok == HV_OK.int32
     #sciter.Value.raise_from(rv, ok == SCDOM_RESULT.SCDOM_OK, name)
     #self._throw_if(ok)
-    return rv
+    return result

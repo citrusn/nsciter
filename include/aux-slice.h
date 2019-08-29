@@ -54,12 +54,12 @@ template <typename T >
       slice(): start(0), length(0) {}
       slice(const T* start_, size_t length_) { start = start_; length = (unsigned int)length_; }
       slice(const slice& src): start(src.start), length(src.length) {}
-      slice(const std::basic_string<T>& src): start(src.c_str()), length((unsigned int)src.length()) {}
-      //slice(const T* start_, const T* end_): start(start_), length( max(end_-start_,0)) {}
 
       slice& operator = (const slice& src) { start = src.start; length = src.length; return *this; }
 
-      const T*      end() const { return start + length; }
+      // definitions to support for(auto a : slice) {} loops in C++11
+      const T* begin() const { return start; }
+      const T* end() const { return start + length; }
 
       bool operator == ( const slice& r ) const
       {
@@ -175,6 +175,10 @@ template <typename T >
 
   #define MAKE_SLICE( T, D ) slice<T>(D, sizeof(D) / sizeof(D[0]))
 
+  // gets (static) array of elements and constructs slice of it (start/length pair)
+  template<typename T, int size>
+    inline slice<T> make_slice(const T(&arr)[size]) { return slice<T>(&arr[0], size); }
+
   #ifdef _DEBUG
 
   inline void slice_unittest()
@@ -253,7 +257,10 @@ template <typename T >
      slice<T> chars_of( const std::basic_string<T> &s ) {  return slice<T>(s.c_str(), s.length()); }
 
   template<typename T>
-     slice<T> elements_of( const std::vector<T> &s ) {  return slice<T>(s.cbegin(), s.size()); }
+     slice<T> elements_of(const T* s, size_t l) { return slice<T>(s, l); }
+
+  template<typename T>
+     slice<T> elements_of( const std::vector<T> &s ) {  return slice<T>(s.data(), s.size()); }
 
   template<typename T, int size>
      slice<T> elements_of(T (& arr)[size]){ return slice<T>(&arr[0],size);}
@@ -411,12 +418,19 @@ template <typename T >
           str += 1;
           pattern += 1;
         }
-        else if ( *str == *pattern || *pattern == AnyOneDigit )
+        else if (*pattern == AnyOneDigit)
         {
-          if ( !is_digit(*str )) return -1;
-          if ( !matchpos ) matchpos = str;
-          str += 1;
-          pattern += 1;
+          if (isdigit(*str)) {
+            if (!matchpos) matchpos = str;
+            str++;
+            pattern++;
+          }
+          else if (wildcard) {
+            str = ++strpos;
+            pattern = wildcard;
+          }
+          else
+            return -1;
         }
         else if ( wildcard )
         {

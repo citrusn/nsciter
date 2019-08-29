@@ -59,8 +59,7 @@ var fn_handle_scripting_call = proc(he: HELEMENT,
         params: ptr SCRIPTING_METHOD_PARAMS): uint = return 0
 var fn_ttach = proc(he: HELEMENT) = discard
 
-proc newEventHandler*(): EventHandler =
-    #var eh:EventHandler = cast[EventHandler](alloc(sizeof(EventHandlerObj)))
+proc newEventHandler*(): EventHandler =    
     #new(EventHandler)
     result = cast[EventHandler](alloc(sizeof(EventHandlerObj)))
     result.subscription = fn_subscription
@@ -90,10 +89,7 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
     var pThis = cast[EventHandler](tag)
     #if evtg > uint32(256):
     #  debugEcho "element_proc: tag " , repr pThis , evtg , " prms:", repr prms
-    assert pThis != nil
-    if pThis == nil:
-        echo "pThis is nil"
-        return 0
+    assert pThis != nil, "pThis is nil"    
     case cast[EVENT_GROUPS](evtg)
     of SUBSCRIPTIONS_REQUEST:
         var p = cast[ptr cuint](prms)
@@ -145,7 +141,7 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
 
     of HANDLE_METHOD_CALL:
         var p: ptr METHOD_PARAMS = cast[ptr METHOD_PARAMS](prms)
-        echo "HANDLE_METHOD_CALL: ", cast[BEHAVIOR_METHOD_IDENTIFIERS](p.methodID)
+        #echo "HANDLE_METHOD_CALL: ", cast[BEHAVIOR_METHOD_IDENTIFIERS](p.methodID)
         return pThis.handle_method_call(he, p)
 
     of HANDLE_DATA_ARRIVED:
@@ -163,7 +159,7 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
         ## # call using sciter::value's (from CSSS!)
     of HANDLE_SCRIPTING_METHOD_CALL:
         var p: ptr SCRIPTING_METHOD_PARAMS = cast[ptr SCRIPTING_METHOD_PARAMS](prms)
-        echo "HANDLE_SCRIPTING_METHOD_CALL: ", p.name
+        #echo "HANDLE_SCRIPTING_METHOD_CALL: ", p.name
         return pThis.handle_scripting_call(he, p)
 
         ## # call using tiscript::value's (from the script)
@@ -183,7 +179,7 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
     else:
         return 0
 
-proc Attach*(target: EventTarget, eh: var EventHandler,
+proc Attach*(target: EventTarget, eh: EventHandler,
             mask: uint32 = HANDLE_ALL): int32 {.discardable.} =
     when EventTarget is HWINDOW:
         return SciterWindowAttachEventHandler(target, element_proc, eh, mask)
@@ -197,11 +193,12 @@ proc Detach*(target: EventTarget, eh: EventHandler,
     elif EventTarget is HELEMENT:
         return SciterDetachEventHandler(target, element_proc, eh)
 
-proc onClick*(target: EventTarget, handler: proc():uint32): int32 {.discardable.} =
+proc onClick*(target: EventTarget, 
+            handler: proc():uint32): int32 {.discardable.} =
     var eh = newEventHandler()
     eh.handle_event = proc(he: HELEMENT,
                            params: ptr BEHAVIOR_EVENT_PARAMS): uint =
-        echo "onClick: ", cast[BEHAVIOR_EVENTS](params.cmd)
+        #echo "onClick: ", cast[BEHAVIOR_EVENTS](params.cmd)
         if params.cmd == BUTTON_CLICK:
             return handler()        
     return target.Attach(eh, HANDLE_BEHAVIOR_EVENT)
@@ -213,7 +210,7 @@ proc defineScriptingFunction*(target: EventTarget, name: string,
     var eh = newEventHandler()
     eh.handle_scripting_call = proc(he: HELEMENT,
                                 params: ptr SCRIPTING_METHOD_PARAMS): uint =
-        echo "handle_scripting_call: ", params.name
+        #echo "handle_scripting_call: ", params.name
         if params.name != name:
             return 0
         var args = newSeq[Value](params.argc)
@@ -241,7 +238,7 @@ proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR,
                 s = s & " HANDLED"
             echo "handle_mouse cmd: ", s, " pos: ", params.pos,
                 " heTarget: ", repr params.target
-        return 0
+        return 1
     eh.subscription = proc(he: HELEMENT, params: var cuint): uint =
         echo "gdi draw subscription"
         #if comment then full subscription events
@@ -256,23 +253,25 @@ proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR,
             discard g.gLineColor(hgfx, g.RGBA(15, 20, 240))
             discard g.gLineWidth(hgfx, 2.0)
             discard g.gFillColor(hgfx, g.RGBA(20, 20, 20))
-            discard g.gRectangle(hgfx, POS(params.area.left), POS(params.area.top),
-                                POS(params.area.right), POS(params.area.bottom))
+            discard g.gRectangle(hgfx, POS(params.area.left), 
+                                POS(params.area.top),
+                                POS(params.area.right), 
+                                POS(params.area.bottom))
             discard g.gFillColor(hgfx, g.RGBA(255, 15, 0))
-            discard g.gRectangle(hgfx, POS(params.area.left+30), POS(params.area.top+30),
-                                POS(params.area.right-30), POS(
-                                        params.area.bottom-30))
+            discard g.gRectangle(hgfx, POS(params.area.left+30),
+                                POS(params.area.top+30),
+                                POS(params.area.right-30), 
+                                POS(params.area.bottom-30))
         #echo g.gLine(hgfx, 10, 10, 500, 60) # not valid coords
         #if hgfx != nil: discard g.gRelease(hgfx)
         return 1
     eh.handle_event = proc(he: HELEMENT,
-            params: ptr BEHAVIOR_EVENT_PARAMS): uint =
+                           params: ptr BEHAVIOR_EVENT_PARAMS): uint =
         echo "handle_event: ", cast[BEHAVIOR_EVENTS](params.cmd and 0x7FFF)
-        #fn() #
-        if params.cmd == REQUEST_TOOLTIP:
+        #[if params.cmd == REQUEST_TOOLTIP:
             echo repr params
             params.he = tlp
-            return 1
+            return 1]#
         return 0
 
     return target.element.Attach(eh, HANDLE_ALL)

@@ -1,10 +1,11 @@
 #pragma once
 
 #if defined(_WIN32)
-
-  #define WIN32_LEAN_AND_MEAN
+  #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+  #endif
+  #define _WINSOCKAPI_
   #include <windows.h>
-  //#include <assert.h>
 #else
   #include <atomic>
 #endif

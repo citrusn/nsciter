@@ -55,8 +55,12 @@ testInsertFn("hello, world#1", 1)
 testInsertFn("hello, world#5", 8)
 
 #wnd.setTitle("test setTitle window caption") - # windows only proc calling
-wnd.onClick(proc():uint32 = echo "generic click" return 0)
-wnd.onClick(proc():uint32 = echo "generic click 2" return 1)
+wnd.onClick(proc():uint32 = 
+    echo "generic click"
+    return 0)
+wnd.onClick(proc():uint32 = 
+    echo "generic click 2"
+    return 1)
 
 # test value function
 var testFn = proc() =
@@ -113,7 +117,7 @@ echo "dfm hello ret: ",
     wnd.defineScriptingFunction("hello", 
         proc(args: seq[Value]): Value =
             echo "hello from sciter script method"
-            echo "\targs:")#, args)
+            echo "\targs:", args)
 
 proc testCallback() =
     echo "dfm cbCall ret: ", 

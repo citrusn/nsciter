@@ -1,56 +1,6 @@
 #ifndef __value_h__
 #define __value_h__
 
-#ifdef C2NIM
-  #cdecl
-  #skipinclude
-  #def SCFN(name) (*name)
-  #def SCAPI
-  #def SC_CALLBACK
-  #def TISAPI
-  #def EXTAPI
-  
-  #prefix _
-  
-  #discardableprefix Sciter
-  #discardableprefix Value
-  
-  #def UINT uint32
-  #def INT int32
-  #def UINT64 uint64
-  #def INT64 int64
-  #def BYTE byte
-  #def LPCBYTE pointer
-  #def WCHAR Utf16Char
-  #def LPCWSTR  WideCString
-  #def LPWSTR  WideCString
-  #def CHAR char
-  #def LPCSTR cstring
-  #def VOID void
-  #def UINT_PTR UINT
-  #def BOOL bool
-  #def double float64
-  
-  #def WINDOWS windows
-  #def LINUX posix
-  #def OSX osx
-  
-  #def SCITER_VALUE Value
-  #def RECT Rect
-  #def POINT Point
-  #def SIZE Size
-  #def LPVOID pointer
-  #def LPCVOID pointer
-  #def LPRECT Rect*
-  #def LPCRECT Rect*
-  #def PPOINT Point*
-  #def LPPOINT Point*
-  #def PSIZE Size*
-  #def LPSIZE Size*
-  #def LPUINT UINT*
-  #def SCDOM_RESULT INT
-#endif
-
 #include "sciter-x-types.h"
 
 enum VALUE_RESULT
@@ -68,30 +18,32 @@ typedef struct
   UINT64   d;
 } VALUE;
 
-#ifndef C2NIM
-    #define FLOAT_VALUE   double
-#else
-#def VALUE_TYPE VTYPE
-#def FLOAT_VALUE float64
-#endif
+#define FLOAT_VALUE   double
 
 enum VALUE_TYPE
 {
     T_UNDEFINED = 0,
     T_NULL = 1,
-    T_BOOL, 
-    T_INT,
-    T_FLOAT,
-    T_STRING, 
-    T_DATE,     // INT64 - contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC), a.k.a. FILETIME on Windows
-    T_CURRENCY, // INT64 - 14.4 fixed number. E.g. dollars = int64 / 10000; 
-    T_LENGTH,   // length units, value is int or float, units are VALUE_UNIT_TYPE
-    T_ARRAY,
-    T_MAP,
-    T_FUNCTION,
-    T_BYTES,      // sequence of bytes - e.g. image data
-    T_OBJECT,     // scripting object proxy (TISCRIPT/SCITER)
-    T_DOM_OBJECT  // DOM object (CSSS!), use get_object_data to get HELEMENT 
+    T_BOOL = 2,
+    T_INT  = 3,
+    T_FLOAT = 4,
+    T_STRING = 5,
+    T_DATE = 6,     // INT64 - contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC), a.k.a. FILETIME on Windows
+    T_CURRENCY = 7, // INT64 - 14.4 fixed number. E.g. dollars = int64 / 10000; 
+    T_LENGTH = 8,   // length units, value is int or float, units are VALUE_UNIT_TYPE
+    T_ARRAY = 9,
+    T_MAP = 10,
+    T_FUNCTION = 11,   // named tuple , like array but with name tag
+    T_BYTES = 12,      // sequence of bytes - e.g. image data
+    T_OBJECT = 13,     // scripting object proxy (TISCRIPT/SCITER)
+    T_DOM_OBJECT = 14,  // DOM object, use get_object_data to get HELEMENT 
+    //T_RESOURCE = 15,  // 15 - other thing derived from tool::resource
+    //T_RANGE = 16,     // 16 - N..M, integer range.
+    T_DURATION = 17,   // double, seconds
+    T_ANGLE = 18,      // double, radians
+    T_COLOR = 19,      // [unsigned] INT, ABGR
+
+
 };
 
 enum VALUE_UNIT_TYPE
@@ -110,7 +62,7 @@ enum VALUE_UNIT_TYPE
     UT_PC = 12, //picas (1 pica = 12 points). 
     UT_DIP = 13,
     reserved3 = 14, 
-    UT_COLOR = 15, // color in int
+    reserved4 = 15, 
     UT_URL   = 16,  // url in string
 };
 
@@ -127,7 +79,7 @@ enum VALUE_UNIT_TYPE_OBJECT
 {
     UT_OBJECT_ARRAY  = 0,   // type T_OBJECT of type Array
     UT_OBJECT_OBJECT = 1,   // type T_OBJECT of type Object
-    UT_OBJECT_CLASS  = 2,   // type T_OBJECT of type Type (class or namespace)
+    UT_OBJECT_CLASS  = 2,   // type T_OBJECT of type Class (class or namespace)
     UT_OBJECT_NATIVE = 3,   // type T_OBJECT of native Type with data slot (LPVOID)
     UT_OBJECT_FUNCTION = 4, // type T_OBJECT of type Function
     UT_OBJECT_ERROR = 5,    // type T_OBJECT of type Error
@@ -137,7 +89,7 @@ enum VALUE_UNIT_TYPE_OBJECT
 enum VALUE_UNIT_TYPE_STRING
 {
     UT_STRING_STRING = 0,        // string
-    UT_STRING_ERROR  = 1,         // is an error string
+    UT_STRING_ERROR  = 1,        // is an error string
     UT_STRING_SECURE = 2,        // secure string ("wiped" on destroy)
     UT_STRING_SYMBOL = 0xffff,   // symbol in tiscript sense
 };
@@ -146,7 +98,7 @@ enum VALUE_UNIT_TYPE_STRING
 typedef VOID NATIVE_FUNCTOR_INVOKE( VOID* tag, UINT argc, const VALUE* argv, VALUE* retval); // retval may contain error definition
 typedef VOID NATIVE_FUNCTOR_RELEASE( VOID* tag );
 
-#ifndef C2NIM
+
 /**
  * ValueInit - initialize VALUE storage
  * This call has to be made before passing VALUE* to any other functions
@@ -261,13 +213,11 @@ UINT SCAPI ValueNthElementValue( const VALUE* pval, INT n, VALUE* pretval);
  */
 UINT SCAPI ValueNthElementValueSet( VALUE* pval, INT n, const VALUE* pval_to_set);
 
-#endif
 /**Callback function used with #ValueEnumElements().
  * return TRUE to continue enumeration
  */
 typedef BOOL SC_CALLBACK KeyValueCallback( LPVOID param, const VALUE* pkey, const VALUE* pval );
 
-#ifndef C2NIM
 /**
  * ValueEnumElements - enumeartes key/value pairs of T_MAP, T_FUNCTION and T_OBJECT values
  * - T_MAP - key of nth key/value pair in the map;
@@ -299,8 +249,6 @@ UINT SCAPI ValueSetValueToKey( VALUE* pval, const VALUE* pkey, const VALUE* pval
  */
 UINT SCAPI ValueGetValueOfKey( const VALUE* pval, const VALUE* pkey, VALUE* pretval);
 
-#endif
-
 enum VALUE_STRING_CVT_TYPE
 {
   CVT_SIMPLE,        ///< simple conversion of terminal values 
@@ -309,8 +257,6 @@ enum VALUE_STRING_CVT_TYPE
   CVT_XJSON_LITERAL, ///< x-json parsing/emission, date is emitted as ISO8601 date literal, currency is emitted in the form DDDD$CCC
                                                    
 };
-
-#ifndef C2NIM
 
 /**
  * ValueToString - converts value to T_STRING inplace:
@@ -353,15 +299,13 @@ UINT SCAPI ValueInvoke( const VALUE* pval, VALUE* pthis, UINT argc, const VALUE*
  */
 UINT SCAPI ValueNativeFunctorSet( VALUE* pval, 
     NATIVE_FUNCTOR_INVOKE*  pinvoke,
-    NATIVE_FUNCTOR_RELEASE* prelease = NULL,
-    VOID* tag = NULL );
+    NATIVE_FUNCTOR_RELEASE* prelease /* = NULL*/,
+    VOID* tag /* = NULL*/ );
 
 BOOL SCAPI ValueIsNativeFunctor( const VALUE* pval);
 
-#endif
 
-#ifndef C2NIM
-#if defined(__cplusplus) && !defined(__value_hpp__)
+#if defined(__cplusplus) && !defined(__value_hpp__) && !defined(PLAIN_API_ONLY)
 
   #include "value.hpp"
 
@@ -376,6 +320,5 @@ BOOL SCAPI ValueIsNativeFunctor( const VALUE* pval);
   }
 
 #endif //defined(__cplusplus)
-#endif
 
 #endif
