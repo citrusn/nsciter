@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "MinGW",
             "includePath": [
                 "${workspaceFolder}/**",
                 "D:/Spc/sciter-sdk-4/include/*",                
@@ -13,7 +13,8 @@
                 "UNICODE",
                 "_UNICODE"
             ],
-            "intelliSenseMode": "msvc-x64"
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "D:/spc/mingw32/bin/gcc.exe"
         }
     ],
     "version": 4

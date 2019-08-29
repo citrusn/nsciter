@@ -22,6 +22,8 @@
 
   #include <string>
   #include <functional>
+  #include <stdexcept>
+
   #include "aux-slice.h"
   #include "aux-cvt.h"
 
@@ -67,18 +69,24 @@
       value(const value& src) { ValueInit(this); ValueCopy(this,&src); }
       value(const VALUE& src) { ValueInit(this); ValueCopy(this,&src); }
 
+#ifdef CPP11
+      value(value&& src) { ValueInit(this); std::swap( *(VALUE*)this, *(VALUE*)&src); }
+#endif
+
+      value(const value_key_a& src);
+      value(const value_idx_a& src);
+      
       value& operator = (const value& src) { ValueCopy(this,&src); return *this; }
       value& operator = (const VALUE& src) { ValueCopy(this,&src); return *this; }
 
       value( bool v )           { ValueInit(this); ValueIntDataSet(this, v?1:0, T_BOOL, 0); }
       value( int  v )           { ValueInit(this); ValueIntDataSet(this, v, T_INT, 0); }
       value( double v )         { ValueInit(this); ValueFloatDataSet(this, v, T_FLOAT, 0); }
+      value( float v )          { ValueInit(this); ValueFloatDataSet(this, v, T_FLOAT, 0); }
 
       value( const WCHAR* s, unsigned int slen = 0 ) { ValueInit(this); ValueStringDataSet(this, LPCWSTR(s), (slen || !s)? slen : (unsigned int)str_length(s), 0); }
       value( const string& s ) { ValueInit(this); ValueStringDataSet(this, LPCWSTR(s.c_str()), UINT(s.length()), 0); }
       value( const astring& s ) { aux::a2w as(s.c_str()); ValueInit(this); ValueStringDataSet(this, LPCWSTR(as.c_str()), UINT(as.length()), UT_STRING_SYMBOL); }
-      //value( const std::ustring& s ) { ValueInit(this); ValueStringDataSet(this, LPCWSTR(s.c_str()), UINT(s.length()), 0); }
-      //value( const std::string& s ) { aux::a2w as(s.c_str()); ValueInit(this); ValueStringDataSet(this, LPCWSTR(as.c_str()), UINT(as.length()), UT_STRING_SYMBOL); }
       value( aux::wchars ws )   { ValueInit(this); ValueStringDataSet(this, LPCWSTR(ws.start), ws.length, 0); }
 
       value( aux::bytes bs )    { ValueInit(this); ValueBinaryDataSet(this, bs.start, bs.length, T_BYTES, 0); }
@@ -94,6 +102,15 @@
       static value date( FILETIME ft, bool is_utc = true /* true if ft is UTC*/ )  { value t; ValueInt64DataSet(&t, *((INT64*)&ft), T_DATE, is_utc); return t;} 
 #endif
       static value symbol( aux::wchars wc ) { value t; ValueInit(&t); ValueStringDataSet(&t, LPCWSTR(wc.start), wc.length , 0xFFFF); return t; }
+
+      /** set color value, abgr - a << 24 | b << 16 | g << 8 | r, where a,b,g,r are bytes */
+      static value color(UINT abgr) { value t; ValueInit(&t); ValueIntDataSet(&t, abgr, T_COLOR, 0); return t; }
+      
+      /** set duration value, seconds */
+      static value duration(double seconds) { value t; ValueInit(&t); ValueFloatDataSet(&t, seconds, T_DURATION, 0); return t; }
+
+      /** set angle value, radians */
+      static value angle(double radians) { value t; ValueInit(&t); ValueFloatDataSet(&t, radians, T_ANGLE, 0); return t; }
 
       // string-symbol
       value( const char* s ) 
@@ -112,6 +129,27 @@
         return value( aux::chars_of(s) );
       }
 
+      /** Creates an array of values packaged into the value 
+          Creates an empty array if called with length == 0 */
+      static value make_array( unsigned int length = 0, const value* elements = nullptr )
+      {
+        value v;
+        ValueIntDataSet(&v, INT(length), T_ARRAY, 0);
+        if( elements ) 
+          for( unsigned int i = 0; i < length; ++i ) 
+           v.set_item(INT(i),elements[i]);
+        return v;
+      }
+
+      /** Creates an empty json key/value map (object in JS terms) 
+          The map can be populated by map.set_item(key,val); */
+      static value make_map(  )
+      {
+        value v;
+        ValueIntDataSet(&v, INT(0), T_MAP, 0);
+        return v;
+      }
+      
       static value secure_string(const WCHAR* s, size_t slen)
       {
         value v;
@@ -146,6 +184,10 @@
       bool is_dom_element() const { return t == T_DOM_OBJECT; }
       // if it is a native functor reference
       bool is_native_function() const { return !!ValueIsNativeFunctor(this); }
+
+      bool is_color() const { return t == T_COLOR; }
+      bool is_duration() const { return t == T_DURATION; }
+      bool is_angle() const { return t == T_ANGLE; }
       
       bool is_null() const { return t == T_NULL; }
 
@@ -199,6 +241,32 @@
         aux::bytes bs;
         ValueBinaryData(this,&bs.start,&bs.length);
         return bs;
+      }
+
+      UINT get_color(UINT defv = 0) const 
+      {
+        UINT v = defv;
+        assert(is_color());
+        ValueIntData(this, (INT*)&v);
+        return v;
+      }
+
+      // returns radians if this->is_angle()
+      double get_angle(double defv = 0) const 
+      {
+        double v = defv;
+        assert(is_angle());
+        ValueFloatData(this, &v);
+        return v;
+      }
+
+      // returns seconds if this->is_duration()
+      double get_duration(double defv = 0) const
+      {
+        double v = defv;
+        assert(is_duration());
+        ValueFloatData(this, &v);
+        return v;
       }
 
 #ifdef WIN32
@@ -281,24 +349,27 @@
       const value operator[](const value& key) const { return get_item(key); }
       value_key_a operator[](const value& key);
 
+#ifdef CPP11
       typedef std::function<bool(const value& key, const value& val)> key_value_cb;
+#endif
 
       struct enum_cb
       {
         // return true to continue enumeration
         virtual bool on(const value& key, const value& val) = 0;
+
         static BOOL SC_CALLBACK _callback( LPVOID param, const VALUE* pkey, const VALUE* pval )
         {
           enum_cb* cb = (enum_cb*)param;
           return cb->on( *(value*)pkey, *(value*)pval );
         }
-
+#ifdef CPP11
         static BOOL SC_CALLBACK lambda_callback( LPVOID param, const VALUE* pkey, const VALUE* pval )
         {
           key_value_cb* cb = (key_value_cb*)param;
           return (*cb)(*(value*)pkey, *(value*)pval );
         }
-
+#endif
       };
 
       // enum
@@ -307,11 +378,13 @@
         ValueEnumElements(const_cast<value*>(this), &enum_cb::_callback, &cb);
       }
 
+#ifdef CPP11
       // calls cbf for each key/value pair found in T_OBJECT or T_MAP  
       void each_key_value(key_value_cb cbf) const
       {
         ValueEnumElements(const_cast<value*>(this), &enum_cb::lambda_callback, &cbf);
       }
+#endif      
       
       value key(int n) const
       {
@@ -347,13 +420,24 @@
         ValueSetValueToKey( this,&key,&v );
       }
 
-      const value get_item(const value& key) const
+      /** get value by key value
+          \return \b #value under that key if this value is a map/object containing that key, otherwise undefined value */
+      value get_item(const value& key) const
       {
         value r;
         ValueGetValueOfKey( this, &key, &r);
         return r;
       }
 
+      /** get value by name 
+          \return \b #value under that key if this value is a map/object containing that key, otherwise undefined value */
+      value get_item(const char* name) const
+      {
+        value key(name);
+        value r;
+        ValueGetValueOfKey( this, &key, &r);
+        return r;
+      }
       
       // T_OBJECT and T_DOM_OBJECT only, get value of object's data slot
       void* get_object_data() const
@@ -400,12 +484,13 @@
         return rv;
       }
 
-      value call() const {  return call(0,nullptr);  }
+      value call() const {  return call(0,0);  }
       value call( const value& p1 ) const {  return call(1,&p1); }
       value call( const value& p1, const value& p2 )  const { value args[2] = { p1,p2 };  return call(2,args); }
       value call( const value& p1, const value& p2, const value& p3 ) const { value args[3] = { p1,p2,p3 };  return call(3,args); }
       value call( const value& p1, const value& p2, const value& p3, const value& p4 )  const { value args[4] = { p1,p2,p3,p4 };  return call(4,args); }
 
+      /** converts T_OBJECT/UT_OBJECT_*** values into plain map of key/value pairs */
       void isolate()
       {
         ValueIsolate(this);
@@ -463,7 +548,6 @@
     public:
       ~value_key_a() {}
       value_key_a& operator= (const value& val) { col.set_item(key,val); return *this; }
-      operator const value() const              { return col.get_item(key); }
     };
 
     inline value_key_a 
@@ -481,13 +565,23 @@
     public:
       ~value_idx_a() {}
       value_idx_a& operator= (const value& val) { col.set_item(idx,val); return *this; }
-      operator const value() const              { return col.get_item(idx); }
     };
 
     inline value_idx_a 
         value::operator[](int idx) { return value_idx_a(*this, idx); }
 
+    inline value::value(const value_key_a& src) {
+      ValueInit(this);
+      *this = src.col.get_item(src.key);
+    }
+
+    inline value::value(const value_idx_a& src) {
+      ValueInit(this);
+      *this = src.col.get_item(src.idx);
+    }
+
   }
+
 
 
 #ifdef CPP11
@@ -575,6 +669,31 @@
           return value(r); 
       }); 
     }
+
+    template<typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
+    inline value vfunc( R(*func)(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)) {
+      return value([func](unsigned int argc, const value *argv) -> value {
+        R r = func(argc >= 1 ? argv[0].get<T1>() : T1(),
+          argc >= 2 ? argv[1].get<T2>() : T2(),
+          argc >= 3 ? argv[2].get<T3>() : T3(),
+          argc >= 4 ? argv[3].get<T4>() : T4(),
+          argc >= 5 ? argv[4].get<T5>() : T5());
+        return value(r);
+      });
+    }
+    template<typename R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+    inline value vfunc( R(*func)(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6)) {
+      return value([func](unsigned int argc, const value *argv) -> value {
+        R r = func(argc >= 1 ? argv[0].get<T1>() : T1(),
+          argc >= 2 ? argv[1].get<T2>() : T2(),
+          argc >= 3 ? argv[2].get<T3>() : T3(),
+          argc >= 4 ? argv[3].get<T4>() : T4(),
+          argc >= 5 ? argv[4].get<T5>() : T5(),
+          argc >= 6 ? argv[5].get<T6>() : T6());
+        return value(r);
+      });
+    }
+
 
     // versions of the above but for generic std::function
     template<typename R>

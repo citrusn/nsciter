@@ -14,9 +14,14 @@
 
 static std::vector<sciter::string> _argv;
 
+#ifndef SKIP_MAIN
+
 int main(int argc, const char * argv[])
 {
   NSApplication * application = [NSApplication sharedApplication];
+  NSArray *tl;
+  [[NSBundle mainBundle] loadNibNamed:@"MainMenu" owner:application topLevelObjects:&tl];
+  
     
   for( int i = 0; i < argc; ++i ) {
       aux::a2w w(argv[i]);
@@ -35,6 +40,7 @@ int main(int argc, const char * argv[])
   //};
   //return uimain(message_pump);
 }
+#endif
 
 namespace sciter {
     
@@ -75,7 +81,7 @@ namespace sciter {
   }    
 
   void window::dismiss() {
-    if(_hwnd) [nswindow(_hwnd) close];
+    if(_hwnd) [nswindow(_hwnd) performClose: nswindow(_hwnd)];
     _hwnd = 0;
   }
 

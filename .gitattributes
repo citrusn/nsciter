@@ -1,0 +1,8 @@
+* text=auto 
+include/* linguist-vendored=true
+*.nim linguist-language=Nim
+*.nim text diff=Nim
+
+*.gitattributes text 
+.gitignore text 
+*.md text 

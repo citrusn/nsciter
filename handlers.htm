@@ -5,10 +5,10 @@
       html {
         /*overflow: hidden;*/
         padding-left: 20dip;
-        min-width:20%;
+        /*min-width:20%;
         width: 300dip;
         max-width: 30%;
-        height: 400dip;
+        height: 400dip;*/
       }
       ol {
         margin-left: 20dip;
@@ -24,7 +24,7 @@
         background-color: green;
         assigned!: self::opacity = 1.0, self.start-timer(100);
         timer!: self::opacity > 0.0?
-          self::opacity = self::opacity - 0.1 # return cancel /* to stop the timer */;
+          self::opacity = self::opacity - 0.05 # return cancel /* to stop the timer */;
       }
       button#native {
         color: yellow;
@@ -34,7 +34,13 @@
         color:blue;
         click!:gprintln("hello world", 11,22,33,44);
       }
+      malevich {
+        behavior: gdi-drawing; 
+        display:block;
+        size:300dip;
+      }
     </style>
+
     <script type="text/tiscript">
       //view.connectToInspector();
       // for host calls
@@ -77,8 +83,17 @@
       <label>Y (Ctrl+2):</label><input type="integer" name="y" step="20" accesskey="^2" />
     </form>
   </div>
-  <div id="output">
+  <div id="output">  </div>
 
-  </div>
+  <h2>Native GDI drawing behavior demo</h2>
+  <p>See: sdk/include/behaviors/behavior_drawing-gdi.cpp</p>
+  <!-- In native code not working now --> 
+  <popup role="tooltip" id="dyn-tooltip" format="Tooltip # %d">Tooltip</popup>
+  <malevich></malevich>
+  
+  <!-- Test download url --> 
+  <p>Url to load: <span id='url'>placed here</span></p>
+  <div id='content' style='size: *'></div>
+
 </body>
 </html>

@@ -15,6 +15,7 @@ when not defined(windows):
   include widestr
 
 type
+  RectRef* = ref Rect
   Rect* = object
     left*: int32
     top*: int32
@@ -29,12 +30,12 @@ type
     cx*: int32
     cy*: int32
 
-  LPCWSTR_RECEIVER* = proc (str: ptr WideCString; str_length: cuint; param: pointer) {.stdcall.}
+  LPCWSTR_RECEIVER* = proc (str: WideCString; str_length: cuint; param: pointer) {.stdcall.}
   LPCSTR_RECEIVER*  = proc (str: cstring; str_length: cuint; param: pointer) {.stdcall.}
-  LPCBYTE_RECEIVER* = proc (str: ptr byte; num_bytes: cuint; param: pointer) {.stdcall.}
+  LPCBYTE_RECEIVER* = proc (str: cstring; num_bytes: cuint; param: pointer) {.stdcall.}
 
 when defined(windows):
-  import winlean
+  #import winlean
   const
     whdr = "<windows.h>"
     # d2hdr = "<D2d1.h>"
@@ -44,6 +45,11 @@ when defined(windows):
     LPARAM* = ByteAddress
     LRESULT* = ByteAddress
     HRESULT* = int
+    LONG* = int32
+    ULONG* = int32
+    PULONG* = ptr int
+    WINBOOL* = int32
+
     MSG* {.header:whdr, importc.} = object
     # ID2D1RenderTarget* {.header:d2hdr, importc.} = object
     # IDXGISwapChain* {.header:d2hdr, importc.} = object
