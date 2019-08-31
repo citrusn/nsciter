@@ -102,7 +102,7 @@ type
     SciterGetNthChild*: proc (he: HELEMENT; n: uint32;
                               phe: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetParentElement*: proc (he: HELEMENT;
-                                  p_parent_he: ptr HELEMENT): int32 {.stdcall.}
+                                  p_parent_he: ptr HELEMENT): SCDOM_RESULT {.stdcall.}
     SciterGetElementHtmlCB*: proc (he: HELEMENT; outer: bool;
                                   rcv: LPCBYTE_RECEIVER;
                                   rcv_param: pointer): SCDOM_RESULT {.stdcall.}
@@ -369,7 +369,7 @@ type
                                 pdataLength: ptr uint32): bool {.stdcall.}
     SciterCloseArchive*: proc (harc: HSARCHIVE): bool {.stdcall.}
     SciterFireEvent*: proc (evt: ptr BEHAVIOR_EVENT_PARAMS; post: bool;
-                          handled: ptr bool): int32 {.stdcall.}
+                          handled: ptr bool): SCDOM_RESULT {.stdcall.}
     SciterGetCallbackParam*: proc (hwnd: HWINDOW): pointer {.stdcall.}
     SciterPostCallback*: proc (hwnd: HWINDOW; wparam: uint32; lparam: uint32;
                              timeoutms: uint32): uint32 {.stdcall.}
@@ -536,454 +536,454 @@ proc SciterSetupDebugOutput*(hwndOrNull: HWINDOW; param: pointer;
     inline.} =
   SAPI().SciterSetupDebugOutput(hwndOrNull, param, pfOutput)
 
-proc Sciter_UseElement*(he: HELEMENT): int32 {.
+proc Sciter_UseElement*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().Sciter_UseElement(he)
 
-proc Sciter_UnuseElement*(he: HELEMENT): int32 {.
+proc Sciter_UnuseElement*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().Sciter_UnuseElement(he)
 
-proc SciterGetRootElement*(hwnd: HWINDOW; phe: ptr HELEMENT): int32 {.
+proc SciterGetRootElement*(hwnd: HWINDOW; phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetRootElement(hwnd, phe)
 
-proc SciterGetFocusElement*(hwnd: HWINDOW; phe: ptr HELEMENT): int32 {.
+proc SciterGetFocusElement*(hwnd: HWINDOW; phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetFocusElement(hwnd, phe)
 
-proc SciterFindElement*(hwnd: HWINDOW; pt: Point; phe: ptr HELEMENT): int32 {.
+proc SciterFindElement*(hwnd: HWINDOW; pt: Point; phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterFindElement(hwnd, pt, phe)
 
-proc SciterGetChildrenCount*(he: HELEMENT; count: ptr uint32): int32 {.
+proc SciterGetChildrenCount*(he: HELEMENT; count: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetChildrenCount(he, count)
 
-proc SciterGetNthChild*(he: HELEMENT; n: uint32; phe: ptr HELEMENT): int32 {.
+proc SciterGetNthChild*(he: HELEMENT; n: uint32; phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetNthChild(he, n, phe)
 
-proc SciterGetParentElement*(he: HELEMENT; p_parent_he: ptr HELEMENT): int32 {.
+proc SciterGetParentElement*(he: HELEMENT; p_parent_he: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetParentElement(he, p_parent_he)
 
 proc SciterGetElementHtmlCB*(he: HELEMENT; outer: bool; 
                             rcv: LPCBYTE_RECEIVER;
-                            rcv_param: pointer): int32 {.
+                            rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementHtmlCB(he, outer, rcv, rcv_param)
 
 proc SciterGetElementTextCB*(he: HELEMENT; rcv: LPCWSTR_RECEIVER;
-                            rcv_param: pointer): int32 {.
+                            rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementTextCB(he, rcv, rcv_param)
 
 proc SciterSetElementText*(he: HELEMENT; utf16: WideCString;
-                          length: uint32): int32 {.
+                          length: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetElementText(he, utf16, length)
 
-proc SciterGetAttributeCount*(he: HELEMENT; p_count: ptr uint32): int32 {.
+proc SciterGetAttributeCount*(he: HELEMENT; p_count: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetAttributeCount(he, p_count)
 
 proc SciterGetNthAttributeNameCB*(he: HELEMENT; n: uint32; rcv: LPCSTR_RECEIVER;
-                                 rcv_param: pointer): int32 {.
+                                 rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetNthAttributeNameCB(he, n, rcv, rcv_param)
 
 proc SciterGetNthAttributeValueCB*(he: HELEMENT; n: uint32;
                                   rcv: LPCWSTR_RECEIVER;
-                                  rcv_param: pointer): int32 {.
+                                  rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetNthAttributeValueCB(he, n, rcv, rcv_param)
 
 proc SciterGetAttributeByNameCB*(he: HELEMENT; name: cstring;
                                 rcv: LPCWSTR_RECEIVER;
-                                rcv_param: pointer): int32 {.
+                                rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetAttributeByNameCB(he, name, rcv, rcv_param)
 
 proc SciterSetAttributeByName*(he: HELEMENT; name: cstring;
-                              value: WideCString): int32 {.
+                              value: WideCString): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetAttributeByName(he, name, value)
 
-proc SciterClearAttributes*(he: HELEMENT): int32 {.
+proc SciterClearAttributes*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterClearAttributes(he)
 
-proc SciterGetElementIndex*(he: HELEMENT; p_index: ptr uint32): int32 {.
+proc SciterGetElementIndex*(he: HELEMENT; p_index: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementIndex(he, p_index)
 
-proc SciterGetElementType*(he: HELEMENT; p_type: ptr cstring): int32 {.
+proc SciterGetElementType*(he: HELEMENT; p_type: ptr cstring): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementType(he, p_type)
 
 proc SciterGetElementTypeCB*(he: HELEMENT; rcv: LPCSTR_RECEIVER;
-                            rcv_param: pointer): int32 {.
+                            rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementTypeCB(he, rcv, rcv_param)
 
 proc SciterGetStyleAttributeCB*(he: HELEMENT; name: cstring;
                                 rcv: LPCWSTR_RECEIVER;
-                                rcv_param: pointer): int32 {.
+                                rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetStyleAttributeCB(he, name, rcv, rcv_param)
 
 proc SciterSetStyleAttribute*(he: HELEMENT; name: cstring;
-                              value: WideCString): int32 {.
+                              value: WideCString): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetStyleAttribute(he, name, value)
 
 proc SciterGetElementLocation*(he: HELEMENT; p_location: ptr Rect;
-                              areas: uint32): int32 {.
+                              areas: uint32): SCDOM_RESULT {.
     inline, discardable.} =  ## #ELEMENT_AREAS
   return SAPI().SciterGetElementLocation(he, p_location, areas)
 
-proc SciterScrollToView*(he: HELEMENT; SciterScrollFlags: uint32): int32 {.
+proc SciterScrollToView*(he: HELEMENT; SciterScrollFlags: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterScrollToView(he, SciterScrollFlags)
 
-proc SciterUpdateElement*(he: HELEMENT; andForceRender: bool): int32 {.
+proc SciterUpdateElement*(he: HELEMENT; andForceRender: bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterUpdateElement(he, andForceRender)
 
-proc SciterRefreshElementArea*(he: HELEMENT; rc: Rect): int32 {.
+proc SciterRefreshElementArea*(he: HELEMENT; rc: Rect): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterRefreshElementArea(he, rc)
 
-proc SciterSetCapture*(he: HELEMENT): int32 {.
+proc SciterSetCapture*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetCapture(he)
 
-proc SciterReleaseCapture*(he: HELEMENT): int32 {.
+proc SciterReleaseCapture*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterReleaseCapture(he)
 
 proc SciterGetElementHwnd*(he: HELEMENT; p_hwnd: ptr HWINDOW;
-                          rootWindow: bool): int32 {.
+                          rootWindow: bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementHwnd(he, p_hwnd, rootWindow)
 
 proc SciterCombineURL*(he: HELEMENT; szUrlBuffer: WideCString;
-                      UrlBufferSize: uint32): int32 {.
+                      UrlBufferSize: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterCombineURL(he, szUrlBuffer, UrlBufferSize)
 
 proc SciterSelectElements*(he: HELEMENT; CSS_selectors: cstring;
                           callback: SciterElementCallback;
-                              param: pointer): int32 {.
+                              param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSelectElements(he, CSS_selectors, callback, param)
 
 proc SciterSelectElementsW*(he: HELEMENT; CSS_selectors: WideCString;
                            callback: SciterElementCallback;
-                               param: pointer): int32 {.
+                               param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSelectElementsW(he, CSS_selectors, callback, param)
 
 proc SciterSelectParent*(he: HELEMENT; selector: cstring; depth: uint32;
-                        heFound: ptr HELEMENT): int32 {.
+                        heFound: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSelectParent(he, selector, depth, heFound)
 
 proc SciterSelectParentW*(he: HELEMENT; selector: WideCString; depth: uint32;
-                         heFound: ptr HELEMENT): int32 {.
+                         heFound: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSelectParentW(he, selector, depth, heFound)
 
 proc SciterSetElementHtml*(he: HELEMENT; html: ptr byte; htmlLength: uint32;
-                          where: uint32): int32 {.
+                          where: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetElementHtml(he, html, htmlLength, where)
 
-proc SciterGetElementUID*(he: HELEMENT; puid: ptr uint32): int32 {.
+proc SciterGetElementUID*(he: HELEMENT; puid: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementUID(he, puid)
 
 proc SciterGetElementByUID*(hwnd: HWINDOW; uid: uint32;
-                            phe: ptr HELEMENT): int32 {.
+                            phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementByUID(hwnd, uid, phe)
 
 proc SciterShowPopup*(hePopup: HELEMENT; heAnchor: HELEMENT;
-                      placement: uint32): int32 {.
+                      placement: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterShowPopup(hePopup, heAnchor, placement)
 
 proc SciterShowPopupAt*(hePopup: HELEMENT; pos: Point; 
-                        placement: uint32): int32 {.
+                        placement: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterShowPopupAt(hePopup, pos, placement)
 
-proc SciterHidePopup*(he: HELEMENT): int32 {.
+proc SciterHidePopup*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterHidePopup(he)
 
-proc SciterGetElementState*(he: HELEMENT; pstateBits: ptr uint32): int32 {.
+proc SciterGetElementState*(he: HELEMENT; pstateBits: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementState(he, pstateBits)
 
 proc SciterSetElementState*(he: HELEMENT; stateBitsToSet: uint32;
-                           stateBitsToClear: uint32; updateView: bool): int32 {.
+                           stateBitsToClear: uint32; updateView: bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetElementState(he, stateBitsToSet, 
                                       stateBitsToClear,  updateView)
 
 proc SciterCreateElement*(tagname: cstring; textOrNull: WideCString;
-                         phe: ptr HELEMENT): int32 {.
+                         phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   ## #out
   return SAPI().SciterCreateElement(tagname, textOrNull, phe)
 
-proc SciterCloneElement*(he: HELEMENT; phe: ptr HELEMENT): int32 {.
+proc SciterCloneElement*(he: HELEMENT; phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} = ## #out
   return SAPI().SciterCloneElement(he, phe)
 
 proc SciterInsertElement*(he: HELEMENT; hparent: HELEMENT;
-                          index: uint32): int32 {.
+                          index: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterInsertElement(he, hparent, index)
 
-proc SciterDetachElement*(he: HELEMENT): int32 {.
+proc SciterDetachElement*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterDetachElement(he)
 
-proc SciterDeleteElement*(he: HELEMENT): int32 {.
+proc SciterDeleteElement*(he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterDeleteElement(he)
 
 proc SciterSetTimer*(he: HELEMENT; milliseconds: uint32;
-                    timer_id: uint32): int32 {.
+                    timer_id: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetTimer(he, milliseconds, timer_id)
 
 proc SciterDetachEventHandler*(he: HELEMENT; pep: ElementEventProc;
-                              tag: pointer): int32 {.
+                              tag: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterDetachEventHandler(he, pep, tag)
 
 proc SciterAttachEventHandler*(he: HELEMENT; pep: ElementEventProc;
-                              tag: pointer): int32 {.
+                              tag: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterAttachEventHandler(he, pep, tag)
 
 proc SciterWindowAttachEventHandler*(hwndLayout: HWINDOW; pep: ElementEventProc;
-                                    tag: pointer; subscription: uint32): int32 {.
+                                    tag: pointer; subscription: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterWindowAttachEventHandler(hwndLayout, pep, tag, subscription)
 
 proc SciterWindowDetachEventHandler*(hwndLayout: HWINDOW; pep: ElementEventProc;
-                                    tag: pointer): int32 {.
+                                    tag: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterWindowDetachEventHandler(hwndLayout, pep, tag)
 
 proc SciterSendEvent*(he: HELEMENT; appEventCode: uint32; heSource: HELEMENT;
-                     reason: ptr uint32; handled: ptr bool): int32 {.
+                     reason: ptr uint32; handled: ptr bool): SCDOM_RESULT {.
     inline, discardable.} =  ## #out
   return SAPI().SciterSendEvent(he, appEventCode, heSource, reason, handled)
 
 proc SciterPostEvent*(he: HELEMENT; appEventCode: uint32; heSource: HELEMENT;
-                     reason: ptr uint32): int32 {.
+                     reason: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterPostEvent(he, appEventCode, heSource, reason)
 
 proc SciterFireEvent*(evt: ptr BEHAVIOR_EVENT_PARAMS; post: bool;
-                      handled: ptr bool): int32 {.
+                      handled: ptr bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterFireEvent(evt, post, handled)
 
 proc SciterCallBehaviorMethod*(he: HELEMENT;
-                              params: ptr METHOD_PARAMS): int32 {.
+                              params: ptr METHOD_PARAMS): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterCallBehaviorMethod(he, params)
 
 proc SciterRequestElementData*(he: HELEMENT; url: WideCString; dataType: uint32;
-                              initiator: HELEMENT): int32 {.
+                              initiator: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterRequestElementData(he, url, dataType, initiator)
 
 proc SciterHttpRequest*(he: HELEMENT; url: WideCString; dataType: uint32;
                        requestType: uint32; requestParams: ptr REQUEST_PARAM;
-                       nParams: uint32): int32 {.
+                       nParams: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterHttpRequest(he, url, dataType, requestType, 
                                   requestParams, nParams)
 
 proc SciterGetScrollInfo*(he: HELEMENT; scrollPos: ptr Point; viewRect: ptr Rect;
-                         contentSize: ptr Size): int32 {.
+                         contentSize: ptr Size): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetScrollInfo(he, scrollPos, viewRect, contentSize)
 
-proc SciterSetScrollPos*(he: HELEMENT; scrollPos: Point; smooth: bool): int32 {.
+proc SciterSetScrollPos*(he: HELEMENT; scrollPos: Point; smooth: bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetScrollPos(he, scrollPos, smooth)
 
 proc SciterGetElementIntrinsicWidths*(he: HELEMENT; pMinWidth: ptr int32;
-                                     pMaxWidth: ptr int32): int32 {.
+                                     pMaxWidth: ptr int32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementIntrinsicWidths(he, pMinWidth, pMaxWidth)
 
 proc SciterGetElementIntrinsicHeight*(he: HELEMENT; forWidth: int32;
-                                     pHeight: ptr int32): int32 {.
+                                     pHeight: ptr int32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementIntrinsicHeight(he, forWidth, pHeight)
 
-proc SciterIsElementVisible*(he: HELEMENT; pVisible: ptr bool): int32 {.
+proc SciterIsElementVisible*(he: HELEMENT; pVisible: ptr bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterIsElementVisible(he, pVisible)
 
-proc SciterIsElementEnabled*(he: HELEMENT; pEnabled: ptr bool): int32 {.
+proc SciterIsElementEnabled*(he: HELEMENT; pEnabled: ptr bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterIsElementEnabled(he, pEnabled)
 
 proc SciterSortElements*(he: HELEMENT; firstIndex: uint32; lastIndex: uint32;
                         cmpFunc: ptr ELEMENT_COMPARATOR;
-                        cmpFuncParam: pointer): int32 {.
+                        cmpFuncParam: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSortElements(he, firstIndex, lastIndex, 
                                   cmpFunc, cmpFuncParam)
 
-proc SciterSwapElements*(he1: HELEMENT; he2: HELEMENT): int32 {.
+proc SciterSwapElements*(he1: HELEMENT; he2: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSwapElements(he1, he2)
 
 proc SciterTraverseUIEvent*(evt: uint32; eventCtlStruct: pointer;
-                           bOutProcessed: ptr bool): int32 {.
+                           bOutProcessed: ptr bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterTraverseUIEvent(evt, eventCtlStruct, bOutProcessed)
 
 proc SciterCallScriptingMethod*(he: HELEMENT; name: cstring; argv: ptr VALUE;
-                               argc: uint32; retval: ptr VALUE): int32 {.
+                               argc: uint32; retval: ptr VALUE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterCallScriptingMethod(he, name, argv, argc, retval)
 
 proc SciterCallScriptingFunction*(he: HELEMENT; name: cstring; argv: ptr VALUE;
-                                 argc: uint32; retval: ptr VALUE): int32 {.
+                                 argc: uint32; retval: ptr VALUE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterCallScriptingFunction(he, name, argv, argc, retval)
 
 proc SciterEvalElementScript*(he: HELEMENT; script: WideCString;
-                             scriptLength: uint32; retval: ptr VALUE): int32 {.
+                             scriptLength: uint32; retval: ptr VALUE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterEvalElementScript(he, script, scriptLength, retval)
 
-proc SciterAttachHwndToElement*(he: HELEMENT; hwnd: HWINDOW): int32 {.
+proc SciterAttachHwndToElement*(he: HELEMENT; hwnd: HWINDOW): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterAttachHwndToElement(he, hwnd)
 
-proc SciterControlGetType*(he: HELEMENT; pType: ptr uint32): int32 {.
+proc SciterControlGetType*(he: HELEMENT; pType: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} = ## #CTL_TYPE
   return SAPI().SciterControlGetType(he, pType)
 
-proc SciterGetValue*(he: HELEMENT; pval: ptr VALUE): int32 {.
+proc SciterGetValue*(he: HELEMENT; pval: ptr VALUE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetValue(he, pval)
 
-proc SciterSetValue*(he: HELEMENT; pval: ptr VALUE): int32 {.
+proc SciterSetValue*(he: HELEMENT; pval: ptr VALUE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetValue(he, pval)
 
 proc SciterGetExpando*(he: HELEMENT; pval: ptr VALUE;
-                      forceCreation: bool): int32 {.
+                      forceCreation: bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetExpando(he, pval, forceCreation)
 
 proc SciterGetObject*(he: HELEMENT; pval: ptr tiscript_value;
-    forceCreation: bool): int32 {.
+    forceCreation: bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetObject(he, pval, forceCreation)
 
 proc SciterGetElementNamespace*(he: HELEMENT;
-    pval: ptr tiscript_value): int32 {.
+    pval: ptr tiscript_value): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetElementNamespace(he, pval)
 
-proc SciterGetHighlightedElement*(hwnd: HWINDOW; phe: ptr HELEMENT): int32 {.
+proc SciterGetHighlightedElement*(hwnd: HWINDOW; phe: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterGetHighlightedElement(hwnd, phe)
 
-proc SciterSetHighlightedElement*(hwnd: HWINDOW; he: HELEMENT): int32 {.
+proc SciterSetHighlightedElement*(hwnd: HWINDOW; he: HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterSetHighlightedElement(hwnd, he)
 
-proc SciterNodeAddRef*(hn: HNODE): int32 {.
+proc SciterNodeAddRef*(hn: HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeAddRef(hn)
 
-proc SciterNodeRelease*(hn: HNODE): int32 {.
+proc SciterNodeRelease*(hn: HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeRelease(hn)
 
-proc SciterNodeCastFromElement*(he: HELEMENT; phn: ptr HNODE): int32 {.
+proc SciterNodeCastFromElement*(he: HELEMENT; phn: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeCastFromElement(he, phn)
 
-proc SciterNodeCastToElement*(hn: HNODE; he: ptr HELEMENT): int32 {.
+proc SciterNodeCastToElement*(hn: HNODE; he: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeCastToElement(hn, he)
 
-proc SciterNodeFirstChild*(hn: HNODE; phn: ptr HNODE): int32 {.
+proc SciterNodeFirstChild*(hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeFirstChild(hn, phn)
 
-proc SciterNodeLastChild*(hn: HNODE; phn: ptr HNODE): int32 {.
+proc SciterNodeLastChild*(hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeLastChild(hn, phn)
 
-proc SciterNodeNextSibling*(hn: HNODE; phn: ptr HNODE): int32 {.
+proc SciterNodeNextSibling*(hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeNextSibling(hn, phn)
 
-proc SciterNodePrevSibling*(hn: HNODE; phn: ptr HNODE): int32 {.
+proc SciterNodePrevSibling*(hn: HNODE; phn: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodePrevSibling(hn, phn)
 
-proc SciterNodeParent*(hnode: HNODE; pheParent: ptr HELEMENT): int32 {.
+proc SciterNodeParent*(hnode: HNODE; pheParent: ptr HELEMENT): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeParent(hnode, pheParent)
 
-proc SciterNodeNthChild*(hnode: HNODE; n: uint32; phn: ptr HNODE): int32 {.
+proc SciterNodeNthChild*(hnode: HNODE; n: uint32; phn: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeNthChild(hnode, n, phn)
 
-proc SciterNodeChildrenCount*(hnode: HNODE; pn: ptr uint32): int32 {.
+proc SciterNodeChildrenCount*(hnode: HNODE; pn: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeChildrenCount(hnode, pn)
 
-proc SciterNodeType*(hnode: HNODE; pNodeType: ptr uint32): int32 {.
+proc SciterNodeType*(hnode: HNODE; pNodeType: ptr uint32): SCDOM_RESULT {.
     inline, discardable.} =  ## #NODE_TYPE
   return SAPI().SciterNodeType(hnode, pNodeType)
 
 proc SciterNodeGetText*(hnode: HNODE; rcv: LPCWSTR_RECEIVER;
-                        rcv_param: pointer): int32 {.
+                        rcv_param: pointer): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeGetText(hnode, rcv, rcv_param)
 
 proc SciterNodeSetText*(hnode: HNODE; text: WideCString;
-                        textLength: uint32): int32 {.
+                        textLength: uint32): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeSetText(hnode, text, textLength)
 
 proc SciterNodeInsert*(hnode: HNODE; where: uint32; ## #NODE_INS_TARGET
-                      what: HNODE): int32 {.
+                      what: HNODE): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeInsert(hnode, where, what)
 
-proc SciterNodeRemove*(hnode: HNODE; finalize: bool): int32 {.
+proc SciterNodeRemove*(hnode: HNODE; finalize: bool): SCDOM_RESULT {.
     inline, discardable.} =
   return SAPI().SciterNodeRemove(hnode, finalize)
 
 proc SciterCreateTextNode*(text: WideCString; textLength: uint32;
-                          phnode: ptr HNODE): int32 {.
+                          phnode: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.}
   = return SAPI().SciterCreateTextNode(text, textLength, phnode)
 
 proc SciterCreateCommentNode*(text: WideCString; textLength: uint32;
-                             phnode: ptr HNODE): int32 {.
+                             phnode: ptr HNODE): SCDOM_RESULT {.
     inline, discardable.} 
   = return SAPI().SciterCreateCommentNode(text, textLength, phnode)
 

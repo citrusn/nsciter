@@ -343,7 +343,7 @@ proc callMethod*(he: HELEMENT, name: cstring, args:varargs[Value]): Value =
         cargs[i] = args[i]
     var ok =  SciterCallScriptingMethod(he,  name,  cargs[0].addr, 
                                         uint32(clen), result.addr)
-    assert ok == HV_OK.int32
+    assert ok == SCDOM_OK
     #sciter.Value.raise_from(rv, ok == SCDOM_RESULT.SCDOM_OK, name)
     #self._throw_if(ok)
     return result

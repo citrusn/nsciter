@@ -180,21 +180,21 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
         return 0
 
 proc Attach*(target: EventTarget, eh: EventHandler,
-            mask: uint32 = HANDLE_ALL): int32 {.discardable.} =
+            mask: uint32 = HANDLE_ALL): SCDOM_RESULT {.discardable.} =
     when EventTarget is HWINDOW:
         return SciterWindowAttachEventHandler(target, element_proc, eh, mask)
     elif EventTarget is HELEMENT:
         return SciterAttachEventHandler(target, element_proc, eh)
 
 proc Detach*(target: EventTarget, eh: EventHandler,
-            mask: uint32 = HANDLE_ALL): int32 {.discardable.} =
+            mask: uint32 = HANDLE_ALL): SCDOM_RESULT {.discardable.} =
     when EventTarget is HWINDOW:
         return SciterWindowDetachEventHandler(target, element_proc, eh, mask)
     elif EventTarget is HELEMENT:
         return SciterDetachEventHandler(target, element_proc, eh)
 
 proc onClick*(target: EventTarget, 
-            handler: proc():uint32): int32 {.discardable.} =
+            handler: proc():uint32): SCDOM_RESULT {.discardable.} =
     var eh = newEventHandler()
     eh.handle_event = proc(he: HELEMENT,
                            params: ptr BEHAVIOR_EVENT_PARAMS): uint =
@@ -206,7 +206,7 @@ proc onClick*(target: EventTarget,
 type NativeFunctor* = proc(args: seq[Value]): Value
 
 proc defineScriptingFunction*(target: EventTarget, name: string,
-                            fn: NativeFunctor): int32 {.discardable.} =
+                            fn: NativeFunctor): SCDOM_RESULT {.discardable.} =
     var eh = newEventHandler()
     eh.handle_scripting_call = proc(he: HELEMENT,
                                 params: ptr SCRIPTING_METHOD_PARAMS): uint =
@@ -226,7 +226,7 @@ proc defineScriptingFunction*(target: EventTarget, name: string,
 
 var tlp*: HELEMENT
 proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR,
-                    fn: proc()): int32 {.discardable.} =
+                    fn: proc()): SCDOM_RESULT {.discardable.} =
     var eh = newEventHandler()
     eh.handle_mouse = proc (he: HELEMENT, params: ptr MOUSE_PARAMS): uint =
         var s: string
