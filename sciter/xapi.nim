@@ -299,60 +299,62 @@ type
     ## #|
     ## #| Value API
     ## #|
-    ValueInit*: proc (pval: ptr VALUE): uint32 {.stdcall.}
-    ValueClear*: proc (pval: ptr VALUE): uint32 {.stdcall.}
+    ValueInit*: proc (pval: ptr VALUE): VALUE_RESULT {.stdcall.}
+    ValueClear*: proc (pval: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueCompare*: proc (pval1: ptr VALUE; 
-                        pval2: ptr VALUE): uint32 {.stdcall.}
+                        pval2: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueCopy*: proc (pdst: ptr VALUE; 
-                      psrc: ptr VALUE): uint32 {.stdcall.}
-    ValueIsolate*: proc (pdst: ptr VALUE): uint32 {.stdcall.}
+                      psrc: ptr VALUE): VALUE_RESULT {.stdcall.}
+    ValueIsolate*: proc (pdst: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueType*: proc (pval: ptr VALUE; pType: ptr uint32;
-                      pUnits: ptr uint32): uint32 {.stdcall.}
+                      pUnits: ptr uint32): VALUE_RESULT {.stdcall.}
     ValueStringData*: proc (pval: ptr VALUE; pChars: ptr WideCString;
-                            pNumChars: ptr uint32): uint32 {.stdcall.}
+                            pNumChars: ptr uint32): VALUE_RESULT {.stdcall.}
     ValueStringDataSet*: proc (pval: ptr VALUE; 
                               chars: WideCString; numChars: uint32;
-                              units: uint32): uint32 {.stdcall.}
+                              units: uint32): VALUE_RESULT {.stdcall.}
     ValueIntData*: proc (pval: ptr VALUE; 
-                        pData: ptr int32): uint32 {.stdcall.}
+                        pData: ptr int32): VALUE_RESULT {.stdcall.}
     ValueIntDataSet*: proc (pval: ptr VALUE; data: int32;
-                          `type`: uint32; units: uint32): uint32 {.stdcall.}
+                          `type`: uint32; units: uint32): VALUE_RESULT {.stdcall.}
     ValueInt64Data*: proc (pval: ptr VALUE; 
-                          pData: ptr int64): uint32 {.stdcall.}
+                          pData: ptr int64): VALUE_RESULT {.stdcall.}
     ValueInt64DataSet*: proc (pval: ptr VALUE; data: int64; `type`: uint32;
-                              units: uint32): uint32 {.stdcall.}
+                              units: uint32): VALUE_RESULT {.stdcall.}
     ValueFloatData*: proc (pval: ptr VALUE; 
-                          pData: ptr float64): uint32 {.stdcall.}
+                          pData: ptr float64): VALUE_RESULT {.stdcall.}
     ValueFloatDataSet*: proc (pval: ptr VALUE; data: float64; `type`: uint32;
-                              units: uint32): uint32 {.stdcall.}
+                              units: uint32): VALUE_RESULT {.stdcall.}
     ValueBinaryData*: proc (pval: ptr VALUE; pBytes: ptr pointer;
-                            pnBytes: ptr uint32): uint32 {.stdcall.}
+                            pnBytes: ptr uint32): VALUE_RESULT {.stdcall.}
     ValueBinaryDataSet*: proc (pval: ptr VALUE; pBytes: pointer; nBytes: uint32;
-                             `type`: uint32; units: uint32): uint32 {.stdcall.}
+                             `type`: uint32; units: uint32): VALUE_RESULT {.stdcall.}
     ValueElementsCount*: proc (pval: ptr VALUE;
-                               pn: ptr int32): uint32 {.stdcall.}
+                               pn: ptr int32): VALUE_RESULT {.stdcall.}
     ValueNthElementValue*: proc (pval: ptr VALUE; n: int32;
-                                pretval: ptr VALUE): uint32 {.stdcall.}
+                                pretval: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueNthElementValueSet*: proc (pval: ptr VALUE; n: int32;
-                                    pval_to_set: ptr VALUE): uint32 {.stdcall.}
+                                    pval_to_set: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueNthElementKey*: proc (pval: ptr VALUE; n: int32;
-                              pretval: ptr VALUE): uint32 {.stdcall.}
+                              pretval: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueEnumElements*: proc (pval: ptr VALUE; penum: KeyValueCallback;
-                            param: pointer): uint32 {.stdcall.}
+                            param: pointer): VALUE_RESULT {.stdcall.}
     ValueSetValueToKey*: proc (pval: ptr VALUE; pkey: ptr VALUE;
-                              pval_to_set: ptr VALUE): uint32 {.stdcall.}
+                              pval_to_set: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueGetValueOfKey*: proc (pval: ptr VALUE; pkey: ptr VALUE;
-                              pretval: ptr VALUE): uint32 {.stdcall.}
-    ValueToString*: proc (pval: ptr VALUE; how: uint32): uint32 {.
+                              pretval: ptr VALUE): VALUE_RESULT {.stdcall.}
+    ValueToString*: proc (pval: ptr VALUE; how: uint32): VALUE_RESULT {.
         stdcall.} ## #VALUE_STRING_CVT_TYPE
     ValueFromString*: proc (pval: ptr VALUE; str: WideCString; strLength: uint32;
-                          how: uint32): uint32 {.stdcall.} ## #VALUE_STRING_CVT_TYPE
-    ValueInvoke*: proc (pval: ptr VALUE; pthis: ptr VALUE; argc: uint32; argv: ptr VALUE;
-                      pretval: ptr VALUE; url: WideCString): uint32 {.stdcall.}
+                          how: uint32): VALUE_RESULT {.stdcall.} ## #VALUE_STRING_CVT_TYPE
+    ValueInvoke*: proc (pval: ptr VALUE; pthis: ptr VALUE;
+                        argc: uint32; argv: ptr VALUE;
+                        pretval: ptr VALUE; 
+                        url: WideCString): VALUE_RESULT {.stdcall.}
     ValueNativeFunctorSet*: proc (pval: ptr VALUE;
                                 pinvoke: NATIVE_FUNCTOR_INVOKE;
                                 prelease: NATIVE_FUNCTOR_RELEASE;
-                                tag: pointer): uint32 {.stdcall.}
+                                tag: pointer): VALUE_RESULT {.stdcall.}
     ValueIsNativeFunctor*: proc (pval: ptr VALUE): bool {.stdcall.}
 
     ## # tiscript VM API
@@ -366,7 +368,7 @@ type
                               archiveDataLength: uint32): HSARCHIVE {.stdcall.}
     SciterGetArchiveItem*: proc (harc: HSARCHIVE; path: WideCString;
                                 pdata: ptr pointer;
-                                pdataLength: ptr uint32): bool {.stdcall.}
+                                pdataLength: var uint32): bool {.stdcall.}
     SciterCloseArchive*: proc (harc: HSARCHIVE): bool {.stdcall.}
     SciterFireEvent*: proc (evt: ptr BEHAVIOR_EVENT_PARAMS; post: bool;
                           handled: ptr bool): SCDOM_RESULT {.stdcall.}
@@ -1122,6 +1124,28 @@ proc ValueNativeFunctorSet*(pval: ptr VALUE;
 proc ValueIsNativeFunctor*(pval: ptr VALUE): bool {.
     inline, discardable.} =
   return SAPI().ValueIsNativeFunctor(pval)
+
+#TIScriptAPI*: proc (): ptr tiscript_native_interface {.stdcall.}
+proc SciterOpenArchive*(archiveData: pointer;
+                        archiveDataLength: uint32): HSARCHIVE {.inline.} = 
+  return SAPI().SciterOpenArchive(archiveData, archiveDataLength)
+
+proc SciterGetArchiveItem*(harc: HSARCHIVE; path: WideCString;
+                          pdata: ptr pointer;
+                          pdataLength: var uint32): bool {.inline.} = 
+  return SAPI().SciterGetArchiveItem(harc, path, pdata, pdataLength)
+
+proc SciterCloseArchive*(harc: HSARCHIVE): bool {.inline.} = 
+  return SAPI().SciterCloseArchive(harc)
+
+proc SciterGetCallbackParam*(hwnd: HWINDOW): pointer {.inline.} = 
+  return SAPI().SciterGetCallbackParam(hwnd)
+  
+proc SciterPostCallback*(hwnd: HWINDOW; 
+                        wparam: uint32; lparam: uint32;
+                        timeoutms: uint32): uint32 {.inline.} = 
+  return SAPI().SciterPostCallback(hwnd, wparam, lparam, timeoutms)
+  
 
 ## # conversion between script (managed) value and the VALUE ( com::variant alike thing )
 proc Sciter_tv2V*(vm: HVM; script_value: tiscript_value; 

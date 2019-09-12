@@ -10,7 +10,7 @@ proc SAPI*():ptr ISciterAPI {.inline.} =
   if libhandle == nil:
     libhandle = loadLib(getCurrentDir() / SCITER_DLL_NAME)
   if libhandle == nil:
-    quit "sciter runtime library not found: "&SCITER_DLL_NAME
+    quit "sciter runtime library not found: " & SCITER_DLL_NAME
     #return nil
   var procPtr = symAddr(libhandle, "SciterAPI")
   let p = cast[SciterAPI_ptr](procPtr)

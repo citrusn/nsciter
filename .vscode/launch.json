@@ -14,15 +14,25 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
+            "logging": {
+                "moduleLoad": true, 
+                "trace": true
+            },
             "MIMode": "gdb",
-            "miDebuggerPath": "D:/Spc/nim/bin/nim-gdb.cmd",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            //"miDebuggerPath": "D:\\Project\\nim\\bin\\nim-gdb.cmd",
+            "miDebuggerPath": "D:\\Project\\nim\\dist\\mingw32\\bin\\gdb.exe",            
+            //"setupCommands": [
+                //{
+                //    "description": "Enable pretty-printing for gdb",
+                //    "text": "-enable-pretty-printing",
+                //    "ignoreFailures": false
+                //},
+              //  {
+               //     "description": "source nim-gdb",
+                //    "text": "source D:\\Project\\nim\\bin\\nim-gdb.py",
+                //    "ignoreFailures": false
+                //}
+           // ]
         }
     ]
 }

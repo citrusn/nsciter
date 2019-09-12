@@ -1,3 +1,4 @@
+
 type
     EventHandler* = ptr EventHandlerObj
     EventHandlerObj* = object
@@ -220,11 +221,11 @@ proc defineScriptingFunction*(target: EventTarget, name: string,
             for idx in 0..params.argc-1:
                 var p = cast[ptr Value](base + step*uint(idx))
                 args[int(idx)] = p[]
-        params.result = fn(args)
+        echo "retv from fn", fn(args)
+        #params.result = newValue("handle_scripting_call")
         return 1
-    return target.Attach(eh, HANDLE_SCRIPTING_METHOD_CALL)
+    return target.Attach(eh, HANDLE_ALL)#  HANDLE_SCRIPTING_METHOD_CALL)
 
-var tlp*: HELEMENT
 proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR,
                     fn: proc()): SCDOM_RESULT {.discardable.} =
     var eh = newEventHandler()
@@ -238,7 +239,7 @@ proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR,
                 s = s & " HANDLED"
             echo "handle_mouse cmd: ", s, " pos: ", params.pos,
                 " heTarget: ", repr params.target
-        return 1
+        return 0 # иначе события BEHAVIOR_EVENTS не вызываются
     eh.subscription = proc(he: HELEMENT, params: var cuint): uint =
         echo "gdi draw subscription"
         #if comment then full subscription events

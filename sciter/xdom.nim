@@ -156,7 +156,8 @@ type
 ## # Shall return -1,0,+1 values to indicate result of comparison of two elements
 ## #
 type
-  ELEMENT_COMPARATOR* = proc (he1: HELEMENT; he2: HELEMENT; param: pointer): int32 {.stdcall.}
+  ELEMENT_COMPARATOR* = proc (he1: HELEMENT; he2: HELEMENT;
+                              param: pointer): int32 {.stdcall.}
   CTL_TYPE* {.size: 4.} = enum
     CTL_NO = 0,          ## #< This dom element has no behavior at all.
     CTL_UNKNOWN = 1,     ## # < This dom element has behavior but its type is unknown.

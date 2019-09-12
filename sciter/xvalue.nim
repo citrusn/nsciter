@@ -10,10 +10,11 @@ type
     t*: uint32
     u*: uint32
     d*: uint64
-  
 
+type
   VTYPE* {.size: 4.} = enum
-    T_UNDEFINED = 0, T_NULL = 1, 
+    T_UNDEFINED = 0, 
+    T_NULL = 1, 
     T_BOOL = 2, 
     T_INT = 3,
     T_FLOAT = 4,

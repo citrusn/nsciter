@@ -1,12 +1,13 @@
-﻿import os, sciter/sciter, strutils, times
+﻿import os, sciter/sciter, strutils, strformat, times
 
 OleInitialize(nil)
-var s = SAPI()
+var api = SAPI()
 #echo "spi:", repr s
 #echo "s.version:", s.version
 echo "SciterClassName:", SciterClassName() # NOW IT'S WORKED !!!!
 echo "SciterVersion:", toHex(int(SciterVersion(true)), 5)
 echo "SciterVersion:", toHex(int(SciterVersion(false)), 5)
+echo VersionAsString()
 
 #echo HANDLE_SCRIPTING_METHOD_CALL, "->", ord(HANDLE_SCRIPTING_METHOD_CALL)
 #echo 1024, "->", cast[EVENT_GROUPS](1024)
@@ -27,7 +28,7 @@ var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
     echo "subsystem: ", cast[OUTPUT_SUBSYTEMS](subsystem),
          " severity: ", cast[OUTPUT_SEVERITY](severity), 
          " len: ", text_length, " msg: ", text
-s.SciterSetupDebugOutput(nil, nil, dbg)
+api.SciterSetupDebugOutput(nil, nil, dbg)
 
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or
                             SW_RESIZEABLE, defaultRect, nil, nil, nil)
@@ -57,7 +58,7 @@ testInsertFn("hello, world#5", 8)
 #wnd.setTitle("test setTitle window caption") - # windows only proc calling
 wnd.onClick(proc():uint32 = 
     echo "generic click"
-    return 0)
+    return 0) # if return 1 then next proc not calling
 wnd.onClick(proc():uint32 = 
     echo "generic click 2"
     return 1)
@@ -82,7 +83,7 @@ var testFn = proc() =
     echo "b: ", b
     var bv = nullValue()
     echo "bv as int: ", getInt(bv), " bv as boolean: ", getBool(p)
-    setBytes(bv, b)
+    bv.setBytes(b)
     echo "set bytes bv:", bv.getBytes()
     var o = nullValue()
     o["key"] = newValue(i)
@@ -100,8 +101,10 @@ var testFn = proc() =
 #testFn()
 
 proc nf(args: seq[Value]): Value =
-    echo "NativeFunction called"
-    return newValue("nf ok")
+    echo "NativeFunction called", args
+    var s = "1234'i32"
+    result = newValue(s)
+    echo "result nf: ", result, " - ", repr result
 
 var testVptr = proc() =
     var i: int16 = 100
@@ -117,7 +120,10 @@ echo "dfm hello ret: ",
     wnd.defineScriptingFunction("hello", 
         proc(args: seq[Value]): Value =
             echo "hello from sciter script method"
-            echo "\targs:", args)
+            echo "\targs:", args
+            result = newValue("returning from hello")
+            return result
+    )
 
 proc testCallback() =
     echo "dfm cbCall ret: ", 
@@ -127,22 +133,23 @@ proc testCallback() =
                 var fn = args[0]
                 var ret = fn.invoke(newValue(100), newValue("arg2"))
                 echo "cb ret:", ret
-                ret = fn.invokeWithSelf(
-                    newValue("string as this"), 
-                    newValue(100),
-                    newValue("arg2"))
+                #ret = fn.invokeWithSelf( #TODO: proferit
+                #    newValue("string as this"), 
+                #    newValue(100),
+                #    newValue("arg2"))
         )
-testCallback()
+#testCallback()
 
 proc testNativeFunctor() =
     wnd.defineScriptingFunction("api",  # calling from html script
         proc(args: seq[Value]): Value =
-            result = newValue()
-            result["i"] = newValue(1000)
-            result["str"] = newValue("a string")
+            var res = nullValue()            
+            res["i"] = newValue(1000)
+            res["str"] = newValue("a string")
             var fn = newValue()
             discard fn.setNativeFunctor(nf)
-            result["fn"] = fn
+            res["fn"] = fn
+            return res
     )
 testNativeFunctor()
 
@@ -152,9 +159,9 @@ proc testGetElFunction() =
     echo "t:", t
     wnd.SciterGetRootElement(root.addr)
     root.SciterGetElementHtmlCB(false, LPCBYTE2ASTRING, addr(t))
-    echo "Root html =" , len(t), t
+    echo fmt"Root html (size:{t.len})  = {t}"
     root.SciterGetElementTextCB(LPCWSTR2STRING, addr(t))
-    echo "Root text =" , len(t), t
+    echo fmt"Root text ({t.len}) = {t}"
 #testGetElFunction()
 
 wnd.run

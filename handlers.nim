@@ -34,26 +34,26 @@ proc OnEngineDestroyed() =
     echo "Sciter Destroyed"
 
 proc sciterHostCallback(pns: LPSCITER_CALLBACK_NOTIFICATION;
-                        callbackParam: pointer): uint32 {.stdcall.} =
+                        callbackParam: pointer): SC_LOAD_DATA_RETURN_CODES {.stdcall.} =
     # callbackParam; // we are not using callbackParam in the sample,
     # use it when you need this to be a method of some class
     if pns.code == SC_LOAD_DATA:
         OnLoadData(cast[LPSCN_LOAD_DATA](pns))
-        return 0
+        return LOAD_OK
     if pns.code == SC_DATA_LOADED:
         OnDataLoaded(cast[LPSCN_DATA_LOADED](pns))
-        return 0
+        return LOAD_OK
     
     if pns.code == SC_ATTACH_BEHAVIOR:
         OnAttachBehavior(cast[LPSCN_ATTACH_BEHAVIOR](pns))
-        return 0
+        return LOAD_OK
 
     if pns.code == SC_ENGINE_DESTROYED:
         OnEngineDestroyed()
-        return 0
+        return LOAD_OK
 
     echo "sciterHostCallback pns.code: ", pns.code
-    return 0
+    return LOAD_OK
 
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR,
                              defaultRect, nil, nil, nil)
@@ -72,30 +72,30 @@ proc nf(args: seq[Value]): Value =
 proc testCallback() =
     echo "gprintln set: ", wnd.defineScriptingFunction("gprintln",
         proc(args: seq[Value]): Value =
-        echo "gprintln call:", $(args)
+            echo "gprintln call:", $(args)
     )
     echo "mcall set: ",
         root.defineScriptingFunction("mcall",
             proc(args: seq[Value]): Value =
-        echo "mcall call:", $(args)
+                echo "mcall call:", $(args)
     )
     echo "sumall set: ",
         wnd.defineScriptingFunction("sumall",
             proc(args: seq[Value]): Value =
-        var sumall: int32 = 0
-        for v in args:
-            var p = cast[VALUE](v)
-            sumall = sumall + getInt32(p)
-        return newValue(sumall)
+                var sumall: int32 = 0
+                for v in args:
+                    var p = cast[VALUE](v)
+                    sumall = sumall + getInt32(p)
+                return newValue(sumall)
     )
     echo "kkk set: ", wnd.defineScriptingFunction("kkk",
         proc (args: seq[Value]): Value =
-        result = newValue()
-        result["i"] = newValue(1000)
-        result["str"] = newValue("a string")
-        var fn = newValue()
-        discard fn.setNativeFunctor(nf)
-        result["f"] = fn
+            result = newValue()
+            result["i"] = newValue(1000)
+            result["str"] = newValue("a string")
+            var fn = newValue()
+            discard fn.setNativeFunctor(nf)
+            result["f"] = fn
     )
 testCallback()
 
@@ -124,14 +124,13 @@ proc findFirst(el: HELEMENT; selector: cstring): HELEMENT =
     if(fe.len() == 0): return nil else: return fe[0]
 
 proc OnAttachBehavior(pnm: LPSCN_ATTACH_BEHAVIOR) =
-    var l: HELEMENT
     echo "LPSCN_ATTACH_BEHAVIOR: " , "HE:", repr pnm.element, " ", pnm.behaviorName
     if pnm.behaviorName == "gdi-drawing": 
         echo "gdi-drawing: ", pnm.createBehavior( proc() = echo "gdi-drawing behavior" )        
 
 proc downloadURL() =
-    var url ="http://tdp-app/astue/j_security_check"
-    #var url = "http://httpbin.org/html" # worked throo proxy server    
+    #var url ="http://tdp-app/astue/j_security_check"
+    var url = "http://httpbin.org/html" # worked throo proxy server    
     # get span#url and frame#content:
     var span = root.findFirst("#url")
     var content = root.findFirst("#content")
@@ -146,7 +145,7 @@ proc downloadURL() =
     #content.SciterGetElementTextCB(LPCWSTR2STRING, addr(text))
     #echo text
 
-#downloadURL()
+downloadURL()
 
 wnd.run
 

@@ -107,7 +107,7 @@ type
 type
   LPSciterHostCallback* = ptr SciterHostCallback
   SciterHostCallback* = proc (pns: LPSCITER_CALLBACK_NOTIFICATION;
-                           callbackParam: pointer): uint32 {.stdcall.}
+                           callbackParam: pointer): SC_LOAD_DATA_RETURN_CODES {.stdcall.}
   
 
 ## #*This structure is used by #SC_LOAD_DATA notification.

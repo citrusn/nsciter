@@ -1,6 +1,7 @@
-<html>
+﻿<html window-icon="icon.png" lang="ru">
     <head>
         <title>Test Html Page-Тестовая страница</title>
+        <meta charset="UTF-8">
     </head>
     <h1>Test page for sciter script function</h1>
     <h2>Тестовая страница скриптов</h2>
@@ -8,8 +9,9 @@
     <button id="hello">Hello</button>
     <button id="nf">NativeFunctor</button>
     <script type="text/tiscript">
+        include "log.tis";
         function self.ready() {
-            //view.connectToInspector();
+            view.connectToInspector();
             var btn = $(button#hello); // 
             function cb(a,b) { // callback function from native code
                 view.hello(this, a, b);
@@ -18,14 +20,23 @@
             }
             btn.onClick = function(){ // calling from hello btn
                 view.hello(1, 2, "view.hello", true, false);  //defineScriptingFunction "hello",   native method
-                view.cbCall(cb);  //test callback function. defineScriptingFunction "cbCall",   native method
+                //view.cbCall(cb);  //test callback function. defineScriptingFunction "cbCall",   native method
             }
             var nf = $(button#nf)
             nf.onClick = function(){
-                var api = view.api(); // 
-                view.hello("api field:", api.i, api.str, api.fn);
-                view.hello("api.fn():", api.fn());
-            }            
+                var api = view.api();
+                var r = view.hello("api field:", api.i, api.str, api.fn);                              
+                log.f("hello=%s", r);
+                try {
+                    var res = api.fn(1, 2.34, "test param");
+                    log.f("api.res=%s", res);
+                } catch(e) {
+                    log.$(error);
+                }
+                
+                //view.hello("api.fn(1, 2.34, test param): ", res);
+                //view.hello("api.fn():", api.fn());                
+            }
         }
     </script>
 </html>

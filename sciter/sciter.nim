@@ -1,4 +1,4 @@
-include xapi, event, valueprocs
+include xapi, event , valueprocs
 
 when defined(posix):
     # {.passC: "-std=c++11".}
@@ -69,6 +69,69 @@ when defined(windows):
             discard TranslateMessage(m.addr)
             discard DispatchMessage(m.addr)
 
-let defaultRect*: RectRef = RectRef(left: 10, top: 50, right: 800, bottom: 500)
-#proc defaultRect*(): ref Rect = #result = cast[ref Rect](alloc0(sizeof(Rect)))
+proc VersionAsString*(): string = 
+    var major = SciterVersion(true)
+    var minor = SciterVersion(false)    
+    return fmt"{major shr 16}.{major and 0xffff}.{minor shr 16}.{minor and 0xffff}"       
 
+#proc defaultRect*(): ref Rect = #result = cast[ref Rect](alloc0(sizeof(Rect)))
+let defaultRect*: RectRef = RectRef(left: 10, top: 50, right: 600, bottom: 400)
+
+## # Open data blob of the provided compressed Sciter archive.
+proc OpenArchive* (data: openarray[byte]): HSARCHIVE =
+    var l: uint32 = data.len.uint32
+    var d: ptr byte = data[0].unsafeAddr
+    return SciterOpenArchive(d, l)
+
+## # Get an archive item referenced by \c uri.
+#
+## # Usually it is passed to \c Sciter.DataReady().
+proc GetArchiveItem*(harc: HSARCHIVE, uri: string): (ptr UncheckedArray[byte], int32) =
+    var data: ptr UncheckedArray[byte]
+    var length: uint32
+    echo "GetArchiveItem uri: ", uri
+    var r = SciterGetArchiveItem(harc, uri, cast[ptr pointer](data.addr), length)
+    #result = newSeq[byte](length)
+    #result=data
+    if not r:
+        return (data, 0'i32)
+    #ret := ByteCPtrToBytes(data, length)
+    #echo data.len, data
+    return (data, length.int32)
+
+## # Close the archive
+proc CloseArchive*(harc: var HSARCHIVE): bool =   
+    result = SciterCloseArchive(harc)
+    harc = nil       
+
+#[Register `this://app/` URLs to be loaded from the given Sciter archive.
+  Pack resources using `packfolder` tool:
+   `$ packfolder res_folder res_packed.go -v resource_name -go`
+  Usage:
+    win.SetResourceArchive(resource_name)
+    win.LoadFile("this://app//index.htm")
+]#
+proc SetResourceArchive*(data: openarray[byte]): HSARCHIVE =
+    var harc = OpenArchive(data)
+    doassert not harc.isNil
+    return harc
+
+## #This function is used in response to SCN_LOAD_DATA request.
+##
+##  \param[in] hwnd \b HWINDOW, Sciter window handle.
+##  \param[in] uri \b LPCWSTR, URI of the data requested by Sciter.
+##  \param[in] data \b LPBYTE, pointer to data buffer.
+##  \param[in] dataLength \b UINT, length of the data in bytes.
+##  \return \b BOOL, TRUE if Sciter accepts the data or \c FALSE if error occured
+##  (for example this function was called outside of #SCN_LOAD_DATA request).
+##
+##  \warning If used, call of this function MUST be done ONLY while handling
+##  SCN_LOAD_DATA request and in the same thread. For asynchronous resource loading
+##  use SciterDataReadyAsync
+proc DataReady*(wnd:HWINDOW, uri: string, data:openarray[byte]): bool =         
+    var ret = wnd.SciterDataReady(uri, cast[pointer](data), cast[uint32](data.len) )
+    #if not ret :
+    #   return false    
+    ## mark the data to prevent gc
+    #loadedUri[uri] = data
+    return ret
