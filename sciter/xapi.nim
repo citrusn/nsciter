@@ -311,7 +311,8 @@ type
     ValueStringData*: proc (pval: ptr VALUE; pChars: ptr WideCString;
                             pNumChars: ptr uint32): VALUE_RESULT {.stdcall.}
     ValueStringDataSet*: proc (pval: ptr VALUE; 
-                              chars: WideCString; numChars: uint32;
+                              chars: WideCString;
+                              numChars: uint32;
                               units: uint32): VALUE_RESULT {.stdcall.}
     ValueIntData*: proc (pval: ptr VALUE; 
                         pData: ptr int32): VALUE_RESULT {.stdcall.}
@@ -1023,7 +1024,7 @@ proc ValueStringData*(pval: ptr VALUE; pChars: ptr WideCString;
     inline, discardable.} 
   = return SAPI().ValueStringData(pval, pChars, pNumChars)
 
-proc ValueStringDataSet*(pval: ptr VALUE; chars: WideCString; 
+proc ValueStringDataSet*(pval: ptr VALUE; chars: WideCString;
                         numChars: uint32; units: uint32): uint32 {.
     inline, discardable.} 
   = return SAPI().ValueStringDataSet(pval, chars, numChars, units)
@@ -1103,9 +1104,10 @@ proc ValueToString*(pval: ptr VALUE; how: uint32): uint32 {.
     inline, discardable.} =
   return SAPI().ValueToString(pval, how)
 
-proc ValueFromString*(pval: ptr VALUE; str: WideCString; strLength: uint32;
+proc ValueFromString*(pval: ptr VALUE; str: WideCString; strLength: uint32; 
                       how: uint32): uint32 {.
     inline, discardable.} =
+  #UINT SCAPI ValueFromString( VALUE* pval, LPCWSTR str, UINT strLength, /*VALUE_STRING_CVT_TYPE*/ UINT how );
   return SAPI().ValueFromString(pval, str, strLength, how)
 
 proc ValueInvoke*(pval: ptr VALUE; pthis: ptr VALUE; argc: uint32; 

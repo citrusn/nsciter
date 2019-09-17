@@ -8,34 +8,47 @@
     <button>Click</button> <!--Call wnd.onClick  -->
     <button id="hello">Hello</button>
     <button id="nf">NativeFunctor</button>
+    <button id="csss">CSSS!click</button>
     <script type="text/tiscript">
-        include "log.tis";
+        include "log.tis";        
+        //event click $(button#csss) {
+        //    view.gprintln("hello world", 11, 22, 33, 44);    }
+
         function self.ready() {
-            view.connectToInspector();
-            var btn = $(button#hello); // 
+            if( view.connectToInspector )
+                view.connectToInspector();
+            
+            var csss = $(button#csss);
+            csss.onClick = function() {
+                var f = view.nf();
+                log.f("csss result = %s", f);
+                //var r=f();
+                //log.f("f() result = %s", r);
+                //view.hello("f()=: ", r);
+            }
+
+            var btn = $(button#hello); //
             function cb(a,b) { // callback function from native code
                 view.hello(this, a, b);
-                stdout.printf( "%s" , this );
-                return 101010;
+                log.f("stdout.printf: %s" , this );
+                return 101010; // result to native code
             }
+
             btn.onClick = function(){ // calling from hello btn
-                view.hello(1, 2, "view.hello", true, false);  //defineScriptingFunction "hello",   native method
-                //view.cbCall(cb);  //test callback function. defineScriptingFunction "cbCall",   native method
+                var r = view.hello(1, 2, "view.hello", true, false);  //defineScriptingFunction "hello",   native method
+                log.f("hello result = %s", r);
+                r = view.cbCall(cb);  //test callback function. defineScriptingFunction "cbCall",   native method
+                log.f("cbCall result = %s", r);
             }
+
             var nf = $(button#nf)
             nf.onClick = function(){
                 var api = view.api();
-                var r = view.hello("api field:", api.i, api.str, api.fn);                              
-                log.f("hello=%s", r);
-                try {
-                    var res = api.fn(1, 2.34, "test param");
-                    log.f("api.res=%s", res);
-                } catch(e) {
-                    log.$(error);
-                }
-                
-                //view.hello("api.fn(1, 2.34, test param): ", res);
-                //view.hello("api.fn():", api.fn());                
+                //var res = view.hello("api field:", api.i, api.str, api.fn);
+                //log.f("hello=%s", res);
+                var r = api.fn(1, 2.34, "test param");
+                log.f("api.fn=%s", r);
+                view.hello("api.fn(1, 2.34, test param): ", r);
             }
         }
     </script>

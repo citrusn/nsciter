@@ -78,7 +78,7 @@ proc VersionAsString*(): string =
 let defaultRect*: RectRef = RectRef(left: 10, top: 50, right: 600, bottom: 400)
 
 ## # Open data blob of the provided compressed Sciter archive.
-proc OpenArchive* (data: openarray[byte]): HSARCHIVE =
+proc OpenArchive*(data: openarray[byte]): HSARCHIVE =
     var l: uint32 = data.len.uint32
     var d: ptr byte = data[0].unsafeAddr
     return SciterOpenArchive(d, l)

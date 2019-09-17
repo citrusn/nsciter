@@ -1,51 +1,35 @@
 import os, sciter/sciter
 
-
 echo "Test value function"
 
-var cnt = 0
-proc finalize(x: ref Value) =
-  inc(cnt) 
-  ValueClear(cast[ptr Value](x))
-  #echo "=destroy ref Value"
+var i: int8 = 100
+var p = newValue(i)
 
-
-proc newRV(): ref Value = 
-  new(result, finalize)
-  ValueInit(cast[ptr Value](result))
-  return result
-
-proc newRV(dat: int): ref Value = 
-  result = newRV()
-  ValueIntDataSet(cast[ptr Value](result), dat.int32, T_INT, 0)
-  
-for i in 1..10_000:
-  var v = newRV()
-  var p = newRV(i)  
-  #echo v, p
-
-echo "values object destroyed: ", cnt
-sleep(2000)
-GC_fullCollect()
-echo "values object destroyed: ", cnt
-
-when false: #ok
-  var i: int8 = 100
-  #var p = newValue(i)
-  #echo "p.getInt: ", p.getInt()
-  #echo "p as boolean: ", p.getBool()
-  #var s = "a test string"
-  #var sv = newValue(s)
-  #var s2 = sv.getString()
-  #echo s, "->", s2
-  #echo s.len, "=", s2.len
-  #echo "value:", p
-  #echo "\t", sv # bad
+when false: #ok    
+  var p1 = p.clone()
+  echo "p: ", p, "p1: ", p1 
+  echo "p.getInt: ", p.getInt()
+  echo "p as boolean: ", p.getBool()    
+  echo "value:", p
+  echo "\t", sv # bad. static value desroyed
 
 # test string conversion
-when false:
-  echo "p: ", p
-  discard p.clone()
+when true:  
+  var s1: string = "a test string"
+  #var sv1 = newValue(s1)
+  var sv: Value = nullValue()  
+  var ws = newWideCString(s1)  
+  echo ws.type , " ", ws.sizeof , " " , ws.len,  " ", repr $ws
+  echo ValueStringDataSet(sv.addr, ws, ws.len.uint32, 0'u32)
+  var s2 = sv.getString()
+  echo "sv.getString(): ", s2
+  var wd: WideCString
+  var n: uint32    
+  echo ValueStringData(sv.addr, wd.addr, n.addr)
+  echo n,  wd
+  echo s1, "->", s2
+  echo s1.len, "=", s2.len
+
   p.convertToString()
   echo "convertToString: ", p
   p.convertFromString("hello, world")
@@ -53,24 +37,24 @@ when false:
   p.convertToString()
   echo "convertToString: ", p
   
-#[
 #test float 
-when true: #ok
+when false: #ok
   var f = 6.341
   var fv = newValue(f)
   echo "float value:", f, "\t", fv, "\t", fv.getFloat()
   
 #test bytes operations
-when true: #ok
+when false: #ok
   var b: seq[byte] = @[byte(1), byte(2), byte(3), byte(4)]
   echo "b: ", b
   var bv = nullValue()
-  echo "bv as int: ", getInt(bv), " bv as boolean: ", getBool(p)
+  # echo "bv as int: ", bv.getInt() # bad parameter
+  # echo " bv as boolean: ", p.getBool()# bad parameter
   setBytes(bv, b)
   echo "set bytes bv:", bv.getBytes()
 
 # test array
-when true: #ok
+when false: #ok
   var a = nullValue()
   a[3] = newValue(100) # min index is 0
   a[6] = newValue("111")
@@ -80,16 +64,17 @@ when true: #ok
   echo "a:", a
 
 # test map
-when true: #ok
+when false: #ok
   var o = nullValue()
   o["key"] = newValue(i)
   o["at"] = newValue(i+1)
   echo "o:", o
 
 # test time
-when true: #ok
+when false: #ok
   import times
   var dt = getTime()
   var t = newValue(dt)
   echo "DateTime: ", dt, " Value DT:", t, " Dt from value: ", t.getDate()  
-]#
+
+echo "values counter: ", count

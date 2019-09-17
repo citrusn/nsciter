@@ -1,8 +1,8 @@
 ﻿import os, sciter/sciter, strutils, strformat, times
 
 OleInitialize(nil)
-var api = SAPI()
-#echo "spi:", repr s
+let api = SAPI()
+#echo "api:", repr api
 #echo "s.version:", s.version
 echo "SciterClassName:", SciterClassName() # NOW IT'S WORKED !!!!
 echo "SciterVersion:", toHex(int(SciterVersion(true)), 5)
@@ -14,9 +14,7 @@ echo VersionAsString()
 #echo "SciterCreateWindow:", repr SciterCreateWindow
 #echo "s.SciterCreateWindow:", repr s.SciterCreateWindow
 
-# for connect to Inspector
-SciterSetOption(nil, SCITER_SET_DEBUG_MODE, 1)
-SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
+assert SciterSetOption(nil, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
                 ALLOW_FILE_IO or ALLOW_SOCKET_IO or
                 ALLOW_EVAL or ALLOW_SYSINFO)
 
@@ -28,11 +26,13 @@ var dbg: DEBUG_OUTPUT_PROC = proc ( param: pointer;
     echo "subsystem: ", cast[OUTPUT_SUBSYTEMS](subsystem),
          " severity: ", cast[OUTPUT_SEVERITY](severity), 
          " len: ", text_length, " msg: ", text
-api.SciterSetupDebugOutput(nil, nil, dbg)
+SciterSetupDebugOutput(nil, nil, dbg)
 
 var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR or
                             SW_RESIZEABLE, defaultRect, nil, nil, nil)
 assert wnd != nil, "wnd is nil"
+# for connect to Inspector
+assert SciterSetOption(wnd, SCITER_SET_DEBUG_MODE, 1) 
 
 # test load html string into Sciter
 var htmlw: string="""<html> <head><title>Тестовая страница</title></head>пїЅпїЅпїЅпїЅпїЅпїЅ, hello world! </html>"""
@@ -56,12 +56,12 @@ testInsertFn("hello, world#1", 1)
 testInsertFn("hello, world#5", 8)
 
 #wnd.setTitle("test setTitle window caption") - # windows only proc calling
-wnd.onClick(proc():uint32 = 
+#[wnd.onClick(proc():uint32 = 
     echo "generic click"
     return 0) # if return 1 then next proc not calling
 wnd.onClick(proc():uint32 = 
     echo "generic click 2"
-    return 1)
+    return 1)]#
 
 # test value function
 var testFn = proc() =
@@ -82,7 +82,7 @@ var testFn = proc() =
     var b: seq[byte] = @[byte(1), byte(2), byte(3), byte(4)]
     echo "b: ", b
     var bv = nullValue()
-    echo "bv as int: ", getInt(bv), " bv as boolean: ", getBool(p)
+    #echo "bv as int: ", getInt(bv), " bv as boolean: ", getBool(p)
     bv.setBytes(b)
     echo "set bytes bv:", bv.getBytes()
     var o = nullValue()
@@ -100,11 +100,11 @@ var testFn = proc() =
     echo "DateTime: ", dt, " Value DT:", repr t, " Dt from value: ", t.getDate()    
 #testFn()
 
-proc nf(args: seq[Value]): Value =
+proc nf(args: seq[ptr Value]): Value =
     echo "NativeFunction called", args
-    var s = "1234'i32"
+    var s = 1234'i32
     result = newValue(s)
-    echo "result nf: ", result, " - ", repr result
+    #echo "result nf: ", result
 
 var testVptr = proc() =
     var i: int16 = 100
@@ -112,46 +112,84 @@ var testVptr = proc() =
     echo v, "\tv.isNativeFunctor():", v.isNativeFunctor()
     var vvv = newValue("ssss") 
     echo "vvv: " , vvv
-    echo "setNativeFunctor: ", vvv.setNativeFunctor(nf)
+    vvv.setNativeFunctor(nf)
     echo vvv, "\tvvv.isNativeFunctor():", vvv.isNativeFunctor()
-testVptr()
+#testVptr()
 
 echo "dfm hello ret: ", 
     wnd.defineScriptingFunction("hello", 
-        proc(args: seq[Value]): Value =
+        proc(args: seq[ptr Value]): Value =
             echo "hello from sciter script method"
-            echo "\targs:", args
-            result = newValue("returning from hello")
-            return result
+            echo "\targs:" , args
+            var res = newValue("native call hello is ok")
+            return res
     )
 
 proc testCallback() =
     echo "dfm cbCall ret: ", 
         wnd.defineScriptingFunction("cbCall", 
-            proc(args: seq[Value]): Value =
-                echo "cbCall args:", args, repr args, isObject(args[0])
-                var fn = args[0]
-                var ret = fn.invoke(newValue(100), newValue("arg2"))
-                echo "cb ret:", ret
-                #ret = fn.invokeWithSelf( #TODO: proferit
-                #    newValue("string as this"), 
-                #    newValue(100),
-                #    newValue("arg2"))
+            proc(args: seq[ptr Value]): Value =
+                echo "cbCall args:" , args #, repr args, isObject(args[0])
+                var fn: ptr Value = args[0]
+                #var res = newValue("returning from cbCall") 
+                var res = fn.invoke(newValue(100), newValue("arg2"))
+                echo "cb result:", res
+
+                var self = newValue("string as this-self")
+                var ret = fn.invokeWithSelf( #TODO: proverit
+                                            self, 
+                                            newValue(100),
+                                            newValue("arg2"))
+                return ret
         )
-#testCallback()
+testCallback()
 
 proc testNativeFunctor() =
     wnd.defineScriptingFunction("api",  # calling from html script
-        proc(args: seq[Value]): Value =
-            var res = nullValue()            
-            res["i"] = newValue(1000)
-            res["str"] = newValue("a string")
+        proc(args: seq[ptr Value]): Value =
+            result = nullValue()            
+            result["i"] = newValue(1000)
+            result["str"] = newValue("a string")
             var fn = newValue()
-            discard fn.setNativeFunctor(nf)
-            res["fn"] = fn
-            return res
+            fn.setNativeFunctor(nf)
+            result["fn"] = fn
     )
 testNativeFunctor()
+
+proc pr(tag: pointer) {.stdcall.} = 
+    echo "pr tag: " , cast[int](tag)
+    #ValueClear(cast[ptr Value](tag))
+
+proc pin(tag: pointer; 
+        argc: uint32; 
+        argv: ptr Value;
+        retval: ptr Value) {.stdcall.} =
+    echo "pin invoke"
+    assert ValueInit(retval) == HV_OK    
+    #var ws = newWideCString("pin result")    
+    #assert ValueIntDataSet(retval, 101202.int32, T_INT, 0) == HV_OK
+    #assert ValueToString(retval, 0) == HV_OK
+    #assert ValueFromString(retval, ws[0].addr, ws.len.uint32, 0) == HV_OK
+    #assert ValueCopy(retval, gres) == HV_OK
+    #echo "retval: ", retval
+
+proc defFunc*(target: HWINDOW, name: string): SCDOM_RESULT {.discardable.} =
+    var eh = newEventHandler()
+    eh.handle_scripting_call = proc(he: HELEMENT,
+                                    params: ptr SCRIPTING_METHOD_PARAMS): uint =
+        echo "defFunc: ", params.name
+        if params.name != name:
+            return 0
+        var res = nullValue()
+        
+        #assert ValueNativeFunctorSet(res.addr, pin, pr, cast[pointer](1) ) == HV_OK
+        #echo "isFunctor",  ValueIsNativeFunctor(res.addr)
+        echo " defFunc: ", res
+        params.result = res
+        return 1
+    return target.Attach(eh,  HANDLE_SCRIPTING_METHOD_CALL) 
+
+wnd.defFunc("nf")
 
 proc testGetElFunction() = 
     var root: HELEMENT
@@ -164,4 +202,7 @@ proc testGetElFunction() =
     echo fmt"Root text ({t.len}) = {t}"
 #testGetElFunction()
 
-wnd.run
+try:
+    wnd.run
+finally:
+    echo "End!"

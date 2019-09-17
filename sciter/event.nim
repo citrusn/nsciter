@@ -89,7 +89,7 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
                   prms: pointer): uint {.stdcall.} =
     var pThis = cast[EventHandler](tag)
     #if evtg > uint32(256):
-    #  debugEcho "element_proc: tag " , repr pThis , evtg , " prms:", repr prms
+    #debugEcho "element_proc: tag " , repr pThis , evtg , " prms:", repr prms
     assert pThis != nil, "pThis is nil"    
     case cast[EVENT_GROUPS](evtg)
     of SUBSCRIPTIONS_REQUEST:
@@ -204,7 +204,7 @@ proc onClick*(target: EventTarget,
             return handler()        
     return target.Attach(eh, HANDLE_BEHAVIOR_EVENT)
 
-type NativeFunctor* = proc(args: seq[Value]): Value
+type NativeFunctor* = proc(args: seq[ptr Value]): Value
 
 proc defineScriptingFunction*(target: EventTarget, name: string,
                             fn: NativeFunctor): SCDOM_RESULT {.discardable.} =
@@ -214,17 +214,18 @@ proc defineScriptingFunction*(target: EventTarget, name: string,
         #echo "handle_scripting_call: ", params.name
         if params.name != name:
             return 0
-        var args = newSeq[Value](params.argc)
+        var args = newSeq[ptr Value](params.argc)
         var base = cast[uint](params.argv)
         var step = cast[uint](sizeof(Value))
         if params.argc > 0.uint32:
             for idx in 0..params.argc-1:
                 var p = cast[ptr Value](base + step*uint(idx))
-                args[int(idx)] = p[]
-        echo "retv from fn", fn(args)
-        #params.result = newValue("handle_scripting_call")
+                args[int(idx)] = p
+        var ret = fn(args)
+        echo " handle_scripting_call: ", ret
+        params.result = ret
         return 1
-    return target.Attach(eh, HANDLE_ALL)#  HANDLE_SCRIPTING_METHOD_CALL)
+    return target.Attach(eh, HANDLE_SCRIPTING_METHOD_CALL) #  HANDLE_ALL
 
 proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR,
                     fn: proc()): SCDOM_RESULT {.discardable.} =
@@ -276,3 +277,5 @@ proc createBehavior*(target: LPSCN_ATTACH_BEHAVIOR,
         return 0
 
     return target.element.Attach(eh, HANDLE_ALL)
+
+ 
