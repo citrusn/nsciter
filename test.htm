@@ -2,13 +2,7 @@
     <head>
         <title>Test Html Page-Тестовая страница</title>
         <meta charset="UTF-8">
-    </head>
-    <h1>Test page for sciter script function</h1>
-    <h2>Тестовая страница скриптов</h2>
-    <button>Click</button> <!--Call wnd.onClick  -->
-    <button id="hello">Hello</button>
-    <button id="nf">NativeFunctor</button>
-    <button id="csss">CSSS!click</button>
+    </head>    
     <script type="text/tiscript">
         include "log.tis";        
         //event click $(button#csss) {
@@ -21,35 +15,46 @@
             var csss = $(button#csss);
             csss.onClick = function() {
                 var f = view.nf();
-                log.f("csss result = %s", f);
-                //var r=f();
-                //log.f("f() result = %s", r);
-                //view.hello("f()=: ", r);
+                view.hello("f(): ", f);
+                //log.f("csss result = %s", f);
+                var r = f();
+                //log.f("f() = %s", f);
+                view.hello("f()=: ", r);
             }
 
             var btn = $(button#hello); //
+
             function cb(a,b) { // callback function from native code
+                //log.f("function cb(a,b) calling");
                 view.hello(this, a, b);
-                log.f("stdout.printf: %s" , this );
+                //log.f("stdout.printf: %s" , this );
                 return 101010; // result to native code
             }
 
             btn.onClick = function(){ // calling from hello btn
-                var r = view.hello(1, 2, "view.hello", true, false);  //defineScriptingFunction "hello",   native method
-                log.f("hello result = %s", r);
-                r = view.cbCall(cb);  //test callback function. defineScriptingFunction "cbCall",   native method
-                log.f("cbCall result = %s", r);
+                //var r = view.hello(1, 2, "view.hello", true, false);  //defineScriptingFunction "hello",   native method
+                //log.f("hello result = %s", r);
+                var r = view.cbCall( cb );  //test callback function. defineScriptingFunction "cbCall",   native method
+                //log.f("cbCall result = %s", r);
             }
 
             var nf = $(button#nf)
             nf.onClick = function(){
                 var api = view.api();
-                //var res = view.hello("api field:", api.i, api.str, api.fn);
+                var res = view.hello("api field:", api.i, api.str, api.fn);
                 //log.f("hello=%s", res);
-                var r = api.fn(1, 2.34, "test param");
-                log.f("api.fn=%s", r);
+                var r =  api.fn(1, 2.34, "test param");
+                //log.f("api.fn=%s", r);
                 view.hello("api.fn(1, 2.34, test param): ", r);
             }
         }
     </script>
+
+    <h1>Test page for sciter script function</h1>
+    <h2>Тестовая страница скриптов</h2>
+    <button>Click</button> <!--Call wnd.onClick  -->
+    <button id="hello">Hello</button>
+    <button id="nf">NativeFunctor</button>
+    <button id="csss">CSSS!click</button>
+
 </html>

@@ -1,53 +1,53 @@
-import sciter/sciter
+type
+  VALUE* =  object
+    t*: uint32
+    u*: uint32
+    d*: uint64
 
-proc nf(args: seq[ptr Value]): Value =
-    echo "NativeFunction called: ", args
-    var s = "NativeFunction returned result "
-    result = newValue(s)
-    echo "result nf: ", result
+var count: int32 = 0
 
-proc nf_Ptr(args: seq[ptr Value]): ptr Value =
-  echo "NativeFunction called", args
-  var s = "1234'i32"
-  var r = newValue(s)
-  result = r.addr
+proc ValueClear(x: ptr Value ) = 
+  dec count
+  echo "ValueClear: " , count, " addr: ", cast[int](x)
 
-proc pr(tag: pointer) {.stdcall.} = 
-  echo "pr tag: " , cast[int](tag)
-  #ValueClear(cast[ptr Value](tag))
+proc ValueInit(x: ptr Value ) = 
+  inc count
+  echo "ValueInit: " , count, " addr: ", cast[int](x)
 
-proc pin(tag: pointer; argc: uint32; argv: ptr Value; retval: ptr Value) {.stdcall.} =
-  echo "pin invoke", cast[int](tag)
-  assert ValueInit(retval) == HV_OK    
-  #var ws = newWideCString("pin result")
-  #echo ValueStringDataSet(retval, ws, ws.len.uint32, 0'u32)  
-  ##assert ValueIntDataSet(retval, 101202.int32, T_INT, 0) == HV_OK
-  #var res = newValue("All good!")   
-  var args = newSeq[ptr Value](argc)
-  var base = cast[uint](argv)
-  var step = cast[uint](sizeof(Value))
+proc ValueCopy(dst: ptr Value;  src: ptr Value) =  
+  dst.t = src.t 
+  dst.u = src.u
+  dst.d = src.d
 
-  if argc > 0.uint32:
-      for idx in 0..<argc:
-          var p = cast[ptr Value](base + step*uint(idx))
-          args[int(idx)] = p  
-  var res = nf(args)
+proc `=destroy`(x: var Value) = 
+  echo "=destroy"
+  ValueClear(x.addr) 
 
-  assert ValueCopy(retval, res.addr) == HV_OK
-  echo "retval: ", retval[]
+proc `=`(dst: var Value; src: Value) =
+  echo "operator ="  
+  ValueInit(dst.addr)
+  ValueCopy(dst.addr, src.unsafeAddr)
+  
+proc `=sink`(dst: var Value; src: Value) =  
+  echo "operator sink="  
+  ValueInit(dst.addr)
+  ValueCopy(dst.addr, src.unsafeAddr)
+  ValueClear(src.unsafeAddr)
 
+proc newValue*(): Value =  
+  ValueInit(result.addr)
 
-var res = nullValue()            
-res["i"] = newValue(1000)
-res["str"] = newValue("a string")
-var fn = nullValue()
-#discard fn.setNativeFunctor(nf)
-var tag = cast[pointer](101)
-assert ValueNativeFunctorSet(fn.addr, pin, pr, tag) == HV_OK
-res["fn"] = fn
+proc newValue*(dat: int): Value =    
+  echo "newValue: " , dat
+  ValueInit(result.addr)
+  result.d = cast[uint64](dat)  
+  
+var v = newValue()
+var v1 = newValue(121)
+v = v1
+echo "v:", v, " v1:" , v1
+#var v2: Value
+#v2 = v1
+#echo "v2 ", v2 , "v1 ", v1
 
-var f = res["fn"]
-echo f, repr f
-
-var r = invoke(f.addr, newValue(1), newValue(2), newValue("String param #1 "))
-echo r.type, r
+echo "END PROGRAMM"

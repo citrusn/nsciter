@@ -6,7 +6,7 @@ type
     HV_INCOMPATIBLE_TYPE = 2
 
 type   
-  VALUE* = object # {.byref.}
+  VALUE* = object
     t*: uint32
     u*: uint32
     d*: uint64

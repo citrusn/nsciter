@@ -95,31 +95,58 @@ var count* = 0
 
 proc getString*(x: var Value): string
 
-proc `=destroy`(x: var Value) =
-    if x.t == 0 and x.d == 0:
-        return
+#[proc `=destroy`(x: ptr Value) = # this destructor is invalid
+    echo "=destroy ptr "
+    ValueClear(x)
+    x.dealloc()]#
+
+proc `=destroy`(x: var Value) =    
+    #if x.t == 0 and x.d == 0:
+    #    return
     inc count, -1
     #var s = ""
     #if x.t == T_STRING: s = x.getString()
-    echo "=destroy: ", count#, " ", cast[int](x.addr), " ", cast[VTYPE](x.t), " ", x.d #, " ", s
+    #echo "=destroy : ", count, " ", repr x.addr #, " ", s
     assert ValueClear(x.addr) == HV_OK
 
-proc newValueStrPtr*(s: string): ptr Value =
-    #var s: cstring = "test ptr newValue"
+#[proc `=`(dst: var Value; src: Value) =
+    echo "operator ="
+    #ValueClear(dst.addr)
+    ValueInit(dst.addr)
+    ValueCopy(dst.addr, src.unsafeAddr)]#
+
+proc `=sink`(dst: var Value; src: Value) =
+    #echo "operator sink = dst: " , dst, "src: ", src
+    #ValueInit(dst.addr)
+    inc count
+    ValueCopy(dst.addr, src.unsafeAddr)
+
+proc newValuePtr*(): ptr Value = 
     result = cast[ptr Value](alloc0(sizeof(Value)))    
     assert ValueInit(result) == HV_OK
-    var ws = newWideCString(s)
-    assert ValueFromString(result, ws, ws.len.uint32, 0) == HV_OK
+    return result
+
+proc newValuePtr*(dat: string): ptr Value = 
+    result = newValuePtr()
+    var ws = newWideCString(dat)
+    #assert ValueFromString(result, ws, ws.len.uint32, 0) == HV_OK
+    assert ValueStringDataSet(result, ws, ws.len.uint32, 0) == HV_OK
+    return result
+
+proc newValuePtr*(dat: SomeSignedInt): ptr Value = 
+    result = newValuePtr()    
+    assert ValueIntDataSet(result, dat.int32, T_INT, 0) == HV_OK
     return result
 
 proc newValue*(): Value =
     inc count
     #echo "newValue(): " , count #cast[int](result.addr)
-    assert  ValueInit(result.addr) == HV_OK
+    assert ValueInit(result.addr) == HV_OK
 
-proc nullValue*(): Value =
-    result = newValue()
-    result.t = T_NULL
+proc nullValue*(): Value =    
+    #result = Value()
+    result.t = T_NULL # only here, not newVal()
+    #assert ValueInit(result.addr) == HV_OK
 
 proc cloneTo*(src: var Value, dst: var Value) {.inline.} =
     assert ValueCopy(dst.addr, src.addr) == HV_OK
@@ -132,7 +159,7 @@ proc clone*(x: var Value): Value {.inline.} =
 proc newValue*(dat: string): Value =
     #UINT SCFN( ValueStringDataSet )( VALUE* pval, LPCWSTR chars, UINT numChars, UINT units );
     var ws = newWideCString(dat)
-    result = nullValue()
+    result = newValue()
     assert ValueStringDataSet(result.addr, ws, ws.len.uint32, 0'u32) == HV_OK
 
 proc newValue*(dat: SomeSignedInt): Value =
@@ -154,9 +181,9 @@ proc newValue*(dat: float64): Value =
 proc newValue*(dat: bool): Value =
     result = newValue()
     if dat:
-        assert ValueIntDataSet(result.addr, 1, T_INT, 0) == HV_OK
+        assert ValueIntDataSet(result.addr, 1, T_BOOL, 0) == HV_OK
     else:
-        assert ValueIntDataSet(result.addr, 0, T_INT, 0) == HV_OK
+        assert ValueIntDataSet(result.addr, 0, T_BOOL, 0) == HV_OK
 
 proc convertFromString*(x: var Value, s: string, 
                         how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
@@ -168,7 +195,7 @@ proc convertToString*(x: var Value,
                     how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
     # converts value to T_STRING inplace
     #UINT SCFN( ValueToString )( VALUE* pval, /*VALUE_STRING_CVT_TYPE*/ UINT how );
-    assert ValueToString(x.unsafeAddr, how) == HV_OK
+    assert ValueToString(x.addr, how) == HV_OK
 
 proc getString*(x: var Value): string =
     #UINT SCFN( ValueStringData )( const VALUE* pval, LPCWSTR* pChars, UINT* pNumChars );
@@ -177,9 +204,6 @@ proc getString*(x: var Value): string =
     var n: uint32    
     assert ValueStringData(x.addr, ws.addr, n.addr) == HV_OK
     return $(ws)
-
-proc `$`*(v: ref Value): string = 
-    result = fmt"Value ref ({cast[VTYPE](v.t)}) {v.t} {v.u} {v.d} "
 
 proc `$`*(v: var Value): string =
     result = fmt"({cast[VTYPE](v.t)}) "
@@ -195,8 +219,15 @@ proc `$`*(v: var Value): string =
         result = result & nv.getString()
     return result
 
+#proc `$`*(v: Value): string =     
+#    return $v
+
 proc `$`*(v: ptr Value): string =     
-    result = $(v[])
+    #result = "Ptr: " & (repr cast[pointer](v)) & " " &
+    return $(v[])
+
+proc `$`*(v: ref Value): string = 
+    result = "Ref to value: " & $(v[])
 
 proc getInt64*(x: var Value): int64 =
     assert ValueInt64Data(x.unsafeAddr, result.addr) == HV_OK
@@ -208,16 +239,11 @@ proc getInt32*(x: var Value): int32 =
     
 proc getInt*(x: var Value): int32 =
     #var xx = x
-    if x.isInt:
-        result = getInt32(x)
-    else:
-        result = 0
+    result = if x.isInt: getInt32(x) else: 0
 
 proc getBool*(x: var Value): bool =
     var i = getInt(x)
-    if i == 0:
-        return false
-    return true
+    result = if i == 0: false else: true
 
 proc getFloat*(x: var Value): float =
     #xDefPtr(x, v)
@@ -299,49 +325,53 @@ proc `[]=`*(x: var Value; name: string; y: Value) =
 ## value functions calls
 proc invokeWithSelf*(x: ptr Value, self: var Value, 
                     args: varargs[Value]): Value = 
-    result = newValue()
+    result = newValue(0)
     #var xx = x
     #var ss = self
     var clen = len(args)
-    var cargs = newSeq[ptr Value](clen)
-    for i in 0..clen-1:
-        cargs[i] = args[i].unsafeAddr
-    assert ValueInvoke(x, self.unsafeAddr, uint32(len(args)),
+    var cargs = newSeq[ptr Value](clen+1)
+    #var url = newWideCString("[Native Script]")
+    if clen>0:
+        for i in 0..<clen:
+            cargs[i] = args[i].unsafeAddr
+    echo "invokeWithSelf. x:" , x[]
+    assert ValueInvoke(x, self.addr, uint32(len(args)),
                        cargs[0], result.addr, nil) == HV_OK
+    echo "invokeWithSelf. result: ", result
     return result
 
 ## value functions calls    
 proc invoke*(x: ptr Value, args: varargs[Value]): Value =
+    echo "invoke"
     var self = newValue()
-    return x.invokeWithSelf(self, args)
+    result = x.invokeWithSelf(self, args)
+    echo result
     #return newValue("return from invoke")
 
 var nfs = newSeq[NativeFunctor]()
 
-proc pinvoke(tag: pointer; 
-             argc: uint32; 
-             argv: ptr Value;
-             retval: ptr Value) {.stdcall.} =
-    # is available only when ``--threads:on`` and ``--tlsEmulation:off`` are used
+proc pinvoke(tag: pointer;
+            argc: uint32; 
+            argv: ptr Value;
+            retval: ptr Value) {.stdcall.} =
+    #is available only when ``--threads:on`` and ``--tlsEmulation:off`` are used
     #setupForeignThreadGc()
     var i = cast[int](tag)
-    var nf = nfs[i]
-    var args = newSeq[ptr Value](argc)
-    var base = cast[uint](argv)
-    var step = cast[uint](sizeof(Value))
-    if argc > 0.uint32:
-        for idx in 0..argc-1:
-            var p = cast[ptr Value](base + step*uint(idx))
-            args[int(idx)] = p    
-    var res = nf(args)     
-
-    ValueInit(retval)                
-    res.convertToString()
+    var nf = nfs[i]    
+    #var res = nf(packArgs(argc, argv))
+    var s = "All good!"
+    #var res = newValue(s)
+    var res = newValue(99955) 
+    #res.convertToString()
+    ValueInit(retval)
+    var ws = newWideCString(s)    
+    #assert ValueFromString(retval, ws, ws.len.uint32, 0) == HV_OK    
     ValueCopy(retval, res.addr)
-    #echo "res: ", res, " retval: ", retval
+    assert ValueToString(retval, 0) == HV_OK
+    echo retval[]
 
-proc prelease(tag: pointer) {.stdcall.} = discard
-    #echo "prelease tag index: ", cast[int](tag)
+proc prelease(tag: pointer) {.stdcall.} = 
+    echo "prelease tag index: ", cast[int](tag)
 
 proc setNativeFunctor*(v: var Value, nf: NativeFunctor) = 
     nfs.add(nf)

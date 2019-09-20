@@ -83,31 +83,34 @@ proc newEventHandler*(): EventHandler =
 
 import tables
 #proc hash(x: EventHandler): Hash {.inline.} =  return hash(x)
-var evct = newCountTable[EventHandler]()
+var evct = initTable[EventHandler, uint]()
 
 proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
                   prms: pointer): uint {.stdcall.} =
     var pThis = cast[EventHandler](tag)
     #if evtg > uint32(256):
-    #debugEcho "element_proc: tag " , repr pThis , evtg , " prms:", repr prms
+    #debugEcho "element_proc: " , cast[EVENT_GROUPS](evtg)  #, " prms:", repr prms
     assert pThis != nil, "pThis is nil"    
     case cast[EVENT_GROUPS](evtg)
     of SUBSCRIPTIONS_REQUEST:
         var p = cast[ptr cuint](prms)
         var res = pThis.subscription(he, p[])
-        echo "SUBSCRIPTIONS_REQUEST: ", cast[EVENT_GROUPS](p)
+        #echo "SUBSCRIPTIONS_REQUEST: ", cast[EVENT_GROUPS](p)
         return res
 
     of HANDLE_INITIALIZATION:
         var p: ptr INITIALIZATION_PARAMS = cast[ptr INITIALIZATION_PARAMS](prms)
+        #echo "INITIALIZATION_PARAMS: " , p[]
         if p.cmd == BEHAVIOR_DETACH:
+            #echo "BEHAVIOR_DETACH: ", cast[int](tag) , " evct: ", evct[pThis]
             pThis.detached(he)
-            evct.inc(pThis, -1)
-            if evct.contains(pThis): dealloc(pThis)
+            evct[pThis] -= 1
+            if evct.contains(pThis): dealloc(pThis) 
         elif p.cmd == BEHAVIOR_ATTACH:
-            echo "BEHAVIOR_ATTACH"
+            #echo "BEHAVIOR_ATTACH: ", cast[int](tag)
             pThis.attached(he)
-            evct.inc(pThis)
+            if evct.hasKeyOrPut(pThis, 0):
+                evct[pThis] = evct[pThis] + 1
         return 1
 
     of HANDLE_MOUSE:
@@ -206,23 +209,26 @@ proc onClick*(target: EventTarget,
 
 type NativeFunctor* = proc(args: seq[ptr Value]): Value
 
+proc packArgs*(argc: uint32; argv: ptr Value): seq[ptr Value] = 
+    result = newSeq[ptr Value](argc)
+    var base = cast[uint](argv)
+    var step = cast[uint](sizeof(Value))
+    if argc > 0.uint32:
+        for idx in 0..<argc:
+            var p = cast[ptr Value](base + step*uint(idx))
+            result[int(idx)] = p
+
 proc defineScriptingFunction*(target: EventTarget, name: string,
                             fn: NativeFunctor): SCDOM_RESULT {.discardable.} =
     var eh = newEventHandler()
     eh.handle_scripting_call = proc(he: HELEMENT,
                                 params: ptr SCRIPTING_METHOD_PARAMS): uint =
-        #echo "handle_scripting_call: ", params.name
+        #echo "handle_scripting_call: ", params.name , " ", name
         if params.name != name:
             return 0
-        var args = newSeq[ptr Value](params.argc)
-        var base = cast[uint](params.argv)
-        var step = cast[uint](sizeof(Value))
-        if params.argc > 0.uint32:
-            for idx in 0..params.argc-1:
-                var p = cast[ptr Value](base + step*uint(idx))
-                args[int(idx)] = p
-        var ret = fn(args)
-        echo " handle_scripting_call: ", ret
+        
+        var ret = fn(packArgs(params.argc, params.argv))
+        #echo " handle_scripting_call: ", params.name, " ", ret
         params.result = ret
         return 1
     return target.Attach(eh, HANDLE_SCRIPTING_METHOD_CALL) #  HANDLE_ALL

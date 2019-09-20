@@ -67,7 +67,7 @@ wnd.SciterGetRootElement(root.addr)
 
 proc nf(args: seq[ptr Value]): Value =
     echo "NativeFunction called with args:", $(args)
-    #return newValue("nf ok")
+    return newValue("nf ok")
 
 proc testCallback() =
     echo "gprintln set: ", wnd.defineScriptingFunction("gprintln",
@@ -93,10 +93,10 @@ proc testCallback() =
     )
     echo "kkk set: ", wnd.defineScriptingFunction("kkk",
         proc (args: seq[ptr Value]): Value =
-            result = newValue()
+            result = nullValue()
             result["i"] = newValue(1000)
             result["str"] = newValue("a string")
-            var fn = newValue()
+            var fn = nullValue()
             fn.setNativeFunctor(nf)
             result["f"] = fn
             return result

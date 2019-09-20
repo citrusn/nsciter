@@ -39,7 +39,7 @@ var htmlw: string="""<html> <head><title>Тестовая страница</titl
 #echo "SciterLoadHtml: " , wnd.SciterLoadHtml(htmlw[0].addr , uint32(htmlw.len), newWideCString("x:main"))
 # test load html file into Sciter
 #echo "SciterLoadFile: ", wnd.SciterLoadFile("./t1.htm") # for test debugger
-echo "SciterLoadFile: ", wnd.SciterLoadFile(getCurrentDir() / "test.htm") # work file
+assert wnd.SciterLoadFile(getCurrentDir() / "test.htm") # work file
 #echo "SciterLoadFile: ", wnd.SciterLoadFile(getCurrentDir() / "particles-demo.html") # bad path
 
 #wnd.run
@@ -48,10 +48,10 @@ var testInsertFn = proc(text: string; index: uint32) =
     wnd.SciterGetRootElement(root.addr)
     var dv: HELEMENT
     SciterCreateElement("div", text, dv.addr)
-    echo "InsertElem:", dv.SciterInsertElement(root, index)
+    assert dv.SciterInsertElement(root, index) == SCDOM_OK
     var html:string = "<div> inserted div node </div>" 
-    echo dv.SciterSetElementHtml(cast[ptr byte](html[0].addr), 
-                                (cuint)html.len(), SIH_APPEND_AFTER_LAST)
+    assert dv.SciterSetElementHtml(cast[ptr byte](html[0].addr), 
+                                (cuint)html.len(), SIH_APPEND_AFTER_LAST) == SCDOM_OK
 testInsertFn("hello, world#1", 1)
 testInsertFn("hello, world#5", 8)
 
@@ -100,11 +100,38 @@ var testFn = proc() =
     echo "DateTime: ", dt, " Value DT:", repr t, " Dt from value: ", t.getDate()    
 #testFn()
 
-proc nf(args: seq[ptr Value]): Value =
-    echo "NativeFunction called", args
+assert wnd.defineScriptingFunction("hello", 
+        proc(args: seq[ptr Value]): ptr Value =
+            echo "hello:"
+            echo "\targs:" , repr args
+            #var res = newValue("native call hello is ok")
+            #return res
+) == SCDOM_OK
+
+proc testCallback() =
+    assert  wnd.defineScriptingFunction("cbCall", 
+        proc(args: seq[ptr Value]): ptr Value =
+            echo "cbCall args:" , repr args #, repr args, isObject(args[0])
+            var fn = args[0]
+            #var res = newValue("returning from cbCall") 
+            var res = fn.invoke(newValue(100), newValue("arg2"))
+            echo "cb result:", res
+            
+            var self = newValue("string as this-self")
+            res = fn.invokeWithSelf( #TODO: proverit
+                                    self, 
+                                    newValue(100),
+                                    newValue("arg2"))
+            return res.addr
+    ) == SCDOM_OK
+testCallback()
+
+proc nf(args: seq[ptr Value]): ptr Value =
+    echo "NativeFunction called", repr args
     var s = 1234'i32
-    result = newValue(s)
+    var r = newValue(s)
     #echo "result nf: ", result
+    return r.addr
 
 var testVptr = proc() =
     var i: int16 = 100
@@ -116,76 +143,56 @@ var testVptr = proc() =
     echo vvv, "\tvvv.isNativeFunctor():", vvv.isNativeFunctor()
 #testVptr()
 
-echo "dfm hello ret: ", 
-    wnd.defineScriptingFunction("hello", 
-        proc(args: seq[ptr Value]): Value =
-            echo "hello from sciter script method"
-            echo "\targs:" , args
-            var res = newValue("native call hello is ok")
-            return res
-    )
-
-proc testCallback() =
-    echo "dfm cbCall ret: ", 
-        wnd.defineScriptingFunction("cbCall", 
-            proc(args: seq[ptr Value]): Value =
-                echo "cbCall args:" , args #, repr args, isObject(args[0])
-                var fn: ptr Value = args[0]
-                #var res = newValue("returning from cbCall") 
-                var res = fn.invoke(newValue(100), newValue("arg2"))
-                echo "cb result:", res
-
-                var self = newValue("string as this-self")
-                var ret = fn.invokeWithSelf( #TODO: proverit
-                                            self, 
-                                            newValue(100),
-                                            newValue("arg2"))
-                return ret
-        )
-testCallback()
-
 proc testNativeFunctor() =
     wnd.defineScriptingFunction("api",  # calling from html script
-        proc(args: seq[ptr Value]): Value =
-            result = nullValue()            
-            result["i"] = newValue(1000)
-            result["str"] = newValue("a string")
-            var fn = newValue()
+        proc(args: seq[ptr Value]): ptr Value =
+            var res = nullValue()            
+            res["i"] = newValue(1000)
+            res["str"] = newValue("a string")
+            var fn = nullValue() # check
             fn.setNativeFunctor(nf)
-            result["fn"] = fn
+            res["fn"] = fn
+            return res.addr
     )
 testNativeFunctor()
 
-proc pr(tag: pointer) {.stdcall.} = 
-    echo "pr tag: " , cast[int](tag)
+proc pr(tag: pointer) {.stdcall.} = discard
+    #echo "pr tag: " , cast[int](tag)
     #ValueClear(cast[ptr Value](tag))
 
 proc pin(tag: pointer; 
         argc: uint32; 
         argv: ptr Value;
-        retval: ptr Value) {.stdcall.} =
-    echo "pin invoke"
-    assert ValueInit(retval) == HV_OK    
-    #var ws = newWideCString("pin result")    
+        retval: ptr Value) {.stdcall.} = 
+    echo "pin invoke: ", retval[]
+    assert retval.ValueInit() == HV_OK
+    #var ws = newWideCString("pin result")
+    #assert ValueFromString(retval, ws, ws.len.uint32, 0) == HV_OK
+
     #assert ValueIntDataSet(retval, 101202.int32, T_INT, 0) == HV_OK
     #assert ValueToString(retval, 0) == HV_OK
-    #assert ValueFromString(retval, ws[0].addr, ws.len.uint32, 0) == HV_OK
-    #assert ValueCopy(retval, gres) == HV_OK
-    #echo "retval: ", retval
+    
+    #var res = g() #newValue("1234")
+    var res = cast[ptr Value](tag)
+    #assert ValueCopy(retval, res) == HV_OK
+    assert ValueCopy(retval, res) == HV_OK
+    #assert ValueIsolate(retval) == HV_OK
+    echo "pin end" , repr res
 
 proc defFunc*(target: HWINDOW, name: string): SCDOM_RESULT {.discardable.} =
     var eh = newEventHandler()
     eh.handle_scripting_call = proc(he: HELEMENT,
                                     params: ptr SCRIPTING_METHOD_PARAMS): uint =
-        echo "defFunc: ", params.name
         if params.name != name:
             return 0
-        var res = nullValue()
-        
-        #assert ValueNativeFunctorSet(res.addr, pin, pr, cast[pointer](1) ) == HV_OK
-        #echo "isFunctor",  ValueIsNativeFunctor(res.addr)
-        echo " defFunc: ", res
-        params.result = res
+        #var res = newValue("1011")
+        var res = newValuePtr()
+        var tag = newValuePtr(12889)
+                
+        assert ValueNativeFunctorSet(res, pin, pr, tag) == HV_OK
+        #var ret = invoke(res.addr)
+        echo " defFunc: ", repr res
+        params.result = res[]
         return 1
     return target.Attach(eh,  HANDLE_SCRIPTING_METHOD_CALL) 
 
