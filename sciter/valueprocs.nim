@@ -100,27 +100,24 @@ proc getString*(x: var Value): string
     ValueClear(x)
     x.dealloc()]#
 
-proc `=destroy`(x: var Value) =    
-    #if x.t == 0 and x.d == 0:
-    #    return
-    inc count, -1
-    #var s = ""
-    #if x.t == T_STRING: s = x.getString()
-    #echo "=destroy : ", count, " ", repr x.addr #, " ", s
+proc `=destroy`(x: var Value) =        
+    inc count, -1    
+    #echo "=destroy : ", count, " ", repr x.addr
     assert ValueClear(x.addr) == HV_OK
 
-#[proc `=`(dst: var Value; src: Value) =
+#[proc `=`(dst: var Value; src: Value) = # создаем копию элемента
     echo "operator ="
     #ValueClear(dst.addr)
     ValueInit(dst.addr)
     ValueCopy(dst.addr, src.unsafeAddr)]#
 
-proc `=sink`(dst: var Value; src: Value) =
+#proc `=sink`(dst: var Value; src: Value) = # перенос данных 
     #echo "operator sink = dst: " , dst, "src: ", src
     #ValueInit(dst.addr)
-    inc count
-    ValueCopy(dst.addr, src.unsafeAddr)
+#    inc count
+#    ValueCopy(dst.addr, src.unsafeAddr)
 
+# for testing only
 proc newValuePtr*(): ptr Value = 
     result = cast[ptr Value](alloc0(sizeof(Value)))    
     assert ValueInit(result) == HV_OK
@@ -189,7 +186,7 @@ proc convertFromString*(x: var Value, s: string,
                         how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
     #UINT SCFN( ValueFromString )( VALUE* pval, LPCWSTR str, UINT strLength, /*VALUE_STRING_CVT_TYPE*/ UINT how );
     var ws = newWideCString(s)    
-    assert ValueFromString(x.addr, ws, ws.len.uint32, how) == HV_OK
+    assert ValueFromString(x.addr, cast[ptr uint16](ws), ws.len.uint32, how) == HV_OK
 
 proc convertToString*(x: var Value, 
                     how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
@@ -353,24 +350,16 @@ var nfs = newSeq[NativeFunctor]()
 proc pinvoke(tag: pointer;
             argc: uint32; 
             argv: ptr Value;
-            retval: ptr Value) {.stdcall.} =
+            retval: ptr Value) {.cdecl.} =
     #is available only when ``--threads:on`` and ``--tlsEmulation:off`` are used
     #setupForeignThreadGc()
     var i = cast[int](tag)
     var nf = nfs[i]    
-    #var res = nf(packArgs(argc, argv))
-    var s = "All good!"
-    #var res = newValue(s)
-    var res = newValue(99955) 
-    #res.convertToString()
-    ValueInit(retval)
-    var ws = newWideCString(s)    
-    #assert ValueFromString(retval, ws, ws.len.uint32, 0) == HV_OK    
-    ValueCopy(retval, res.addr)
-    assert ValueToString(retval, 0) == HV_OK
-    echo retval[]
+    var res = nf(packArgs(argc, argv))    
+    assert ValueInit(retval) == HV_OK
+    assert ValueCopy(retval, res.addr) == HV_OK    
 
-proc prelease(tag: pointer) {.stdcall.} = 
+proc prelease(tag: pointer) {.cdecl.} = 
     echo "prelease tag index: ", cast[int](tag)
 
 proc setNativeFunctor*(v: var Value, nf: NativeFunctor) = 

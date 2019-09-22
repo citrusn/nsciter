@@ -101,17 +101,17 @@ var testFn = proc() =
 #testFn()
 
 assert wnd.defineScriptingFunction("hello", 
-        proc(args: seq[ptr Value]): ptr Value =
+        proc(args: seq[ptr Value]): Value =
             echo "hello:"
-            echo "\targs:" , repr args
+            echo "\targs:" , args
             #var res = newValue("native call hello is ok")
             #return res
 ) == SCDOM_OK
 
 proc testCallback() =
     assert  wnd.defineScriptingFunction("cbCall", 
-        proc(args: seq[ptr Value]): ptr Value =
-            echo "cbCall args:" , repr args #, repr args, isObject(args[0])
+        proc(args: seq[ptr Value]): Value =
+            echo "cbCall args:" , args #, repr args, isObject(args[0])
             var fn = args[0]
             #var res = newValue("returning from cbCall") 
             var res = fn.invoke(newValue(100), newValue("arg2"))
@@ -122,16 +122,15 @@ proc testCallback() =
                                     self, 
                                     newValue(100),
                                     newValue("arg2"))
-            return res.addr
+            return res
     ) == SCDOM_OK
 testCallback()
 
-proc nf(args: seq[ptr Value]): ptr Value =
-    echo "NativeFunction called", repr args
-    var s = 1234'i32
+proc nf(args: seq[ptr Value]): Value =
+    echo "NativeFunction called", args
+    var s = "NativeFunction is calling OK!"
     var r = newValue(s)
-    #echo "result nf: ", result
-    return r.addr
+    return r
 
 var testVptr = proc() =
     var i: int16 = 100
@@ -145,39 +144,31 @@ var testVptr = proc() =
 
 proc testNativeFunctor() =
     wnd.defineScriptingFunction("api",  # calling from html script
-        proc(args: seq[ptr Value]): ptr Value =
+        proc(args: seq[ptr Value]): Value =
             var res = nullValue()            
             res["i"] = newValue(1000)
             res["str"] = newValue("a string")
             var fn = nullValue() # check
             fn.setNativeFunctor(nf)
             res["fn"] = fn
-            return res.addr
+            return res
     )
 testNativeFunctor()
 
-proc pr(tag: pointer) {.stdcall.} = discard
-    #echo "pr tag: " , cast[int](tag)
-    #ValueClear(cast[ptr Value](tag))
+proc pr(tag: pointer) {.cdecl.} = #discard
+    echo "pr tag: " , cast[int](tag)
+
+var s*: array[10, uint16] = [uint16 112,105,110,32,114,101,115,117,108,116]
 
 proc pin(tag: pointer; 
         argc: uint32; 
         argv: ptr Value;
-        retval: ptr Value) {.stdcall.} = 
-    echo "pin invoke: ", retval[]
-    assert retval.ValueInit() == HV_OK
-    #var ws = newWideCString("pin result")
-    #assert ValueFromString(retval, ws, ws.len.uint32, 0) == HV_OK
-
-    #assert ValueIntDataSet(retval, 101202.int32, T_INT, 0) == HV_OK
-    #assert ValueToString(retval, 0) == HV_OK
+        retval: ptr Value) {.cdecl.} = 
     
-    #var res = g() #newValue("1234")
-    var res = cast[ptr Value](tag)
-    #assert ValueCopy(retval, res) == HV_OK
-    assert ValueCopy(retval, res) == HV_OK
-    #assert ValueIsolate(retval) == HV_OK
-    echo "pin end" , repr res
+    assert retval.ValueInit() == HV_OK        
+    var res = newValue("all good")    
+    assert ValueCopy(retval, res.addr) == HV_OK
+    echo "pin retval: ", retval
 
 proc defFunc*(target: HWINDOW, name: string): SCDOM_RESULT {.discardable.} =
     var eh = newEventHandler()
@@ -185,13 +176,12 @@ proc defFunc*(target: HWINDOW, name: string): SCDOM_RESULT {.discardable.} =
                                     params: ptr SCRIPTING_METHOD_PARAMS): uint =
         if params.name != name:
             return 0
-        #var res = newValue("1011")
         var res = newValuePtr()
         var tag = newValuePtr(12889)
                 
         assert ValueNativeFunctorSet(res, pin, pr, tag) == HV_OK
         #var ret = invoke(res.addr)
-        echo " defFunc: ", repr res
+        echo " defFunc: ", res
         params.result = res[]
         return 1
     return target.Attach(eh,  HANDLE_SCRIPTING_METHOD_CALL) 
