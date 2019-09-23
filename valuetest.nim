@@ -14,7 +14,7 @@ when false: #ok
   echo "\t", sv # bad. static value desroyed
 
 # test string conversion
-when true:  
+when false:  
   var s1: string = "a test string"
   #var sv1 = newValue(s1)
   var sv: Value = nullValue()  
@@ -54,22 +54,27 @@ when false: #ok
   echo "set bytes bv:", bv.getBytes()
 
 # test array
-when false: #ok
+when true: #ok
   var a = nullValue()
-  a[3] = newValue(100) # min index is 0
-  a[6] = newValue("111")
-  echo "a:", a, " a[5]=", a[4] # last index is 4 , but 5
-  var a4 = a[4]
+  a[0] = newValue(100) # min index is 0
+  a[1] = newValue("111")
+  echo "a:", a, " a[0] =", a[0]
+  var a4 = a[1]
   echo a4.getString()
   echo "a:", a
+  echo "test iterator's array"
+  for v in a: 
+    echo " v: ", v
 
 # test map
-when false: #ok
+when true: #ok
   var o = nullValue()
-  o["key"] = newValue(i)
-  o["at"] = newValue(i+1)
+  o["key"] = newValue(999)
+  o["at"] = newValue("home")
   echo "o:", o
-
+  echo "test iterator's map"
+  for k, v in o:
+    echo "k: ", k, " v: ", v
 # test time
 when false: #ok
   import times

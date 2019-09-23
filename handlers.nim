@@ -119,12 +119,12 @@ test_call()
 
 var fe: seq[HELEMENT]
 proc findFirst(el: HELEMENT; selector: cstring): HELEMENT =        
-    proc iterateE(he: HELEMENT; param: pointer): bool {.stdcall.} =
+    proc it(he: HELEMENT; param: pointer): bool {.stdcall.} =
         fe.add(he)
         return true
 
     fe.setLen(0)
-    el.SciterSelectElements(selector, iterateE, nil)
+    el.SciterSelectElements(selector, it, nil)
     if(fe.len() == 0): return nil else: return fe[0]
 
 proc OnAttachBehavior(pnm: LPSCN_ATTACH_BEHAVIOR) =
