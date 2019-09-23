@@ -295,9 +295,33 @@ proc len*(x: var Value): int32 =
     assert ValueElementsCount(x.unsafeAddr, result.addr) == HV_OK
     return result
 
-proc enumerate*(x: var Value, cb: KeyValueCallback): uint32 =
+proc enumerate*(x: var Value, cb: KeyValueCallback, param: pointer = nil) =
     #xDefPtr(x, v)
-    assert ValueEnumElements(x.unsafeAddr, cb, nil) == HV_OK
+    assert ValueEnumElements(x.addr, cb, param) == HV_OK
+
+# one list fo two iterator...
+var tempList = newSeq[(ptr Value, ptr Value)]() 
+
+var cb =  proc (param: pointer; 
+                pkey: ptr VALUE; pval: ptr VALUE): bool {.stdcall.} = 
+    tempList.add (pkey, pval)
+    return true
+
+iterator items*(x: var Value): ptr Value =
+    tempList.setLen(0)
+    enumerate(x, cb)
+    var i : int = 0
+    while i < len(tempList):
+        yield tempList[i][1]
+        inc i
+
+iterator pairs*(x: var Value): (ptr Value, ptr Value) =
+    tempList.setLen(0)
+    enumerate(x, cb)
+    var i : int = 0
+    while i < len(tempList):
+        yield tempList[i]
+        inc i
 
 proc `[]`*[I: Ordinal, VT:var Value|ptr Value](x: VT; i: I): Value =
     #xDefPtr(x, v)

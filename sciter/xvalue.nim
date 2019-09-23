@@ -87,8 +87,8 @@ type
 type
   ## # retval may contain error definition
   NATIVE_FUNCTOR_INVOKE* = proc (tag: pointer; argc: uint32; argv: ptr VALUE;
-                                retval: ptr VALUE) {.stdcall.}
-  NATIVE_FUNCTOR_RELEASE* = proc (tag: pointer) {.stdcall.}
+                                retval: ptr VALUE) {.cdecl.}
+  NATIVE_FUNCTOR_RELEASE* = proc (tag: pointer) {.cdecl.}
 
 ## #*Callback function used with #ValueEnumElements().
 ## #  return TRUE to continue enumeration
