@@ -377,7 +377,7 @@ var nfs = newSeq[NativeFunctor]()
 proc pinvoke(tag: pointer;
             argc: uint32; 
             argv: ptr Value;
-            retval: ptr Value) {.stdcall.} =
+            retval: ptr Value) {.cdecl.} =
     #is available only when ``--threads:on`` and ``--tlsEmulation:off`` are used
     #setupForeignThreadGc()
     var i = cast[int](tag)
@@ -394,7 +394,7 @@ proc pinvoke(tag: pointer;
     assert ValueToString(retval, 0) == HV_OK
     echo retval[]
 
-proc prelease(tag: pointer) {.stdcall.} = 
+proc prelease(tag: pointer) {.cdecl.} = 
     echo "prelease tag index: ", cast[int](tag)
 
 proc setNativeFunctor*(v: var Value, nf: NativeFunctor) = 
