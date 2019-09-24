@@ -346,7 +346,7 @@ type
                               pretval: ptr VALUE): VALUE_RESULT {.stdcall.}
     ValueToString*: proc (pval: ptr VALUE; how: uint32): VALUE_RESULT {.
         stdcall.} ## #VALUE_STRING_CVT_TYPE
-    ValueFromString*: proc (pval: ptr VALUE; str: WideCString; strLength: uint32;
+    ValueFromString*: proc (pval: ptr VALUE; str: ptr uint16; strLength: uint32;
                           how: uint32): VALUE_RESULT {.stdcall.} ## #VALUE_STRING_CVT_TYPE
     ValueInvoke*: proc (pval: ptr VALUE; pthis: ptr VALUE;
                         argc: uint32; argv: ptr VALUE;
@@ -1104,7 +1104,7 @@ proc ValueToString*(pval: ptr VALUE; how: uint32): uint32 {.
     inline, discardable.} =
   return SAPI().ValueToString(pval, how)
 
-proc ValueFromString*(pval: ptr VALUE; str: WideCString; strLength: uint32; 
+proc ValueFromString*(pval: ptr VALUE; str: ptr uint16; strLength: uint32; 
                       how: uint32): uint32 {.
     inline, discardable.} =
   #UINT SCAPI ValueFromString( VALUE* pval, LPCWSTR str, UINT strLength, /*VALUE_STRING_CVT_TYPE*/ UINT how );
