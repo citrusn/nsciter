@@ -75,8 +75,9 @@ proc VersionAsString*(): string =
     return fmt"{major shr 16}.{major and 0xffff}.{minor shr 16}.{minor and 0xffff}"       
 
 #proc defaultRect*(): ref Rect = #result = cast[ref Rect](alloc0(sizeof(Rect)))
-let defaultRect*: RectRef = RectRef(left: 10, top: 50, right: 600, bottom: 400)
+let defaultRect*: RectRef = RectRef(left: 50, top: 50, right: 640+50, bottom: 480+50)
 
+let archPref* = "this://app/"
 ## # Open data blob of the provided compressed Sciter archive.
 proc OpenArchive*(data: openarray[byte]): HSARCHIVE =
     var l: uint32 = data.len.uint32
@@ -84,7 +85,6 @@ proc OpenArchive*(data: openarray[byte]): HSARCHIVE =
     return SciterOpenArchive(d, l)
 
 ## # Get an archive item referenced by \c uri.
-#
 ## # Usually it is passed to \c Sciter.DataReady().
 proc GetArchiveItem*(harc: HSARCHIVE, uri: string): (ptr UncheckedArray[byte], int32) =
     var data: ptr UncheckedArray[byte]
@@ -109,7 +109,7 @@ proc CloseArchive*(harc: var HSARCHIVE): bool =
    `$ packfolder res_folder res_packed.go -v resource_name -go`
   Usage:
     win.SetResourceArchive(resource_name)
-    win.LoadFile("this://app//index.htm")
+    win.LoadFile("this://app/index.htm")
 ]#
 proc SetResourceArchive*(data: openarray[byte]): HSARCHIVE =
     var harc = OpenArchive(data)
@@ -135,3 +135,14 @@ proc DataReady*(wnd:HWINDOW, uri: string, data:openarray[byte]): bool =
     ## mark the data to prevent gc
     #loadedUri[uri] = data
     return ret
+
+proc SciterDebug*() = 
+    var dbg: DEBUG_OUTPUT_PROC = proc(param: pointer;
+                                subsystem: uint32; ## #OUTPUT_SUBSYTEMS
+                                severity: uint32;
+                                text: WideCString;
+                                text_length: uint32) {.stdcall.} =
+        echo "subsystem: ", cast[OUTPUT_SUBSYTEMS](subsystem),
+             " severity: ", cast[OUTPUT_SEVERITY](severity),
+            " msg: ", text
+    SciterSetupDebugOutput(nil, nil, dbg)

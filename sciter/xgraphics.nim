@@ -292,3 +292,10 @@ type
     ## #=1.f
     gPopClip*: proc (hgfx: HGFX): GRAPHIN_RESULT {.stdcall}
 
+type  
+  path* = object
+    hpath: HPATH
+
+#proc createPath(): path = 
+#  var r = pathCreate(result.hpath.addr)
+#  assert r == GRAPHIN_OK

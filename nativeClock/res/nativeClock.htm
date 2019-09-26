@@ -22,7 +22,7 @@
         var w,h;
         var cycles = 0;
         
-        var image = clock.nativeImage(25,25);
+        //var image = clock.nativeImage(25,25);
         
         clock.paintBackground = function(gfx) {
           if( path ) 
@@ -32,14 +32,14 @@
                .drawPath(pathOutline)
                .noFill();
 
-            /*gfx.strokeColor( color(128,200,128) )
+            gfx.strokeColor( color(128,200,128) )
                .strokeWidth( 3dip )
-               .drawPath(path);*/
+               .drawPath(path);
                
-            gfx.drawImage(image,0,0)
+            /*gfx.drawImage(image,0,0)
                .drawImage(image,w-20,0)
                .drawImage(image,w-20,h-20)
-               .drawImage(image,0,h-20);  
+               .drawImage(image,0,h-20);  */
           }
         }
         
@@ -47,8 +47,8 @@
           (w,h) = clock.box(#dimension);
           var t = Date.ticks() / 1000.0;
           // getting paths from native code
-          path        = clock.nativeGetPath(0,0,w,h,t, false);
-          pathOutline = clock.nativeGetPath(0,0,w,h,t, true);
+          //path        = clock.nativeGetPath(0,0,w,h,t, false);
+          //pathOutline = clock.nativeGetPath(0,0,w,h,t, true);
           clock.refresh();
           if(++cycles > 100) {
             cycles = 0;

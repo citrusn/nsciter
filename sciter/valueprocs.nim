@@ -137,7 +137,6 @@ proc newValuePtr*(dat: SomeSignedInt): ptr Value =
 
 proc newValue*(): Value =
     inc count
-    #echo "newValue(): " , count #cast[int](result.addr)
     assert ValueInit(result.addr) == HV_OK
 
 proc nullValue*(): Value =    
@@ -186,7 +185,7 @@ proc convertFromString*(x: var Value, s: string,
                         how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
     #UINT SCFN( ValueFromString )( VALUE* pval, LPCWSTR str, UINT strLength, /*VALUE_STRING_CVT_TYPE*/ UINT how );
     var ws = newWideCString(s)    
-    assert ValueFromString(x.addr, cast[ptr uint16](ws), ws.len.uint32, how) == HV_OK
+    assert ValueFromString(x.addr, ws, ws.len.uint32, how) == HV_OK
 
 proc convertToString*(x: var Value, 
                     how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
@@ -300,7 +299,7 @@ proc enumerate*(x: var Value, cb: KeyValueCallback, param: pointer = nil) =
 var tempList = newSeq[(ptr Value, ptr Value)]() 
 
 var cb =  proc (param: pointer; 
-                pkey: ptr VALUE; pval: ptr VALUE): bool {.stdcall.} = 
+                pkey: ptr VALUE; pval: ptr VALUE): bool = #{.stdcall.} = 
     tempList.add (pkey, pval)
     return true
 
@@ -404,13 +403,13 @@ proc callFunction*(hwnd: HWINDOW | HELEMENT,
     when hwnd is HWINDOW:
         ## Call scripting function defined in the global namespace."""
         var ok = SciterCall(hwnd, name, uint32(clen), cargs[0],  result.addr)
-        assert ok # == SCDOM_OK
+        #assert ok, "ok is:" & $ok # == SCDOM_OK
         #sciter.Value.raise_from(rv, ok != False, name)
     else:
         ## Call scripting function defined in the namespace of the element (a.k.a. global function)
         var ok = SciterCallScriptingFunction(hwnd, name, cargs[0],
                                              uint32(clen), result.addr)
-        assert ok == SCDOM_OK
+        assert ok == SCDOM_OK, "ok is:" & $ok
         #sciter.Value.raise_from(rv, ok == SCDOM_RESULT.SCDOM_OK, name)
         #self._throw_if(ok)
     return result
@@ -437,7 +436,7 @@ proc callMethod*(he: HELEMENT, name: cstring, args: varargs[Value]): Value =
         cargs[i] = args[i].unsafeAddr
     var ok =  SciterCallScriptingMethod(he,  name,  cargs[0], 
                                         uint32(clen), result.addr)
-    assert ok == SCDOM_OK
+    assert ok == SCDOM_OK, "ok is:" & $ok 
     #sciter.Value.raise_from(rv, ok == SCDOM_RESULT.SCDOM_OK, name)
     #self._throw_if(ok)
     return result
