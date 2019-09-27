@@ -94,7 +94,7 @@ type
 ## #  return TRUE to continue enumeration
 ## # 
 type
-  KeyValueCallback* = proc (param: pointer; pkey: ptr VALUE; pval: ptr VALUE): bool {.cdecl.} #TODO call conversion
+  KeyValueCallback* = proc (param: pointer; pkey: ptr VALUE; pval: ptr VALUE): bool {.stdcall.} #TODO call conversion
 
   VALUE_STRING_CVT_TYPE* {.size: 4.} = enum
     CVT_SIMPLE,               ## #/< simple conversion of terminal values 

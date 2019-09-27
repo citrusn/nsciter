@@ -299,7 +299,7 @@ proc enumerate*(x: var Value, cb: KeyValueCallback, param: pointer = nil) =
 # one list fo two iterator...
 var tempList = newSeq[(ptr Value, ptr Value)]() 
 
-var cb =  proc (param: pointer; 
+var cb = proc (param: pointer; 
                 pkey: ptr VALUE; pval: ptr VALUE): bool {.stdcall.} = 
     tempList.add (pkey, pval)
     return true

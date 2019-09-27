@@ -56,12 +56,12 @@ testInsertFn("hello, world#1", 1)
 testInsertFn("hello, world#5", 8)
 
 #wnd.setTitle("test setTitle window caption") - # windows only proc calling
-#[wnd.onClick(proc():uint32 = 
+wnd.onClick(proc():uint32 = 
     echo "generic click"
     return 0) # if return 1 then next proc not calling
 wnd.onClick(proc():uint32 = 
     echo "generic click 2"
-    return 1)]#
+    return 1)
 
 # test value function
 var testFn = proc() =
