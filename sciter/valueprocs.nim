@@ -238,13 +238,15 @@ proc getInt*(x: var Value): int32 =
     result = if x.isInt: getInt32(x) else: 0
 
 proc getBool*(x: var Value): bool =
-    var i = getInt(x)
+    assert x.isBool, "Value is not BOOL type"
+    var i = getInt32(x)
     result = if i == 0: false else: true
 
 proc getFloat*(x: var Value): float =
     #xDefPtr(x, v)
     var f:float64
-    assert ValueFloatData(x.unsafeAddr, f.addr) == HV_OK
+    var r = ValueFloatData(x.unsafeAddr, f.addr)
+    assert r == HV_OK, "getFloat:" & $r
     return float(f)
 
 proc getBytes*(x: var Value): seq[byte] = # 

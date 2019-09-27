@@ -135,7 +135,7 @@ proc element_proc(tag: pointer; he: HELEMENT; evtg: uint32;
 
     of HANDLE_TIMER:
         var p: ptr TIMER_PARAMS = cast[ptr TIMER_PARAMS](prms)
-        echo "HANDLE_TIMER: ", repr p
+        # echo "HANDLE_TIMER: ", repr p
         return pThis.handle_timer(he, p)
 
     of HANDLE_BEHAVIOR_EVENT:
@@ -224,11 +224,11 @@ proc defineScriptingFunction*(target: EventTarget, name: string,
     var eh = newEventHandler()
     eh.handle_scripting_call = proc(he: HELEMENT,
                                     params: ptr SCRIPTING_METHOD_PARAMS): uint =
-        echo "handle_scripting_call: ", params.name , " ", name
+        # echo "handle_scripting_call: ", params.name , " ", name
         if params.name != name:
             return 0        
         var ret = fn(packArgs(params.argc, params.argv))
-        echo " handle_scripting_call: ", params.name, " ", ret
+        # echo " handle_scripting result: ", params.name, " ", ret
         params.result = ret
         return 1
     return target.Attach(eh, HANDLE_SCRIPTING_METHOD_CALL) #  HANDLE_ALL

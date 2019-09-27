@@ -1,6 +1,6 @@
 # Native Clock sample with resource packed html
 
-import sciter, os, strutils, times
+import sciter, os, strutils, times, math, sequtils
 
 OleInitialize(nil)
 let api = SAPI()
@@ -93,158 +93,200 @@ var frame = SciterCreateWindow(SW_MAIN or SW_TITLEBAR or SW_CONTROLS,
 assert SciterSetOption(frame, SCITER_SET_DEBUG_MODE, 1)
 SciterSetCallback(frame, sciterHostCallback, nil)
 
+proc image_paint_function(prm: pointer; hgfx:HGFX, width: uint32; height: uint32) {.stdcall.} =          
+  var g = gapi()
+  discard g.gLineColor(hgfx, g.RGBA(255, 0, 0))
+  discard g.gLineWidth(hgfx, 3.0)
+  
+  discard g.gLine(hgfx, 0, 0, POS(width), POS(height))
+  discard g.gLine(hgfx, POS(width), 0, 0, POS(height))
+
+var nativeImage = proc(he: HELEMENT) =       
+  var r = he.defineScriptingFunction("nativeImage",
+      proc(args: seq[ptr Value]): Value =
+        echo "nativeImage:", $(args)
+        var himg: HIMG
+        var g = gapi()
+        var width = args[0][].getInt().uint32
+        var height = args[1][].getInt().uint32
+        # cast[ptr byte](alloc0(sizeof(width * height * 4)))
+        #var b = newSeq[byte](width * height * 4)
+        var b = newSeqWith(int32(width * height * 4), 192'u8)
+        var r = g.imageCreateFromPixmap(himg.addr, width, height, true, b[0].addr)
+        assert(r == GRAPHIN_OK)
+        r = g.imagePaint(himg, image_paint_function, nil)
+        assert(r == GRAPHIN_OK)
+        r = g.vWrapImage(himg, result.addr)
+        assert(r == GRAPHIN_OK)
+        return  result
+  )
+  echo "set nativeImage: ", r
+
+var nativeGetPath = proc(he: HELEMENT) = 
+    var r = he.defineScriptingFunction("nativeGetPath",
+      proc (args: seq[ptr Value]) : Value =
+        #(vx: ptr Value; vy: ptr Value; vw: ptr Value; vh: ptr Value, vt: ptr Value; vclosed: ptr Value): Value = 
+        #echo "nativeGetPath"
+        var x = args[0][].getFloat() #vx[].getFloat()
+        var y = args[1][].getFloat() #vy[].getFloat()
+        var w = args[2][].getFloat() #vw[].getFloat()
+        var h = args[3][].getFloat() #vh[].getFloat()
+        var t = args[4][].getFloat() #vt[].getFloat()
+        var closed = args[5][].getBool()#vclosed[].getBool()
+        
+        var samples: array[6, float]
+        var sx:array[6, float]
+        var sy:array[6, float]
+        var dx = w/5.0
+        
+        samples[0] = (1+sin(t*1.2345+cos(t*0.33457)*0.44))*0.5
+        samples[1] = (1+sin(t*0.68363+cos(t*1.3)*1.55))*0.5
+        samples[2] = (1+sin(t*1.1642+cos(t*0.33457)*1.24))*0.5
+        samples[3] = (1+sin(t*0.56345+cos(t*1.63)*0.14))*0.5
+        samples[4] = (1+sin(t*1.6245+cos(t*0.254)*0.3))*0.5
+        samples[5] = (1+sin(t*0.345+cos(t*0.03)*0.6))*0.5
+
+        for i in 0 .. 5:
+            sx[i] = x+i.float*dx
+            sy[i] = y+h*samples[i]*0.8
+
+        # creating path:
+        var p: HPATH
+        var g = gapi()
+        # sciter::path::create()
+        var r = g.pathCreate(p.addr) 
+        assert r == GRAPHIN_OK
+        #p.move_to(sx[0], sy[0], false)
+        r = g.pathMoveTo(p, sx[0], sy[0], false)
+        assert(r == GRAPHIN_OK)
+        for i in 1 .. 5:
+            #p.bezier_curve_to(sx[i-1]+dx*0.5f,sy[i-1], sx[i]-dx*0.5f,sy[i], sx[i],sy[i],false)
+            r = g.pathBezierCurveTo(p, sx[i-1]+dx*0.5, sy[i-1], sx[i]-dx*0.5, sy[i], sx[i], sy[i], false)
+
+        if closed:
+          #p.line_to(x+w,y+h, false)
+          r = g.pathLineTo(p, x+w, y+h, false)
+          #p.line_to(x+0,y+h, false)
+          r = g.pathLineTo(p, x+0, y+h, false)
+          #p.close_path()
+          r = g.pathClosePath(p)
+
+        # wrap the path into sciter::value
+        r = g.vWrapPath(p, result.addr)
+        assert r == GRAPHIN_OK
+        return result
+    )
+    echo "set nativeGetPath: ", r
+
 proc createBehaviorClock(target: LPSCN_ATTACH_BEHAVIOR,
                         fn: proc()): SCDOM_RESULT {.discardable.} =
-    var eh = newEventHandler()
-    eh.subscription = proc(he: HELEMENT, params: var cuint): uint =
-        echo "clock subscription"
-        #if comment then full subscription events
-        params = HANDLE_DRAW or HANDLE_TIMER
-        return 1
+  var eh = newEventHandler()
+  eh.subscription = proc(he: HELEMENT, params: var cuint): uint =
+      echo "clock subscription"
+      #if comment then full subscription events
+      params = HANDLE_DRAW or HANDLE_TIMER
+      return 1
 
-    eh.attached = proc(he: HELEMENT) =
-        #dom::element(he).start_timer(1000)
-        #assert he.SciterSetTimer(1000, 0) == SCDOM_OK      
-        echo "clock attached"
-        discard
-    
-    eh.handle_timer = proc(he: HELEMENT, params: ptr TIMER_PARAMS): uint =
-        #dom::element(he).refresh() # refresh element's area                        
-        var rc = Rect()
-        he.SciterGetElementLocation(rc.addr, SELF_RELATIVE or CONTENT_BOX)
-        he.SciterRefreshElementArea(rc)
-
-        echo "clock timer event"
-        return 1 # keep ticking
-
-    eh.handle_draw = proc(he: HELEMENT, params: ptr DRAW_PARAMS): uint =
-        if not params.cmd == DRAW_CONTENT: return 0
-        let g = gapi()
-        let gfx = params.gfx
-        
-        let PI = 3.141592653f
-        let w = float(params.area.right - params.area.left)
-        let h = float(params.area.bottom - params.area.top)
-
-        let scale = if w < h: w / 300.0 else: h / 300.0
-                
-        let timeinfo = now()
-
-        discard g.gStateSave(gfx)
-  
-        discard g.gTranslate(gfx, (float)(params.area.left) + w/2.0, (float)(params.area.top) + h/2.0)
-        discard g.gScale(gfx, scale, scale)
-        discard g.gRotate(gfx, -PI/2, nil, nil)
-        discard g.gLineColor(gfx, g.RGBA(0, 0, 0))
-        discard g.gLineWidth(gfx, 8.0)
-        discard g.gLineCap(gfx, SCITER_LINE_CAP_ROUND)
-         
-        # Hour marks
-        discard g.gStateSave(gfx)
-        discard g.gLineColor(gfx, g.RGBA(0x32, 0x5F, 0xA2))
-        for i in 0 .. 11:
-            discard g.gRotate(gfx, PI/6, nil, nil)
-            discard g.gLine(gfx, 137.0, 0, 144.0, 0.0)
-        discard g.gStateRestore( gfx )
+  eh.attached = proc(he: HELEMENT) =
+      echo "clock attached"
+      #dom::element(he).start_timer(1000)
+      assert he.SciterSetTimer(1000, 0) == SCDOM_OK
+      he.nativeImage()
+      he.nativeGetPath()
             
-        # Minute marks
-        discard g.gStateSave(gfx)
-        discard g.gLineWidth(gfx,3.0)
-        discard g.gLineColor(gfx, g.RGBA(0xA5, 0x2A, 0x2A))
-        for i in 0 .. 59:
-            if ( i mod 5 != 0):
-              discard g.gLine(gfx, 143,0,146,0)
-            discard g.gRotate(gfx, PI/30.0, nil, nil)
-        discard g.gStateRestore(gfx)
+  eh.handle_timer = proc(he: HELEMENT, params: ptr TIMER_PARAMS): uint =
+      echo "clock timer event"
+      #dom::element(he).refresh() # refresh element's area                        
+      var rc = Rect()
+      he.SciterGetElementLocation(rc.addr, SELF_RELATIVE or CONTENT_BOX)
+      he.SciterRefreshElementArea(rc)        
+      return 1 # keep ticking
+
+  eh.handle_draw = proc(he: HELEMENT, params: ptr DRAW_PARAMS): uint =
+      if not params.cmd == DRAW_CONTENT: return 0
+      let g = gapi()
+      let gfx = params.gfx
+      
+      let PI = 3.141592653f
+      let w = float(params.area.right - params.area.left)
+      let h = float(params.area.bottom - params.area.top)
+
+      let scale = if w < h: w / 300.0 else: h / 300.0
+              
+      let timeinfo = now()
+
+      discard g.gStateSave(gfx)
+
+      discard g.gTranslate(gfx, (float)(params.area.left) + w/2.0, (float)(params.area.top) + h/2.0)
+      discard g.gScale(gfx, scale, scale)
+      discard g.gRotate(gfx, -PI/2, nil, nil)
+      discard g.gLineColor(gfx, g.RGBA(0, 0, 0))
+      discard g.gLineWidth(gfx, 8.0)
+      discard g.gLineCap(gfx, SCITER_LINE_CAP_ROUND)
+        
+      # Hour marks
+      discard g.gStateSave(gfx)
+      discard g.gLineColor(gfx, g.RGBA(0x32, 0x5F, 0xA2))
+      for i in 0 .. 11:
+          discard g.gRotate(gfx, PI/6, nil, nil)
+          discard g.gLine(gfx, 137.0, 0, 144.0, 0.0)
+      discard g.gStateRestore( gfx )
+          
+      # Minute marks
+      discard g.gStateSave(gfx)
+      discard g.gLineWidth(gfx,3.0)
+      discard g.gLineColor(gfx, g.RGBA(0xA5, 0x2A, 0x2A))
+      for i in 0 .. 59:
+          if ( i mod 5 != 0):
+            discard g.gLine(gfx, 143,0,146,0)
+          discard g.gRotate(gfx, PI/30.0, nil, nil)
+      discard g.gStateRestore(gfx)
+
+      var sec = (float)(timeinfo.second.int32)
+      var min = (float)(timeinfo.minute.int32)
+      var hr  = (float)(timeinfo.hour)
+      hr = if hr >= 12: hr - 12 else: hr
   
-        var sec = (float)(timeinfo.second.int32)
-        var min = (float)(timeinfo.minute.int32)
-        var hr  = (float)(timeinfo.hour)
-        hr = if hr >= 12: hr - 12 else: hr
-    
-        # draw Hours
-        discard g.gStateSave(gfx)
-        discard g.gRotate(gfx, hr*(PI/6.0) + (PI/360.0)*min + (PI/21600.0)*sec, nil, nil)
-        discard g.gLineWidth(gfx,14)
-        discard g.gLineColor(gfx, g.RGBA(0x32,0x5F,0xA2))
-        discard g.gLine(gfx, -20, 0, 70, 0)
-        discard g.gStateRestore(gfx)
+      # draw Hours
+      discard g.gStateSave(gfx)
+      discard g.gRotate(gfx, hr*(PI/6.0) + (PI/360.0)*min + (PI/21600.0)*sec, nil, nil)
+      discard g.gLineWidth(gfx,14)
+      discard g.gLineColor(gfx, g.RGBA(0x32,0x5F,0xA2))
+      discard g.gLine(gfx, -20, 0, 70, 0)
+      discard g.gStateRestore(gfx)
+
+      # draw Minutes
+      discard g.gStateSave(gfx)
+      discard g.gRotate(gfx, (PI/30.0)*min + (PI/1800.0)*sec, nil, nil)
+      discard g.gLineWidth(gfx, 10)
+      discard g.gLineColor(gfx, g.RGBA(0x32, 0x5F, 0xA2))
+      discard g.gLine(gfx, -28, 0, 100, 0)
+      discard g.gStateRestore(gfx)
+      
+      # draw seconds
+      discard g.gStateSave(gfx)
+      discard g.gRotate(gfx, sec * PI/30.0, nil, nil)
+      
+      discard g.gLineColor(gfx, g.RGBA(0xD4,0,0))
+      discard g.gFillColor(gfx, g.RGBA(0xD4,0,0))
+      discard g.gLineWidth(gfx, 6.0)
+      discard g.gLine(gfx, -30.0, 0.0, 83.0, 0.0)
+      discard g.gEllipse(gfx, 0, 0, 10, 10)
   
-        # draw Minutes
-        discard g.gStateSave(gfx)
-        discard g.gRotate(gfx, (PI/30.0)*min + (PI/1800.0)*sec, nil, nil)
-        discard g.gLineWidth(gfx, 10)
-        discard g.gLineColor(gfx, g.RGBA(0x32, 0x5F, 0xA2))
-        discard g.gLine(gfx, -28, 0, 100, 0)
-        discard g.gStateRestore(gfx)
-        
-        # draw seconds
-        discard g.gStateSave(gfx)
-        discard g.gRotate(gfx, sec * PI/30.0, nil, nil)
-        
-        discard g.gLineColor(gfx, g.RGBA(0xD4,0,0))
-        discard g.gFillColor(gfx, g.RGBA(0xD4,0,0))
-        discard g.gLineWidth(gfx, 6.0)
-        discard g.gLine(gfx, -30.0, 0.0, 83.0, 0.0)
-        discard g.gEllipse(gfx, 0, 0, 10, 10)
-    
-        discard g.gFillColor(gfx, g.RGBA(0,0,0))
-        discard g.gEllipse(gfx, 95.0, 0.0, 10.0, 10.0)
-        discard g.gStateRestore(gfx)
-        
-        discard g.gStateRestore(gfx)
-        return 0   
+      discard g.gFillColor(gfx, g.RGBA(0,0,0))
+      discard g.gEllipse(gfx, 95.0, 0.0, 10.0, 10.0)
+      discard g.gStateRestore(gfx)
+      
+      discard g.gStateRestore(gfx)
+      return 0   
 
-    return target.element.Attach(eh, HANDLE_ALL)
+  return target.element.Attach(eh, HANDLE_ALL)
 
-#[var nativeGetPath: proc (vx: ptr Value; vy: ptr Value; vw: ptr Value; vh: ptr Value, vt: ptr Value; vclosed: ptr Value): Value =
-    var x = vx.getFloat()
-    var y = vy.getFloat()
-    var w = vw.getFloat()
-    var h = vh.getFloat()
-    var t = vt.getFloat()
-    var closed = vclosed.getBool()
-
-    var samples: array[6, float]
-    var sx: array[6, float], sy: array[6, float]
-    var dx = w/5.0
-    
-    samples[0] = (1+sinf(t*1.2345+cosf(t*0.33457)*0.44))*0.5
-    samples[1] = (1+sinf(t*0.68363+cosf(t*1.3)*1.55))*0.5
-    samples[2] = (1+sinf(t*1.1642+cosf(t*0.33457)*1.24))*0.5
-    samples[3] = (1+sinf(t*0.56345+cosf(t*1.63)*0.14))*0.5
-    samples[4] = (1+sinf(t*1.6245+cosf(t*0.254)*0.3))*0.5
-    samples[5] = (1+sinf(t*0.345+cosf(t*0.03)*0.6))*0.5
-
-    for i in 0 .. 5:
-        sx[i] = x+i*dx
-        sy[i] = y+h*samples[i]*0.8	    
-
-    # creating path:
-    var p = createPath() # sciter::path::create()
-
-    #p.move_to(sx[0], sy[0], false)
-    #[for i in 0 .. 5:
-        p.bezier_curve_to(sx[i-1]+dx*0.5f,sy[i-1], sx[i]-dx*0.5f,sy[i], sx[i],sy[i],false)
-
-    if( closed ):
-        p.line_to(x+w,y+h,false)
-        p.line_to(x+0,y+h,false)
-        p.close_path()
-
-    # // wrap the path into sciter::value;    
-    return p.to_value()]#
-]#
 
 harc = SetResourceArchive(resource_name)
 
-echo "set nativeImage: ", frame.defineScriptingFunction("nativeImage",
-    proc(args: seq[ptr Value]): Value =
-        echo "nativeImage:", $(args)
-        return newValue("") )
-
 #assert frame.SciterLoadFile(archPref & "nativeClock.htm")
-assert frame.SciterLoadFile(getCurrentDir() / "res/nativeClock.htm")
+assert frame.SciterLoadFile(getCurrentDir() / "nativeClock.htm")
 
 frame.setTitle("Часики")
 frame.run

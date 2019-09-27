@@ -11,7 +11,7 @@
 #define SCFN(name) (__stdcall *name)
 
 
-include xtypes, xdom, xgraphics, xvalue, xtiscript, xbehavior, xrequest, xdef, converters
+include xtypes, xdom, xvalue, xgraphics,  xtiscript, xbehavior, xrequest, xdef, converters
 
 type
   ISciterAPI* = object

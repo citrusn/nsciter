@@ -1,4 +1,4 @@
-﻿<html>
+<html>
   <head>
     <title></title>
     <style>
@@ -22,7 +22,7 @@
         var w,h;
         var cycles = 0;
         
-        //var image = clock.nativeImage(25,25);
+        var image = clock.nativeImage(25,25);
         
         clock.paintBackground = function(gfx) {
           if( path ) 
@@ -36,10 +36,10 @@
                .strokeWidth( 3dip )
                .drawPath(path);
                
-            /*gfx.drawImage(image,0,0)
+            gfx.drawImage(image,0,0)
                .drawImage(image,w-20,0)
                .drawImage(image,w-20,h-20)
-               .drawImage(image,0,h-20);  */
+               .drawImage(image,0,h-20);  
           }
         }
         
@@ -47,8 +47,8 @@
           (w,h) = clock.box(#dimension);
           var t = Date.ticks() / 1000.0;
           // getting paths from native code
-          //path        = clock.nativeGetPath(0,0,w,h,t, false);
-          //pathOutline = clock.nativeGetPath(0,0,w,h,t, true);
+          path        = clock.nativeGetPath(0,0,w,h,t, false);
+          pathOutline = clock.nativeGetPath(0,0,w,h,t, true);
           clock.refresh();
           if(++cycles > 100) {
             cycles = 0;
@@ -63,14 +63,13 @@
   </head>
 <body>
 
-  <h2>Завершеный пример рисования из кода</h2>
-  <p>См: sdk/include/behaviors/behavior_drawing.cpp</p>
+  <h2>Native drawing behavior demo</h2>
+  <p>See: sdk/include/behaviors/behavior_drawing.cpp</p>
   <p>Face clock gets drawn by native side on content layer</p>
   <p>Script is drawing the graph on background layer using paths generated on native side</p>
-  <p>Ресурсы упакованы в ехе файл</p>
+  
 
   <clock></clock>
 
 </body>
 </html>
- 

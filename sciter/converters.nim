@@ -55,8 +55,8 @@ enumToInt(GRAPHIN_RESULT)
 enumToInt(DRAW_PATH_MODE)
 enumToInt(SCITER_LINE_JOIN_TYPE)
 enumToInt(SCITER_LINE_CAP_TYPE)
-enumToInt(SCITER_TEXT_ALIGNMENT)
-enumToInt(SCITER_TEXT_DIRECTION)
+#enumToInt(SCITER_TEXT_ALIGNMENT) # удалено в версии 4.3....
+#enumToInt(SCITER_TEXT_DIRECTION) # удалено в версии 4.3....
 # xrequest
 enumToInt(REQUEST_RESULT)
 enumToInt(REQUEST_RQ_TYPE)
