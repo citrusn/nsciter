@@ -54,7 +54,7 @@ when false: #ok
   echo "set bytes bv:", bv.getBytes()
 
 # test array
-when true: #ok
+when false: #ok
   var a = nullValue()
   a[0] = newValue(100) # min index is 0
   a[1] = newValue("111")
@@ -67,7 +67,7 @@ when true: #ok
     echo " v: ", v
 
 # test map
-when true: #ok
+when false: #ok
   var o = nullValue()
   o["key"] = newValue(999)
   o["at"] = newValue("home")
@@ -83,3 +83,5 @@ when false: #ok
   echo "DateTime: ", dt, " Value DT:", t, " Dt from value: ", t.getDate()  
 
 echo "values counter: ", count
+
+echo 6 DivByZeroError

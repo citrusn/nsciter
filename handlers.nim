@@ -60,10 +60,10 @@ var wnd = SciterCreateWindow(SW_CONTROLS or SW_MAIN or SW_TITLEBAR,
 
 SciterSetCallback(wnd, sciterHostCallback, nil)
 
-echo "SciterLoadFile: ", wnd.SciterLoadFile(getCurrentDir() / "handlers.htm")
+assert wnd.SciterLoadFile(getCurrentDir() / "handlers.htm")
 
 var root: HELEMENT
-wnd.SciterGetRootElement(root.addr)
+assert wnd.SciterGetRootElement(root.addr) == SCDOM_OK
 
 proc nf(args: seq[ptr Value]): Value =
     echo "NativeFunction called with args:", $(args)

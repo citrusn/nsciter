@@ -3,6 +3,9 @@
 #include "sciter-x-behavior.h"
 #include "sciter-x-graphics.hpp"
 #include <time.h>   
+#include <cmath>
+
+using namespace std;
 
 namespace sciter
 {
@@ -29,9 +32,12 @@ struct native_clock: public event_handler
 
     virtual void attached  (HELEMENT he ) 
     {
-      dom::element(he).start_timer(1000);
+      dom::element(he).start_timer(1000,this);
     }
-    virtual void detached  (HELEMENT he ) { delete this; }
+    virtual void detached  (HELEMENT he ) { 
+      dom::element(he).stop_timer(this);
+      delete this; 
+    }
 
 
     virtual bool handle_timer  (HELEMENT he,TIMER_PARAMS& params )
@@ -124,6 +130,84 @@ struct native_clock: public event_handler
       return false;
     
     }
+
+
+    // generation of Graphics.Path object on native side to be passed to script for drawing
+    
+    sciter::value nativeGetPath(sciter::value vx, sciter::value vy, sciter::value vw, sciter::value vh, sciter::value vt, sciter::value vclosed) 
+    {
+      float x = vx.get<float>();
+      float y = vy.get<float>();
+      float w = vw.get<float>();
+      float h = vh.get<float>();
+      float t = vt.get<float>();
+      bool  closed = vclosed.get<bool>();
+
+      float samples[6];
+	    float sx[6], sy[6];
+	    float dx = w/5.0f;
+	    
+      samples[0] = (1+sinf(t*1.2345f+cosf(t*0.33457f)*0.44f))*0.5f;
+	    samples[1] = (1+sinf(t*0.68363f+cosf(t*1.3f)*1.55f))*0.5f;
+	    samples[2] = (1+sinf(t*1.1642f+cosf(t*0.33457f)*1.24f))*0.5f;
+	    samples[3] = (1+sinf(t*0.56345f+cosf(t*1.63f)*0.14f))*0.5f;
+	    samples[4] = (1+sinf(t*1.6245f+cosf(t*0.254f)*0.3f))*0.5f;
+	    samples[5] = (1+sinf(t*0.345f+cosf(t*0.03f)*0.6f))*0.5f;
+
+	    for (int i = 0; i < 6; i++) {
+		    sx[i] = x+i*dx;
+		    sy[i] = y+h*samples[i]*0.8f;
+	    }
+
+      // creating path:
+      sciter::path p = sciter::path::create();
+
+      p.move_to(sx[0], sy[0],false);
+      for(int i = 1; i < 6; ++i)
+        p.bezier_curve_to(sx[i-1]+dx*0.5f,sy[i-1], sx[i]-dx*0.5f,sy[i], sx[i],sy[i],false);
+
+      if( closed ) {
+        p.line_to(x+w,y+h,false);
+        p.line_to(x+0,y+h,false);
+        p.close_path();
+      }
+
+       // .line_to(points[n],points[n+1]);
+     return p.to_value(); // wrap the path into sciter::value;
+    }
+
+    class IMGPainter : public sciter::painter {
+      public:
+      void paint(sciter::graphics& gfx, UINT width, UINT height)
+      {
+          gfx.line_width(3);
+          gfx.line_color(sciter::gcolor(255, 0, 0));
+          gfx.line(0, 0, sciter::POS(width), sciter::POS(height));
+          gfx.line(sciter::POS(width), 0, 0, sciter::POS(height));
+      }
+    };
+
+    sciter::value nativeImage(sciter::value v_width, sciter::value v_height)
+    {
+        UINT width = (UINT) v_width.get<int>();
+        UINT height = (UINT) v_height.get<int>();
+
+        BYTE *b = new BYTE[width * height * 4];
+        memset(b, 127, width * height * 4);
+
+        sciter::image img = sciter::image::create(width, height, false, b);
+
+        IMGPainter painter;
+        img.paint(&painter);
+
+        return img.to_value();
+    }
+
+
+    BEGIN_FUNCTION_MAP
+      FUNCTION_6("nativeGetPath", nativeGetPath); 
+      FUNCTION_2("nativeImage", nativeImage); 
+    END_FUNCTION_MAP
 
 };
 
