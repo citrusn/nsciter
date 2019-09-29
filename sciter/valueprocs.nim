@@ -78,27 +78,29 @@ proc isNull*[VT: Value | ptr Value](v:VT):bool {.inline.} =
 proc isFunction*[VT: Value | ptr Value](v:VT):bool {.inline.} =
     return v.t == T_FUNCTION
 
-#[template xDefPtr(x, v:untyped) = #TODO
-    var v:ptr Value
+#[template xDefPtr(x: untyped, v: untyped) = #TODO
+    var v: ptr Value
+    echo "xDefPtr: ", $x.type
+    when x is ptr Value:        
+        v = x
+    else:
+        #var nx = x
+        v = x.unsafeAddr]#
+
+template xDefPtr(x, v:untyped) = #{.immediate.} =
+    var v: ptr Value
     when x is Value:
         #var nx = x
         v = x.unsafeAddr
     else:
-        v = x]#
+        v = x        
 
 #proc isNativeFunctor*(x: var Value):bool =
-proc isNativeFunctor*[VT: var Value | ptr Value](v: VT): bool {.inline.} =
-    #xDefPtr(x, v)    
-    return ValueIsNativeFunctor(v.unsafeAddr)
+proc isNativeFunctor*[VT: var Value | ptr Value](x: VT): bool {.inline.} =
+    xDefPtr(x, v)    
+    return ValueIsNativeFunctor(v)
 
-var count* = 0
-
-proc getString*(x: var Value): string
-
-#[proc `=destroy`(x: ptr Value) = # this destructor is invalid
-    echo "=destroy ptr "
-    ValueClear(x)
-    x.dealloc()]#
+var count = 0
 
 proc `=destroy`(x: var Value) =        
     inc count, -1    
@@ -117,40 +119,23 @@ proc `=destroy`(x: var Value) =
 #    inc count
 #    ValueCopy(dst.addr, src.unsafeAddr)
 
-# for testing only
-proc newValuePtr*(): ptr Value = 
-    result = cast[ptr Value](alloc0(sizeof(Value)))    
-    assert ValueInit(result) == HV_OK
-    return result
-
-proc newValuePtr*(dat: string): ptr Value = 
-    result = newValuePtr()
-    var ws = newWideCString(dat)
-    #assert ValueFromString(result, ws, ws.len.uint32, 0) == HV_OK
-    assert ValueStringDataSet(result, ws, ws.len.uint32, 0) == HV_OK
-    return result
-
-proc newValuePtr*(dat: SomeSignedInt): ptr Value = 
-    result = newValuePtr()    
-    assert ValueIntDataSet(result, dat.int32, T_INT, 0) == HV_OK
-    return result
-
 proc newValue*(): Value =
     inc count
     assert ValueInit(result.addr) == HV_OK
 
-proc nullValue*(): Value =    
-    #result = Value()
+proc nullValue*(): Value =
     result.t = T_NULL # only here, not newVal()
-    #assert ValueInit(result.addr) == HV_OK
 
 proc cloneTo*(src: var Value, dst: var Value) {.inline.} =
     assert ValueCopy(dst.addr, src.addr) == HV_OK
+proc cloneTo*(src: ptr Value, dst: ptr Value) {.inline.} =
+    assert ValueCopy(dst, src) == HV_OK
 
-proc clone*(x: var Value): Value {.inline.} =
-    #xDefPtr(x, v)
+#proc clone*(x: var Value): Value {.inline.} =
+proc clone*[VT: var Value | ptr Value](x: VT): Value {.inline.} =
+    xDefPtr(x, v)
     result = nullValue()
-    assert ValueCopy(result.addr, x.addr) == HV_OK
+    assert ValueCopy(result.addr, v) == HV_OK
 
 proc newValue*(dat: string): Value =
     #UINT SCFN( ValueStringDataSet )( VALUE* pval, LPCWSTR chars, UINT numChars, UINT units );
@@ -181,24 +166,39 @@ proc newValue*(dat: bool): Value =
     else:
         assert ValueIntDataSet(result.addr, 0, T_BOOL, 0) == HV_OK
 
-proc convertFromString*(x: var Value, s: string, 
+proc convertFromString*(x: ptr Value, s: string, 
                         how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
     #UINT SCFN( ValueFromString )( VALUE* pval, LPCWSTR str, UINT strLength, /*VALUE_STRING_CVT_TYPE*/ UINT how );
+    #xDefPtr(x, v)
     var ws = newWideCString(s)    
+    assert ValueFromString(x, ws, ws.len.uint32, how) == HV_OK
+
+proc convertFromString*(x: var Value, s: string, 
+    how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
+    #UINT SCFN( ValueFromString )( VALUE* pval, LPCWSTR str, UINT strLength, /*VALUE_STRING_CVT_TYPE*/ UINT how );
+    #xDefPtr(x, v)
+    var ws = newWideCString(s)   
     assert ValueFromString(x.addr, ws, ws.len.uint32, how) == HV_OK
 
-proc convertToString*(x: var Value, 
+proc convertToString*(x: ptr Value, 
                     how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
     # converts value to T_STRING inplace
     #UINT SCFN( ValueToString )( VALUE* pval, /*VALUE_STRING_CVT_TYPE*/ UINT how );
-    assert ValueToString(x.addr, how) == HV_OK
+    #xDefPtr(x, v) # don't work
+    assert ValueToString(x, how) == HV_OK
 
-proc getString*(x: var Value): string =
+proc convertToString*(x: var Value, 
+                    how: VALUE_STRING_CVT_TYPE = CVT_SIMPLE) {.discardable.} =
+    convertToString(x.addr)
+
+proc getString*(x: var Value | ptr Value): string =
     #UINT SCFN( ValueStringData )( const VALUE* pval, LPCWSTR* pChars, UINT* pNumChars );
     #var xx = x
     var ws: WideCString
     var n: uint32    
-    assert ValueStringData(x.addr, ws.addr, n.addr) == HV_OK
+    xDefPtr(x, v)    
+    var r = ValueStringData(v, ws.addr, n.addr)
+    assert r == HV_OK, "res: " & $cast[VALUE_RESULT](r)
     return $(ws)
 
 proc `$`*(v: var Value): string =
@@ -215,87 +215,88 @@ proc `$`*(v: var Value): string =
         result = result & nv.getString()
     return result
 
-#proc `$`*(v: Value): string =     
-#    return $v
-
 proc `$`*(v: ptr Value): string =     
-    #result = "Ptr: " & (repr cast[pointer](v)) & " " &
     return $(v[])
 
 proc `$`*(v: ref Value): string = 
     result = "Ref to value: " & $(v[])
 
-proc getInt64*(x: var Value): int64 =
-    assert ValueInt64Data(x.unsafeAddr, result.addr) == HV_OK
+proc getInt64*(x: var Value | ptr Value): int64 =
+    xDefPtr(x, v)
+    assert ValueInt64Data(v, result.addr) == HV_OK
     return result
 
-proc getInt32*(x: var Value): int32 =
-    assert ValueIntData(x.unsafeAddr, result.addr) == HV_OK
+proc getInt32*(x: var Value | ptr Value): int32 =
+    xDefPtr(x, v)
+    assert ValueIntData(v, result.addr) == HV_OK
     return result
     
-proc getInt*(x: var Value): int32 =
+proc getInt*(x: var Value | ptr Value): int32 =
     #var xx = x
-    result = if x.isInt: getInt32(x) else: 0
+    xDefPtr(x, v)
+    result = if v.isInt: getInt32(v) else: 0
 
-proc getBool*(x: var Value): bool =
-    assert x.isBool, "Value is not BOOL type"
-    var i = getInt32(x)
+proc getBool*(x: var Value | ptr Value): bool =    
+    assert x.isBool, "Value is not BOOL type"    
+    xDefPtr(x, v)
+    var i = v.getInt32()
     result = if i == 0: false else: true
 
-proc getFloat*(x: var Value): float =
-    #xDefPtr(x, v)
+proc getFloat*(x: var Value | ptr Value): float =    
     var f:float64
-    var r = ValueFloatData(x.unsafeAddr, f.addr)
+    xDefPtr(x, v)
+    var r = ValueFloatData(v, f.addr)
     assert r == HV_OK, "getFloat:" & $r
     return float(f)
 
-proc getBytes*(x: var Value): seq[byte] = # 
+proc getBytes*(x: var Value | ptr Value): seq[byte] = # 
     var p:pointer
     var size:uint32
-    assert ValueBinaryData(unsafeAddr x, addr p, addr size) == HV_OK
+    xDefPtr(x, v)
+    echo "getBytes: ", repr x, " v:", repr v
+    var r = ValueBinaryData(v, p.addr, size.addr)
+    assert  r == HV_OK, "getBytes:" & repr r
     result = newSeq[byte](size)
     copyMem(result[0].addr, p, int(size)*sizeof(byte))
 
 proc setBytes*(x: var Value, dat: var openArray[byte]): uint32 {.discardable.} =
     var p = dat[0].addr
     var size = dat.len()*sizeof(byte)
-    assert ValueBinaryDataSet(unsafeAddr x, p, uint32(size), T_BYTES, 0) == HV_OK    
+    #xDefPtr(x, v)
+    assert ValueBinaryDataSet(x.addr, p, uint32(size), T_BYTES, 0) == HV_OK    
 
-proc getColor*(x: var Value): uint32 =
+proc getColor*(x: var Value | ptr Value): uint32 =
     assert x.isColor()
-    #ValueIntData(this, (INT*)&v);
     return cast[uint32](getInt(x))
     
 ## returns radians if this->is_angle()
-proc getAngle*(x: var Value): float32 = 
+proc getAngle*(x: var Value | ptr Value): float32 = 
       assert x.isAngle()
-      #ValueFloatData(this, &v);
       return getFloat(x)
     
 ## returns seconds if this->is_duration()
 proc getDuration*(x: var Value): float32 =    
     assert x.isDuration()
-    #ValueFloatData(this, &v)
     return getFloat(x)  
 
-proc getDate*(x: var Value): Time = 
-    var v: int64
-    assert x.isDate()
-    if(ValueInt64Data(x.unsafeAddr, v.addr) == HV_OK): 
-        return fromWinTime(v)
+proc getDate*(x: var Value | ptr Value): Time = 
+    var t: int64
+    xDefPtr(x, v)
+    assert v.isDate()
+    if(ValueInt64Data(v, t.addr) == HV_OK): 
+        return fromWinTime(t)
     else:
         return fromWinTime(0)
     
 ## for array and object types
-proc len*(x: var Value): int32 =
-    #xDefPtr(x, v)
-    #var n:int32 = 0
-    assert ValueElementsCount(x.unsafeAddr, result.addr) == HV_OK
+proc len*(x: var Value | ptr Value): int32 =
+    xDefPtr(x, v)    
+    assert ValueElementsCount(v, result.addr) == HV_OK
     return result
 
-proc enumerate*(x: var Value, cb: KeyValueCallback, param: pointer = nil) =
-    #xDefPtr(x, v)
-    assert ValueEnumElements(x.addr, cb, param) == HV_OK
+proc enumerate*(x: var Value | ptr Value, cb: KeyValueCallback, param: pointer = nil) =
+    xDefPtr(x, v)
+    assert ValueEnumElements(v, cb, param) == HV_OK
 
 # one list fo two iterator...
 var tempList = newSeq[(ptr Value, ptr Value)]() 
@@ -305,7 +306,7 @@ var cb = proc (param: pointer;
     tempList.add (pkey, pval)
     return true
 
-iterator items*(x: var Value): ptr Value =
+iterator items*(x: var Value | ptr Value): ptr Value =
     tempList.setLen(0)
     enumerate(x, cb)
     var i : int = 0
@@ -313,7 +314,7 @@ iterator items*(x: var Value): ptr Value =
         yield tempList[i][1]
         inc i
 
-iterator pairs*(x: var Value): (ptr Value, ptr Value) =
+iterator pairs*(x: var Value | ptr Value): (ptr Value, ptr Value) =
     tempList.setLen(0)
     enumerate(x, cb)
     var i : int = 0
@@ -321,13 +322,14 @@ iterator pairs*(x: var Value): (ptr Value, ptr Value) =
         yield tempList[i]
         inc i
 
-proc `[]`*[I: Ordinal, VT:var Value|ptr Value](x: VT; i: I): Value =
+#proc `[]`*[I: Ordinal, VT:var Value | ptr Value](x: VT; i: I): Value =
+proc `[]`*[I: Ordinal, VT: Value](x: var VT; i: I): Value =
     #xDefPtr(x, v)
     result = newValue()
-    assert ValueNthElementValue(x.unsafeAddr, cast[int32](i), result.addr) == HV_OK
+    assert ValueNthElementValue(x.addr, cast[int32](i), result.addr) == HV_OK
 
 #proc `[]=`*[I: Ordinal, VT:var Value|ptr Value](x: VT; i: I; y: VT) =
-proc `[]=`*(x: var Value, i: int32, y: Value) =
+proc `[]=`*(x: var Value; i: int32; y: Value) =
     #xDefPtr(x, v)
     #xDefPtr(y, yp)
     assert ValueNthElementValueSet(x.addr, cast[int32](i), y.unsafeAddr) == HV_OK
@@ -336,16 +338,16 @@ proc `[]`*(x: var Value; name: string): Value =
     #xDefPtr(x, v)
     var key = newValue(name)
     result = newValue()
-    assert ValueGetValueOfKey(x.unsafeAddr, key.addr, result.addr) == HV_OK
+    assert ValueGetValueOfKey(x.addr, key.addr, result.addr) == HV_OK
 
 proc `[]=`*(x: var Value; name: string; y: Value) =
     #xDefPtr(x, v)
     #var yy = y
     var key = newValue(name)
-    assert ValueSetValueToKey(x.unsafeAddr, key.addr, y.unsafeAddr) == HV_OK
+    assert ValueSetValueToKey(x.addr, key.addr, y.unsafeAddr) == HV_OK
 
 ## value functions calls
-proc invokeWithSelf*(x: ptr Value, self: var Value, 
+proc invokeWithSelf*(x: var Value | ptr Value, self: var Value, 
                     args: varargs[Value]): Value = 
     result = newValue(0)
     #var xx = x
@@ -356,14 +358,15 @@ proc invokeWithSelf*(x: ptr Value, self: var Value,
     if clen>0:
         for i in 0..<clen:
             cargs[i] = args[i].unsafeAddr
-    echo "invokeWithSelf. x:" , x[]
+    #echo "invokeWithSelf. x:" , x[]
+
     assert ValueInvoke(x, self.addr, uint32(len(args)),
                        cargs[0], result.addr, nil) == HV_OK
     echo "invokeWithSelf. result: ", result
     return result
 
 ## value functions calls    
-proc invoke*(x: ptr Value, args: varargs[Value]): Value =
+proc invoke*(x: var Value | ptr Value, args: varargs[Value]): Value =
     echo "invoke"
     var self = newValue()
     result = x.invokeWithSelf(self, args)
@@ -387,7 +390,7 @@ proc pinvoke(tag: pointer;
 proc prelease(tag: pointer) {.cdecl.} = 
     echo "prelease tag index: ", cast[int](tag)
 
-proc setNativeFunctor*(v: var Value, nf: NativeFunctor) = 
+proc setNativeFunctor*(v: var Value | ptr Value, nf: NativeFunctor) = 
     nfs.add(nf)
     var tag = cast[pointer](nfs.len()-1)
     #var vv = v
