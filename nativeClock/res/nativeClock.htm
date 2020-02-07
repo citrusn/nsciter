@@ -49,7 +49,7 @@
           // getting paths from native code
           path        = clock.nativeGetPath(0,0,w,h,t, false);
           pathOutline = clock.nativeGetPath(0,0,w,h,t, true);
-          //clock.refresh();
+          clock.refresh();
           if(++cycles > 100) {
             cycles = 0;
             gc(); // force gc to collect paths 
@@ -63,7 +63,7 @@
   </head>
 <body>
 
-  <h2>Завершеный пример рисования из кода</h2>
+  <h2>Завершеный пример рисования из кода Nim</h2>
   <p>См: sdk/include/behaviors/behavior_drawing.cpp</p>
   <p>Face clock gets drawn by native side on content layer</p>
   <p>Script is drawing the graph on background layer using paths generated on native side</p>
