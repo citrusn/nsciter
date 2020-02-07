@@ -1,6 +1,6 @@
 # Minimalistic PySciter sample for Windows
 
-import sciter/sciter, os
+import sciter, os
 
 OleInitialize(nil)
 let api = SAPI()

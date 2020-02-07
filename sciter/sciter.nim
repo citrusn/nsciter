@@ -69,10 +69,10 @@ when defined(windows):
             discard TranslateMessage(m.addr)
             discard DispatchMessage(m.addr)
 
-proc VersionAsString*(): string = 
+proc VersionAsString*(): string =
     var major = SciterVersion(true)
-    var minor = SciterVersion(false)    
-    return fmt"{major shr 16}.{major and 0xffff}.{minor shr 16}.{minor and 0xffff}"       
+    var minor = SciterVersion(false)
+    return fmt"{major shr 16}.{major and 0xffff}.{minor shr 16}.{minor and 0xffff}"
 
 #proc defaultRect*(): ref Rect = #result = cast[ref Rect](alloc0(sizeof(Rect)))
 let defaultRect*: RectRef = RectRef(left: 50, top: 50, right: 640+50, bottom: 480+50)
@@ -102,7 +102,7 @@ proc GetArchiveItem*(harc: HSARCHIVE, uri: string): (ptr UncheckedArray[byte], i
 ## # Close the archive
 proc CloseArchive*(harc: var HSARCHIVE): bool =   
     result = SciterCloseArchive(harc)
-    harc = nil       
+    harc = nil
 
 #[Register `this://app/` URLs to be loaded from the given Sciter archive.
   Pack resources using `packfolder` tool:

@@ -110,8 +110,11 @@ var nativeImage = proc(he: HELEMENT) =
         var width = args[0][].getInt().uint32
         var height = args[1][].getInt().uint32
         # cast[ptr byte](alloc0(sizeof(width * height * 4)))
+        var b = newSeqWith(int32(width * height * 4), 150'u8)
         #var b = newSeq[byte](width * height * 4)
-        var b = newSeqWith(int32(width * height * 4), 192'u8)
+        #for i in 0 ..< b.len:
+        #  b[i] = 192
+        
         var r = g.imageCreateFromPixmap(himg.addr, width, height, true, b[0].addr)
         assert(r == GRAPHIN_OK)
         r = g.imagePaint(himg, image_paint_function, nil)
@@ -285,8 +288,8 @@ proc createBehaviorClock(target: LPSCN_ATTACH_BEHAVIOR,
 
 harc = SetResourceArchive(resource_name)
 
-#assert frame.SciterLoadFile(archPref & "nativeClock.htm")
-assert frame.SciterLoadFile(getCurrentDir() / "nativeClock.htm")
+assert frame.SciterLoadFile(archPref & "nativeClock.htm")
+#assert frame.SciterLoadFile(getCurrentDir() / "nativeClock.htm")
 
 frame.setTitle("Часики")
 frame.run

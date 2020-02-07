@@ -83,5 +83,3 @@ when false: #ok
   echo "DateTime: ", dt, " Value DT:", t, " Dt from value: ", t.getDate()  
 
 echo "values counter: ", count
-
-echo 6 DivByZeroError

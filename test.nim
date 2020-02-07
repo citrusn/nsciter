@@ -158,7 +158,7 @@ testNativeFunctor()
 proc pr(tag: pointer) {.cdecl.} = #discard
     echo "pr tag: " , cast[int](tag)
 
-var s*: array[10, uint16] = [uint16 112,105,110,32,114,101,115,117,108,116]
+#var s*: array[10, uint16] = [uint16 112,105,110,32,114,101,115,117,108,116]
 
 proc pin(tag: pointer; 
         argc: uint32; 

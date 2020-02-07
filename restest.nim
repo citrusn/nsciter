@@ -77,7 +77,7 @@ var frame = SciterCreateWindow(SW_MAIN or SW_TITLEBAR or
                                SW_CONTROLS or SW_RESIZEABLE,
                                defaultRect, nil, nil, nil)
 
-SciterSetCallback(frame, sciterHostCallback, nil)
+frame.SciterSetCallback(sciterHostCallback, nil)
 
 harc = SetResourceArchive(resource_name)
 
